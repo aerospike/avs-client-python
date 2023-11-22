@@ -1,0 +1,67 @@
+syntax = "proto3";
+
+package aerospike.vector;
+
+option go_package = "aerospike.com/vector/protos/";
+option java_package = "com.aerospike.vector.client";
+option java_multiple_files = true;
+
+import "google/protobuf/empty.proto";
+import "types.proto";
+
+// Put request to insert/update a record.
+message PutRequest {
+  // The key for the record to insert/update
+  Key key = 1;
+
+  // The record bins.
+  repeated Bin bins = 3;
+}
+
+// Get request to insert/update a record.
+message GetRequest {
+  // The key for the record to insert/update
+  Key key = 1;
+
+  // The bin selector.
+  BinSelector binSelector = 2;
+}
+
+enum BinSelectorType {
+  ALL = 0;
+  NONE = 1;
+  SPECIFIED = 2;
+}
+
+message BinSelector {
+  // The type of the selector.
+  BinSelectorType type = 1;
+
+  // Bin names of specific bins are desired.
+  repeated string binNames = 2;
+}
+
+message VectorSearchRequest {
+  // The index identifier.
+  IndexId index = 1;
+
+  // The query vector.
+  Vector queryVector = 2;
+
+  // Maximum number of results to return.
+  uint32 limit = 3;
+
+  // The bin selector.
+  BinSelector binSelector = 4;
+}
+
+// Record transaction services.
+service Transact {
+  rpc Put(PutRequest) returns (google.protobuf.Empty) {}
+
+  rpc Get(GetRequest) returns (Record) {}
+
+  rpc Exists(Key) returns (Boolean) {}
+
+  rpc VectorSearch(VectorSearchRequest) returns (stream RecordWithKey) {}
+}

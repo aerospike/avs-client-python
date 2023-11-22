@@ -1,0 +1,171 @@
+syntax = "proto3";
+
+package aerospike.vector;
+
+option go_package = "aerospike.com/vector/protos/";
+option java_package = "com.aerospike.vector.client";
+option java_multiple_files = true;
+
+// A record key.
+message Key {
+  // The Aerospike namespace.
+  string namespace = 1;
+
+  // Optional Aerospike set.
+  optional string set = 2;
+
+  // The aerospike digest
+  bytes digest = 3;
+
+  // The key value.
+  oneof value {
+    string stringValue = 4;
+
+    bytes bytesValue = 5;
+
+    int32 intValue = 6;
+
+    int64 longValue = 7;
+  }
+}
+
+message BoolArray {
+  repeated bool value = 1;
+}
+
+message FloatArray {
+  repeated float value = 1;
+}
+
+message MapKey {
+  oneof value {
+    string stringValue = 1;
+
+    bytes bytesValue = 2;
+
+    int32 intValue = 3;
+
+    int64 longValue = 4;
+
+    float  floatValue = 5;
+
+    double doubleValue = 6;
+  }
+}
+
+message MapEntry {
+  MapKey key = 1;
+  Value value = 2;
+}
+
+message Map {
+  repeated MapEntry entries = 1;
+}
+
+message List {
+  repeated Value entries = 1;
+}
+
+// A vector.
+message Vector {
+  // Vector data
+  oneof data {
+    // TODO: rename to bool data and float data.
+    BoolArray boolArray = 1;
+    FloatArray floatArray = 2;
+  }
+}
+
+// A data value.
+message Value {
+  oneof value {
+    string stringValue = 1;
+
+    bytes bytesValue = 2;
+
+    int32 intValue = 3;
+
+    int64 longValue = 4;
+
+    float  floatValue = 5;
+
+    double doubleValue = 6;
+
+    Map mapValue = 7;
+
+    List listValue = 8;
+
+    Vector vectorValue = 9;
+  }
+}
+
+// A bin/field in Aerospike record.
+message Bin {
+  string name = 1;
+  Value value = 2;
+}
+
+// A single database record.
+message Record {
+  // Record modification count.
+  uint32 generation = 1;
+
+  // Date record will expire, in seconds from Jan 01 2010 00:00:00 GMT.
+  uint32 expiration = 2;
+
+  // Record bins.
+  repeated Bin bins = 3;
+}
+
+// TODO: For simplicity , include key in Record?
+message RecordWithKey {
+  // The result record key.
+  Key key = 1;
+
+  // The result record, will be missing if no record corresponding to the key is found.
+  optional Record record = 2;
+}
+
+// Unique identifier for an index.
+// TODO: Include optional set name?
+message IndexId {
+  // The name of the index.
+  string name = 1;
+
+  // The Aerospike namespace.
+  string namespace = 2;
+}
+
+enum IndexType {
+  HNSW = 0;
+}
+
+// An index definition.
+message IndexDefinition {
+  // The index identifier.
+  IndexId id = 1;
+
+  IndexType type = 2;
+
+  // Optional Aerospike set name.
+  optional string set = 3;
+
+  // Indexed vector bin.
+  string bin = 4;
+
+  // Number of dimensions in data.
+  // Vectors not matching the dimension count will not be indexed.
+  uint32 dimensions = 5;
+
+  map<string, Value> params = 6;
+}
+
+// List of index definitions.
+message IndexDefinitionList {
+  repeated IndexDefinition indices = 1;
+}
+
+// A boolean type
+message Boolean {
+  bool value = 1;
+}

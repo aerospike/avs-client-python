@@ -1,0 +1,38 @@
+[build-system]
+requires = ["setuptools","wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "aerospike-proximus"
+description = "Aerospike Proximus Client Library for Python"
+authors = [
+    { name = "Aerospike, Inc.", email = "info@aerospike.com" }
+]
+readme = "README.rst"
+license = { text = "Apache Software License" }
+keywords = ["aerospike", "vector", "database", "ANN"]
+classifiers = [
+    "License :: OSI Approved :: Apache Software License",
+    "Operating System :: POSIX :: Linux",
+    "Operating System :: MacOS :: MacOS X",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: Implementation :: CPython",
+    "Topic :: Database"
+]
+version = "0.2.0"
+
+
+[project.urls]
+"Homepage" = "https://aerospike.com"
+
+[tool.setuptools]
+zip-safe = false
+include-package-data = true
+packages = ["aerospike_vector"]
+package-dir={"" = "src"}
+options.install_requires = [
+    "grpcio",
+    "protobuf"
+]
