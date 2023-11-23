@@ -15,11 +15,11 @@ extra-index-url=https://<jfrog-username>:<jfrog-access-token>@aerospike.jfrog.io
 
 ### Install the aerospike_vector using pip
 ```shell
-python3 -m pip install aerospike_proximus
+python3 -m pip install aerospike-proximus
 ```
 Or 
 
-You can add the package name `aerospike_proximus` to your application's `requirements.txt` and install all dependencies using
+You can add the package name `aerospike-proximus` to your application's `requirements.txt` and install all dependencies using
 ```shell
 python3 -m pip install -r requirements.txt
 ```
