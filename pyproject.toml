@@ -22,7 +22,10 @@ classifiers = [
     "Topic :: Database"
 ]
 version = "0.2.0"
-
+dependencies = [
+    "grpcio",
+    "protobuf"
+]
 
 [project.urls]
 "Homepage" = "https://aerospike.com"
@@ -32,7 +35,3 @@ zip-safe = false
 include-package-data = true
 packages = ["aerospike_vector"]
 package-dir={"" = "src"}
-options.install_requires = [
-    "grpcio",
-    "protobuf"
-]
