@@ -4,6 +4,8 @@ Python client for Aerospike Proximus VectorDB
 ## Prerequisites
  - Python 3.8 or higher
  - pip version 9.0.1 or higher
+ - Proximus and Aerospike clusters running. See [Proximus server](https://github.com/citrusleaf/proximus/tree/main/server#aerospike-proximus-server)
+
 
 ## Using the client from your application using pip
 To resolve the client packages using pip, add the following to $HOME/.pip/pip.conf
