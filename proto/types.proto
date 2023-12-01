@@ -136,6 +136,11 @@ message IndexId {
   string namespace = 2;
 }
 
+enum IndexSimilarityMetric {
+  EUCLIDEAN = 0;
+  COSINE = 1;
+}
+
 enum IndexType {
   HNSW = 0;
 }
@@ -147,17 +152,19 @@ message IndexDefinition {
 
   IndexType type = 2;
 
+  IndexSimilarityMetric similarityMetric = 3;
+
   // Optional Aerospike set name.
-  optional string set = 3;
+  optional string set = 4;
 
   // Indexed vector bin.
-  string bin = 4;
+  string bin = 5;
 
   // Number of dimensions in data.
   // Vectors not matching the dimension count will not be indexed.
-  uint32 dimensions = 5;
+  uint32 dimensions = 6;
 
-  map<string, Value> params = 6;
+  map<string, Value> params = 7;
 }
 
 // List of index definitions.

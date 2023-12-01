@@ -28,6 +28,7 @@ class VectorDbAdminClient(object):
             seeds, listener_name)
 
     def indexCreate(self, namespace: str, name: str, set: str,
+                    index_similarity_metric: types_pb2.IndexSimilarityMetric,
                     vector_bin_name: str, dimensions: int,
                     params: dict[str, Any] = None):
         """Create an index"""
@@ -47,6 +48,7 @@ class VectorDbAdminClient(object):
             types_pb2.IndexDefinition(
                 id=types_pb2.IndexId(namespace=namespace, name=name),
                 set=set,
+                similarityMetric=index_similarity_metric,
                 bin=vector_bin_name,
                 dimensions=dimensions,
                 params=grpcParams))
