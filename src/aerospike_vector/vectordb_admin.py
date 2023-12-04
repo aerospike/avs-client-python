@@ -28,9 +28,10 @@ class VectorDbAdminClient(object):
             seeds, listener_name)
 
     def indexCreate(self, namespace: str, name: str, set: str,
-                    index_similarity_metric: types_pb2.IndexSimilarityMetric,
                     vector_bin_name: str, dimensions: int,
-                    params: dict[str, Any] = None):
+                    params: dict[str, Any] = None,
+                    index_similarity_metric: types_pb2.IndexSimilarityMetric =
+                    types_pb2.IndexSimilarityMetric.EUCLIDEAN):
         """Create an index"""
         index_stub = index_pb2_grpc.IndexServiceStub(
             self.channelProvider.getChannel())
