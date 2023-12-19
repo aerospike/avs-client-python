@@ -24,7 +24,9 @@ pipeline {
                     steps {
                         echo "Building.."
                         sh "python3 -m venv .venv"
-                        sh "source .venv/bin/activate"
+                        sh '''#!/bin/bash
+                                source .venv/bin/activate
+                        '''
                         sh "./proto/codegen.sh"
                         sh "python3 -m pip install build"
                         sh "python3 -m build"
