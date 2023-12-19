@@ -29,11 +29,11 @@ message Key {
   }
 }
 
-message BoolArray {
+message BoolData {
   repeated bool value = 1;
 }
 
-message FloatArray {
+message FloatData {
   repeated float value = 1;
 }
 
@@ -70,9 +70,8 @@ message List {
 message Vector {
   // Vector data
   oneof data {
-    // TODO: rename to bool data and float data.
-    BoolArray boolArray = 1;
-    FloatArray floatArray = 2;
+    BoolData boolData = 1;
+    FloatData floatData = 2;
   }
 }
 
@@ -136,9 +135,12 @@ message IndexId {
   string namespace = 2;
 }
 
-enum IndexSimilarityMetric {
-  EUCLIDEAN = 0;
+enum VectorDistanceMetric {
+  SQUARED_EUCLIDEAN = 0;
   COSINE = 1;
+  DOT_PRODUCT = 2;
+  MANHATTAN = 3;
+  HAMMING = 4;
 }
 
 enum IndexType {
@@ -152,7 +154,7 @@ message IndexDefinition {
 
   IndexType type = 2;
 
-  IndexSimilarityMetric similarityMetric = 3;
+  VectorDistanceMetric vectorDistanceMetric = 3;
 
   // Optional Aerospike set name.
   optional string set = 4;
