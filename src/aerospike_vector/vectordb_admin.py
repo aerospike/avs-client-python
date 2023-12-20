@@ -29,7 +29,9 @@ class VectorDbAdminClient(object):
 
     def indexCreate(self, namespace: str, name: str, set: str,
                     vector_bin_name: str, dimensions: int,
-                    params: dict[str, Any] = None):
+                    params: dict[str, Any] = None,
+                    index_similarity_metric: types_pb2.VectorDistanceMetric =
+                    types_pb2.VectorDistanceMetric.SQUARED_EUCLIDEAN):
         """Create an index"""
         index_stub = index_pb2_grpc.IndexServiceStub(
             self.channelProvider.getChannel())
@@ -47,6 +49,7 @@ class VectorDbAdminClient(object):
             types_pb2.IndexDefinition(
                 id=types_pb2.IndexId(namespace=namespace, name=name),
                 set=set,
+                vectorDistanceMetric=index_similarity_metric,
                 bin=vector_bin_name,
                 dimensions=dimensions,
                 params=grpcParams))

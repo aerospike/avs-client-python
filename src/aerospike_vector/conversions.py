@@ -93,9 +93,9 @@ def fromVectorDbValue(input: types_pb2.Value) -> Any:
         return [fromVectorDbValue(v) for v in input.listValue.entries]
     elif input.HasField("vectorValue"):
         vector = input.vectorValue
-        if vector.HasField("floatArray"):
-            return [v for v in vector.floatArray.value]
-        if vector.HasField("boolArray"):
-            return [v for v in vector.boolArray.value]
+        if vector.HasField("floatData"):
+            return [v for v in vector.floatData.value]
+        if vector.HasField("boolData"):
+            return [v for v in vector.boolData.value]
 
     return None
