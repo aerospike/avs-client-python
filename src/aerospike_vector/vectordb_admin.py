@@ -40,15 +40,6 @@ class VectorDbAdminClient(object):
         if setFilter and not setFilter.strip():
             setFilter = None
 
-        print("Index  @@@@"+str(types_pb2.IndexDefinition(
-                id=types_pb2.IndexId(namespace=namespace, name=name),
-                vectorDistanceMetric=vector_distance_metric,
-                setFilter=setFilter,
-                hnswParams=indexParams,
-                bin=vector_bin_name,
-                dimensions=dimensions,
-                labels=labels)))
-
         index_stub.Create(
             types_pb2.IndexDefinition(
                 id=types_pb2.IndexId(namespace=namespace, name=name),
