@@ -68,7 +68,7 @@ class VectorDbClient(object):
                 index=types_pb2.IndexId(namespace=namespace, name=index_name),
                 queryVector=(conversions.toVectorDbValue(query).vectorValue),
                 limit=limit,
-                searchParams=searchParams,
+                hnswSearchParams=searchParams,
                 binSelector=self._getBinSelector(bin_names)
             )
         )
