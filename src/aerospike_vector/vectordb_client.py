@@ -13,7 +13,8 @@ empty = google.protobuf.empty_pb2.Empty()
 class VectorDbClient(object):
     """Vector DB client"""
 
-    def __init__(self, seeds: types.HostPort | tuple[types.HostPort, ...], listener_name: str = None):
+    def __init__(self, seeds: types.HostPort | tuple[types.HostPort, ...],
+                 listener_name: str = None):
         if not seeds:
             raise Exception("at least one seed host needed")
 
@@ -58,6 +59,7 @@ class VectorDbClient(object):
 
     def vectorSearch(self, namespace: str, index_name: str,
                      query: list[bool | float], limit: int,
+                     searchParams: types_pb2.HnswSearchParams = None,
                      *bin_names: str) -> list[types.RecordWithKey]:
         transact_stub = transact_pb2_grpc.TransactStub(
             self._channelProvider.getChannel())
@@ -66,6 +68,7 @@ class VectorDbClient(object):
                 index=types_pb2.IndexId(namespace=namespace, name=index_name),
                 queryVector=(conversions.toVectorDbValue(query).vectorValue),
                 limit=limit,
+                searchParams=searchParams,
                 binSelector=self._getBinSelector(bin_names)
             )
         )
