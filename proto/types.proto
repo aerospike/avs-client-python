@@ -196,11 +196,11 @@ message HnswBatchingParams {
 message AerospikeIndexStorage {
   // Optional Aerospike namespace where the index is stored.
   // Defaults to the index namespace.
-  optional string namespace = 8;
+  optional string namespace = 1;
 
   // Optional Aerospike set where the index is stored.
   // Defaults to the index name.
-  optional string set = 9;
+  optional string set = 2;
 }
 
 // An index definition.
