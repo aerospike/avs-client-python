@@ -27,32 +27,28 @@ class VectorDbAdminClient(object):
         self.channelProvider = vectordb_channel_provider.VectorDbChannelProvider(
             seeds, listener_name)
 
-    def indexCreate(self, namespace: str, name: str, set: str,
+    def indexCreate(self, namespace: str, name: str,
                     vector_bin_name: str, dimensions: int,
-                    params: dict[str, Any] = None,
-                    index_similarity_metric: types_pb2.VectorDistanceMetric =
-                    types_pb2.VectorDistanceMetric.SQUARED_EUCLIDEAN):
+                    vector_distance_metric: types_pb2.VectorDistanceMetric =
+                    types_pb2.VectorDistanceMetric.SQUARED_EUCLIDEAN,
+                    setFilter: str = None,
+                    indexParams: types_pb2.HnswParams = None,
+                    labels: dict[str, str] = None):
         """Create an index"""
         index_stub = index_pb2_grpc.IndexServiceStub(
             self.channelProvider.getChannel())
-        if params is None:
-            params = {}
+        if setFilter and not setFilter.strip():
+            setFilter = None
 
-        grpcParams = {}
-        for k, v in params.items():
-            grpcParams[k] = conversions.toVectorDbValue(v)
-
-        if not set.strip():
-            set = None
-            
         index_stub.Create(
             types_pb2.IndexDefinition(
                 id=types_pb2.IndexId(namespace=namespace, name=name),
-                set=set,
-                vectorDistanceMetric=index_similarity_metric,
+                vectorDistanceMetric=vector_distance_metric,
+                setFilter=setFilter,
+                hnswParams=indexParams,
                 bin=vector_bin_name,
                 dimensions=dimensions,
-                params=grpcParams))
+                labels=labels))
 
     def indexDrop(self, namespace: str, name: str):
         index_stub = index_pb2_grpc.IndexServiceStub(
@@ -87,16 +83,9 @@ class VectorDbAdminClient(object):
         index_definition = self.indexGet(namespace, name)
 
         # Fetch batch wait interval
-        batching_config = \
-            conversions.fromVectorDbValue(index_definition.params[
-                                              "batching-config"])
-
-        # TODO: server should return defaults for batching-config if missing.
-        if not batching_config:
-            batching_config = {}
-        if "batch-interval" not in batching_config:
-            batching_config["batch-interval"] = 10_000
-        batch_interval = batching_config["batch-interval"]
+        batch_interval = 10000
+        if index_definition.hnswParams.batchingParams.interval == 0:
+            batch_interval = index_definition.hnswParams.batchingParams.interval
 
         unmerged_record_count = self.indexGetStatus(namespace,
                                                     name).unmergedRecordCount

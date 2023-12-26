@@ -18,20 +18,24 @@ def toVectorDbValue(value: Any) -> types_pb2.Value:
         if isinstance(value[0], float):
             return types_pb2.Value(
                 vectorValue=types_pb2.Vector(
-                    floatArray={"value": [float(x) for x in value]}))
+                    floatData={"value": [float(x) for x in value]}))
         elif isinstance(value[0], bool):
             return types_pb2.Value(
                 vectorValue=types_pb2.Vector(
-                    boolArray={"value": [True if x else False for x in value]}))
+                    boolData={"value": [True if x else False for x in value]}))
         else:
             return types_pb2.Value(
-                listValue=types_pb2.List(entries = [toVectorDbValue(x) for x in value]))
+                listValue=types_pb2.List(
+                    entries=[toVectorDbValue(x) for x in value]))
     elif isinstance(value, dict):
         d = types_pb2.Value(
-            mapValue=types_pb2.Map(entries = [types_pb2.MapEntry(key=toMapKey(k), value=toVectorDbValue(v)) for k,v in value.items()]))
+            mapValue=types_pb2.Map(entries=[
+                types_pb2.MapEntry(key=toMapKey(k), value=toVectorDbValue(v))
+                for k, v in value.items()]))
         return d
     else:
         raise Exception("Invalid type " + str(type(value)))
+
 
 def toMapKey(value):
     if isinstance(value, str):
@@ -44,6 +48,7 @@ def toMapKey(value):
         return types_pb2.MapKey(doubleValue=value)
     else:
         raise Exception("Invalid map key type " + str(type(value)))
+
 
 def fromVectorDbKey(key: types_pb2.Key) -> types.Key:
     keyValue = None

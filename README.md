@@ -55,17 +55,33 @@ Create or update `$HOME/.pypirc` with following contents
 
 ```ini
 [distutils]
-index-servers = ecosystem-python-dev-local
+index-servers = 
+    ecosystem-python-dev-local
+    ecosystem-python-prod-local
+
 [ecosystem-python-dev-local]
 repository: https://aerospike.jfrog.io/artifactory/api/pypi/ecosystem-python-dev-local
+username: <jfrog-username>
+password: <jfrog-access-token>
+
+[ecosystem-python-prod-local]
+repository: https://aerospike.jfrog.io/artifactory/api/pypi/ecosystem-python-prod-local
 username: <jfrog-username>
 password: <jfrog-access-token>
 ```
 
 ### Upload the packages to the repository
+
+To upload dev packages run
 ```shell
 python3 -m pip install twine
 python3 -m twine upload --repository ecosystem-python-dev-local dist/*
+```
+
+To upload release packages run
+```shell
+python3 -m pip install twine
+python3 -m twine upload --repository ecosystem-python-prod-local dist/*
 ```
 
 ## Examples

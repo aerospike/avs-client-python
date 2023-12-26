@@ -126,7 +126,6 @@ message RecordWithKey {
 }
 
 // Unique identifier for an index.
-// TODO: Include optional set name?
 message IndexId {
   // The name of the index.
   string name = 1;
@@ -147,26 +146,97 @@ enum IndexType {
   HNSW = 0;
 }
 
+// Params for the HNSW index
+message HnswParams {
+  // Maximum number bi-directional links per HNSW vertex. Greater values of
+  // 'm' in general provide better recall for data with high dimensionality, while
+  // lower values work well for data with lower dimensionality.
+  // The storage space required for the index increases proportionally with 'm'.
+  // The default value is 16.
+  optional uint32 m = 1;
+
+  // The number of candidate nearest neighbors shortlisted during index creation.
+  // Larger values provide better recall at the cost of longer index update times.
+  // The default is 100.
+  optional uint32 efConstruction = 2;
+
+  // The default number of candidate nearest neighbors shortlisted during search.
+  // Larger values provide better recall at the cost of longer search times.
+  // The default is 100.
+  optional uint32 ef = 3;
+
+  // Configures batching behaviour for batch based index update.
+  HnswBatchingParams batchingParams = 4;
+}
+
+// Params for the HNSW index search
+message HnswSearchParams {
+  // The default number of candidate nearest neighbors shortlisted during search.
+  // Larger values provide better recall at the cost of longer search times.
+  // The default is value set in HnswParams for the index.
+  optional uint32 ef = 1;
+}
+
+// Configures batching behaviour for batch based index update.
+message HnswBatchingParams {
+  // Maximum number of records to fit in a batch.
+  // The default value is 10000.
+  optional uint32 maxRecords = 1;
+
+  // The maximum amount of time in milliseconds to wait before finalizing a batch.
+  // The default value is 10000.
+  optional uint32 interval = 2;
+
+  // Disables batching for index updates.
+  // Default is false meaning batching is enabled.
+  optional bool disabled = 3;
+}
+
+// Index in Aerospike storage configuration
+message AerospikeIndexStorage {
+  // Optional Aerospike namespace where the index is stored.
+  // Defaults to the index namespace.
+  optional string namespace = 1;
+
+  // Optional Aerospike set where the index is stored.
+  // Defaults to the index name.
+  optional string set = 2;
+}
+
 // An index definition.
 message IndexDefinition {
   // The index identifier.
   IndexId id = 1;
 
+  // The type of index.
   IndexType type = 2;
 
-  VectorDistanceMetric vectorDistanceMetric = 3;
+  // Number of dimensions in data.
+  // Vectors not matching the dimension count will not be indexed.
+  uint32 dimensions = 3;
 
-  // Optional Aerospike set name.
-  optional string set = 4;
+  // Optional The distance metric to use. Defaults to SQUARED_EUCLIDEAN
+  VectorDistanceMetric vectorDistanceMetric = 4;
 
   // Indexed vector bin.
   string bin = 5;
 
-  // Number of dimensions in data.
-  // Vectors not matching the dimension count will not be indexed.
-  uint32 dimensions = 6;
+  // Optional filter on Aerospike set name from which records will be indexed.
+  // If not specified all sets in the index namespace will be indexed.
+  optional string setFilter = 6;
 
-  map<string, Value> params = 7;
+  // Index parameters.
+  oneof params {
+    HnswParams hnswParams = 7;
+  }
+
+  // Index storage.
+  oneof storage {
+    AerospikeIndexStorage aerospikeStorage = 8;
+  }
+
+  // Optional labels associated with the index.
+  map<string, string> labels = 9;
 }
 
 // List of index definitions.

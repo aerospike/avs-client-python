@@ -53,6 +53,11 @@ message VectorSearchRequest {
 
   // The bin selector.
   BinSelector binSelector = 4;
+
+  // Optional parameters to tune the search.
+  oneof searchParams {
+    HnswSearchParams hnswSearchParams = 5;
+  }
 }
 
 // Record transaction services.
