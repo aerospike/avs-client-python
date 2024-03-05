@@ -1,10 +1,8 @@
-import sys
-import time
 from typing import Any
 
 import google.protobuf.empty_pb2
 
-from . import conversions, index_pb2_grpc
+from . import index_pb2_grpc
 from . import index_pb2
 from . import types
 from . import types_pb2
@@ -24,7 +22,7 @@ class VectorDbAdminClient(object):
         if isinstance(seeds, types.HostPort):
             seeds = (seeds,)
 
-        self.channelProvider = vectordb_channel_provider.VectorDbChannelProvider(
+        self.__channelProvider = vectordb_channel_provider.VectorDbChannelProvider(
             seeds, listener_name)
 
     def indexCreate(self, namespace: str, name: str,
@@ -36,7 +34,7 @@ class VectorDbAdminClient(object):
                     labels: dict[str, str] = None):
         """Create an index"""
         index_stub = index_pb2_grpc.IndexServiceStub(
-            self.channelProvider.getChannel())
+            self.__channelProvider.getChannel())
         if setFilter and not setFilter.strip():
             setFilter = None
 
@@ -52,17 +50,17 @@ class VectorDbAdminClient(object):
 
     def indexDrop(self, namespace: str, name: str):
         index_stub = index_pb2_grpc.IndexServiceStub(
-            self.channelProvider.getChannel())
+            self.__channelProvider.getChannel())
         index_stub.Drop(types_pb2.IndexId(namespace=namespace, name=name))
 
     def indexList(self) -> list[Any]:
         index_stub = index_pb2_grpc.IndexServiceStub(
-            self.channelProvider.getChannel())
+            self.__channelProvider.getChannel())
         return index_stub.List(empty).indices
 
     def indexGet(self, namespace: str, name: str) -> types_pb2.IndexDefinition:
         index_stub = index_pb2_grpc.IndexServiceStub(
-            self.channelProvider.getChannel())
+            self.__channelProvider.getChannel())
         return index_stub.Get(types_pb2.IndexId(namespace=namespace, name=name))
 
     def indexGetStatus(self, namespace: str,
@@ -71,35 +69,9 @@ class VectorDbAdminClient(object):
         This API is subject to change.
         """
         index_stub = index_pb2_grpc.IndexServiceStub(
-            self.channelProvider.getChannel())
+            self.__channelProvider.getChannel())
         return index_stub.GetStatus(
             types_pb2.IndexId(namespace=namespace, name=name))
-
-    def waitForIndexCompletion(self, namespace: str, name: str,
-                               timeout: int = sys.maxsize):
-        """
-        Wait for the index to have no pending index update operations.
-        """
-        index_definition = self.indexGet(namespace, name)
-
-        # Fetch batch wait interval
-        batch_interval = 10000
-        if index_definition.hnswParams.batchingParams.interval == 0:
-            batch_interval = index_definition.hnswParams.batchingParams.interval
-
-        unmerged_record_count = self.indexGetStatus(namespace,
-                                                    name).unmergedRecordCount
-        start_time = time.monotonic()
-        while True:
-            if start_time + timeout < time.monotonic():
-                raise "timed-out waiting for index completion"
-            # Wait for in-memory batches to be flushed to storage.
-            time.sleep(2 * batch_interval / 1000.0)
-            index_status = self.indexGetStatus(namespace, name)
-            if unmerged_record_count == 0 and index_status.unmergedRecordCount == 0:
-                return
-            # Update.
-            unmerged_record_count = index_status.unmergedRecordCount
 
     def __enter__(self):
         return self
@@ -108,4 +80,4 @@ class VectorDbAdminClient(object):
         self.close()
 
     def close(self):
-        self.channelProvider.close()
+        self.__channelProvider.close()
