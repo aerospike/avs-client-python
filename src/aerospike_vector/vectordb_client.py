@@ -96,8 +96,8 @@ class VectorDbClient(object):
         Wait for the index to have no pending index update operations.
         """
 
-        # Fetch batch wait interval
-        wait_interval = 20
+        # Wait interval between polling
+        wait_interval = 10
 
         unmerged_record_count = sys.maxsize
         start_time = time.monotonic()
