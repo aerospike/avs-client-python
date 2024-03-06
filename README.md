@@ -36,6 +36,11 @@ python3 -m venv .venv
 source .venv/bin/activate
 ```
 
+### Install requirements
+```shell
+python3 -m pip install -vvv  -r requirements.txt
+```
+
 ### Generate gRPC client code
 ```shell
 # Generate the gRPC client code

@@ -27,6 +27,16 @@ message GetRequest {
   BinSelector binSelector = 2;
 }
 
+// Request to check whether the given record is indexed for the specified
+// index.
+message IsIndexedRequest {
+  // The key of the aerospike record holding Vector.
+  Key key = 1;
+
+  // Index in which the vector is indexed.
+  IndexId indexId = 2;
+}
+
 enum BinSelectorType {
   ALL = 0;
   NONE = 1;
@@ -67,6 +77,8 @@ service Transact {
   rpc Get(GetRequest) returns (Record) {}
 
   rpc Exists(Key) returns (Boolean) {}
+
+  rpc IsIndexed(IsIndexedRequest) returns (Boolean) {}
 
   rpc VectorSearch(VectorSearchRequest) returns (stream RecordWithKey) {}
 }
