@@ -40,7 +40,7 @@ class VectorDbClient(object):
             transact_pb2.PutRequest(key=key, bins=binList))
 
     def get(self, namespace: str, set: str, key: Any,
-            *bin_names: str) -> types.Neighbor:
+            *bin_names: str) -> types.RecordWithKey:
         """Read a record from vector DB"""
         transact_stub = transact_pb2_grpc.TransactStub(
             self.__channelProvider.getChannel())
@@ -49,9 +49,8 @@ class VectorDbClient(object):
 
         result = transact_stub.Get(
             transact_pb2.GetRequest(key=key, binSelector=bin_selector))
-        return types.Neighbor(conversions.fromVectorDbKey(key),
-                              conversions.fromVectorDbRecord(result),
-                              result.distance)
+        return types.RecordWithKey(conversions.fromVectorDbKey(key),
+                              conversions.fromVectorDbRecord(result))
 
     def exists(self, namespace: str, set: str, key: Any) -> bool:
         """Check if a record exists in vector DB"""

@@ -16,6 +16,12 @@ class Key(object):
         self.key = key
 
 
+class RecordWithKey(object):
+    def __init__(self, key: Key, bins: dict[str, Any]):
+        self.key = key
+        self.bins = bins
+
+
 class Neighbor(object):
     def __init__(self, key: Key, bins: dict[str, Any], distance: float):
         self.key = key
