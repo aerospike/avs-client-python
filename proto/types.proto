@@ -117,12 +117,16 @@ message Record {
 }
 
 // TODO: For simplicity , include key in Record?
-message RecordWithKey {
+message Neighbor {
   // The result record key.
   Key key = 1;
 
-  // The result record, will be missing if no record corresponding to the key is found.
+  // The result record, will be missing if no record corresponding to the key is
+  // found.
   optional Record record = 2;
+
+  // The distance from the query vector.
+  float distance = 3;
 }
 
 // Unique identifier for an index.
