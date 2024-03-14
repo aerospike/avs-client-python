@@ -80,5 +80,5 @@ service Transact {
 
   rpc IsIndexed(IsIndexedRequest) returns (Boolean) {}
 
-  rpc VectorSearch(VectorSearchRequest) returns (stream RecordWithKey) {}
+  rpc VectorSearch(VectorSearchRequest) returns (stream Neighbor) {}
 }

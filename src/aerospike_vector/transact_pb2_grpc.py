@@ -40,7 +40,7 @@ class TransactStub(object):
         self.VectorSearch = channel.unary_stream(
                 '/aerospike.vector.Transact/VectorSearch',
                 request_serializer=transact__pb2.VectorSearchRequest.SerializeToString,
-                response_deserializer=types__pb2.RecordWithKey.FromString,
+                response_deserializer=types__pb2.Neighbor.FromString,
                 )
 
 
@@ -104,7 +104,7 @@ def add_TransactServicer_to_server(servicer, server):
             'VectorSearch': grpc.unary_stream_rpc_method_handler(
                     servicer.VectorSearch,
                     request_deserializer=transact__pb2.VectorSearchRequest.FromString,
-                    response_serializer=types__pb2.RecordWithKey.SerializeToString,
+                    response_serializer=types__pb2.Neighbor.SerializeToString,
             ),
     }
     generic_handler = grpc.method_handlers_generic_handler(
@@ -198,6 +198,6 @@ class Transact(object):
             metadata=None):
         return grpc.experimental.unary_stream(request, target, '/aerospike.vector.Transact/VectorSearch',
             transact__pb2.VectorSearchRequest.SerializeToString,
-            types__pb2.RecordWithKey.FromString,
+            types__pb2.Neighbor.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)

@@ -1,3 +1,6 @@
+import sys
+import time
+import grpc
 from typing import Any
 
 import google.protobuf.empty_pb2
@@ -48,6 +51,8 @@ class VectorDbAdminClient(object):
                 dimensions=dimensions,
                 labels=labels))
 
+        self.__waitForIndexCreation(namespace, name, 100_000)
+
     def indexDrop(self, namespace: str, name: str):
         index_stub = index_pb2_grpc.IndexServiceStub(
             self.__channelProvider.getChannel())
@@ -72,6 +77,31 @@ class VectorDbAdminClient(object):
             self.__channelProvider.getChannel())
         return index_stub.GetStatus(
             types_pb2.IndexId(namespace=namespace, name=name))
+
+    def __waitForIndexCreation(self, namespace: str, name: str,
+                               timeout: int = sys.maxsize):
+        """
+        Wait for the index to be created.
+        """
+
+        # Wait interval between polling
+        wait_interval = 10
+
+        start_time = time.monotonic()
+        while True:
+            if start_time + timeout < time.monotonic():
+                raise "timed-out waiting for index creation"
+            try:
+                index_status = self.indexGet(namespace, name)
+                # Index has been created
+                return
+            except grpc.RpcError as e:
+                if (e.code() == grpc.StatusCode.UNAVAILABLE or
+                        e.code() == grpc.StatusCode.NOT_FOUND):
+                    # Wait for some more time.
+                    time.sleep(wait_interval)
+                else:
+                    raise e
 
     def __enter__(self):
         return self

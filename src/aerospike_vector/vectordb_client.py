@@ -50,8 +50,7 @@ class VectorDbClient(object):
         result = transact_stub.Get(
             transact_pb2.GetRequest(key=key, binSelector=bin_selector))
         return types.RecordWithKey(conversions.fromVectorDbKey(key),
-                                   conversions.fromVectorDbRecord(
-                                       result))
+                              conversions.fromVectorDbRecord(result))
 
     def exists(self, namespace: str, set: str, key: Any) -> bool:
         """Check if a record exists in vector DB"""
@@ -76,7 +75,7 @@ class VectorDbClient(object):
     def vectorSearch(self, namespace: str, index_name: str,
                      query: list[bool | float], limit: int,
                      searchParams: types_pb2.HnswSearchParams = None,
-                     *bin_names: str) -> list[types.RecordWithKey]:
+                     *bin_names: str) -> list[types.Neighbor]:
         transact_stub = transact_pb2_grpc.TransactStub(
             self.__channelProvider.getChannel())
         results = transact_stub.VectorSearch(
@@ -88,7 +87,7 @@ class VectorDbClient(object):
                 binSelector=self.__getBinSelector(bin_names)
             )
         )
-        return [conversions.fromVectorDbRecordWithKey(result) for result in
+        return [conversions.fromVectorDbNeighbor(result) for result in
                 results]
     def waitForIndexCompletion(self, namespace: str, name: str,
                                timeout: int = sys.maxsize):
