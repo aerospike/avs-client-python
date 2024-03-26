@@ -10,6 +10,7 @@ from . import types, vector_db_pb2
 from . import vector_db_pb2_grpc
 
 empty = google.protobuf.empty_pb2.Empty()
+from typing import Optional, Union
 
 
 class ChannelAndEndpoints(object):
@@ -36,7 +37,7 @@ class VectorDbChannelProvider(object):
         self._clusterId = 0
         self.seeds = seeds
         self.listener_name = listener_name
-        self._seedChannels = [self._createChannelFromHostPort(seed) for seed in
+        self._seedChannels = [self._create_channel_from_host_port(seed) for seed in
                               self.seeds]
         self._tend()
 
@@ -49,7 +50,7 @@ class VectorDbChannelProvider(object):
             if channelEndpoints.channel:
                 channelEndpoints.channel.close()
 
-    def getChannel(self) -> grpc.Channel:
+    def get_channel(self) -> grpc.Channel:
         discoveredChannels: list[ChannelAndEndpoints] = list(
             self._nodeChannels.values())
         if len(discoveredChannels) <= 0:
@@ -108,7 +109,7 @@ class VectorDbChannelProvider(object):
 
                     if add_new_channel:
                         # We have discovered a new node
-                        new_channel = self._createChannelFromServerEndpointList(
+                        new_channel = self._create_channel_from_server_endpoint_list(
                             newEndpoints)
                         self._nodeChannels[node] = ChannelAndEndpoints(
                             new_channel, newEndpoints)
@@ -127,10 +128,10 @@ class VectorDbChannelProvider(object):
             # TODO: check tend interval.
             threading.Timer(1, self._tend).start()
 
-    def _createChannelFromHostPort(self, host: types.HostPort) -> grpc.Channel:
-        return self._createChannel(host.address, host.port, host.isTls)
+    def _create_channel_from_host_port(self, host: types.HostPort) -> grpc.Channel:
+        return self._create_channel(host.host, host.port, host.isTls)
 
-    def _createChannelFromServerEndpointList(
+    def _create_channel_from_server_endpoint_list(
         self,
         endpoints: vector_db_pb2.ServerEndpointList) -> grpc.Channel:
         # TODO: Create channel with all endpoints
@@ -139,12 +140,12 @@ class VectorDbChannelProvider(object):
                 # TODO: Ignoring IPv6 for now. Needs fix
                 continue
             try:
-                return self._createChannel(endpoint.address, endpoint.port,
+                return self._create_channel(endpoint.address, endpoint.port,
                                            endpoint.isTls)
             except:
                 continue
 
-    def _createChannel(
+    def _create_channel(
         self,
         host: str,
         port: int,

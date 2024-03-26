@@ -1,14 +1,16 @@
 import enum
-from typing import Any
+from typing import Any, Optional
+
+from . import types_pb2
 
 
 class HostPort(object):
     def __init__(
         self, *,
-        address: str,
+        host: str,
         port: int,
         isTls: Optional[bool]=False) -> None:
-        self.address = address
+        self.host = host
         self.port = port
         self.isTls = isTls
 

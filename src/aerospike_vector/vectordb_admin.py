@@ -1,7 +1,7 @@
 import sys
 import time
 import grpc
-from typing import Any
+from typing import Any, Optional, Union
 
 import google.protobuf.empty_pb2
 
@@ -31,58 +31,58 @@ class VectorDbAdminClient(object):
         self.__channelProvider = vectordb_channel_provider.VectorDbChannelProvider(
             seeds, listener_name)
 
-    def indexCreate(
+    def index_create(
         self, *,
         namespace: str,
         name: str,
         vector_bin_name: str,
         dimensions: int,
-        vector_distance_metric: Optional[types.DistanceMetric] = (
-            types.DistanceMetric.SQUARED_EUCLIDEAN
+        vector_distance_metric: Optional[types.VectorDistanceMetric] = (
+            types.VectorDistanceMetric.SQUARED_EUCLIDEAN
         ),
         sets: Optional[str] = None,
         index_params: Optional[types_pb2.HnswParams] = None,
         labels: Optional[dict[str, str]] = None):
         """Create an index"""
         index_stub = index_pb2_grpc.IndexServiceStub(
-            self.__channelProvider.getChannel())
-        if setFilter and not setFilter.strip():
-            setFilter = None
+            self.__channelProvider.get_channel())
+        if sets and not sets.strip():
+            sets = None
 
         index_stub.Create(
             types_pb2.IndexDefinition(
                 id=types_pb2.IndexId(namespace=namespace, name=name),
-                vectorDistanceMetric=vector_distance_metric,
-                setFilter=setFilter,
+                vectorDistanceMetric=vector_distance_metric.value,
+                setFilter=sets,
                 hnswParams=index_params,
                 bin=vector_bin_name,
                 dimensions=dimensions,
                 labels=labels))
 
-        self.__waitForIndexCreation(namespace, name, 100_000)
+        self.__wait_for_index_creation(namespace=namespace, name=name, timeout=100_000)
 
-    def indexDrop(
+    def index_drop(
         self, *,
         namespace: str,
         name: str):
         index_stub = index_pb2_grpc.IndexServiceStub(
-            self.__channelProvider.getChannel())
+            self.__channelProvider.get_channel())
         index_stub.Drop(types_pb2.IndexId(namespace=namespace, name=name))
 
-    def indexList(self) -> list[Any]:
+    def index_list(self) -> list[Any]:
         index_stub = index_pb2_grpc.IndexServiceStub(
-            self.__channelProvider.getChannel())
+            self.__channelProvider.get_channel())
         return index_stub.List(empty).indices
 
-    def indexGet(
+    def index_get(
         self, *,
         namespace: str,
         name: str) -> types_pb2.IndexDefinition:
         index_stub = index_pb2_grpc.IndexServiceStub(
-            self.__channelProvider.getChannel())
+            self.__channelProvider.get_channel())
         return index_stub.Get(types_pb2.IndexId(namespace=namespace, name=name))
 
-    def indexGetStatus(
+    def index_get_status(
         self, *,
         namespace: str,
         name: str) -> index_pb2.IndexStatusResponse:
@@ -90,11 +90,11 @@ class VectorDbAdminClient(object):
         This API is subject to change.
         """
         index_stub = index_pb2_grpc.IndexServiceStub(
-            self.__channelProvider.getChannel())
+            self.__channelProvider.get_channel())
         return index_stub.GetStatus(
             types_pb2.IndexId(namespace=namespace, name=name))
 
-    def __waitForIndexCreation(
+    def __wait_for_index_creation(
         self, *,
         namespace: str,
         name: str,
@@ -111,7 +111,7 @@ class VectorDbAdminClient(object):
             if start_time + timeout < time.monotonic():
                 raise "timed-out waiting for index creation"
             try:
-                index_status = self.indexGet(namespace, name)
+                index_status = self.index_get(namespace=namespace, name=name)
                 # Index has been created
                 return
             except grpc.RpcError as e:
