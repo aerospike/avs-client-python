@@ -13,8 +13,10 @@ empty = google.protobuf.empty_pb2.Empty()
 
 
 class ChannelAndEndpoints(object):
-    def __init__(self, channel: grpc.Channel,
-                 endpoints: vector_db_pb2.ServerEndpointList):
+    def __init__(
+        self, 
+        channel: grpc.Channel,
+        endpoints: vector_db_pb2.ServerEndpointList) -> None:
         self.channel = channel
         self.endpoints = endpoints
 
@@ -22,7 +24,10 @@ class ChannelAndEndpoints(object):
 class VectorDbChannelProvider(object):
     """Vector DB client"""
 
-    def __init__(self, seeds: tuple[types.HostPort], listener_name: str = None):
+    def __init__(
+        self, 
+        seeds: tuple[types.HostPort, ...],
+        listener_name: Optional[str] = None) -> None:
         if not seeds:
             raise Exception("at least one seed host needed")
         self._nodeChannels: dict[int, ChannelAndEndpoints] = {}
@@ -34,12 +39,6 @@ class VectorDbChannelProvider(object):
         self._seedChannels = [self._createChannelFromHostPort(seed) for seed in
                               self.seeds]
         self._tend()
-
-    def __enter__(self):
-        return self
-
-    def __exit__(self, exc_type, exc_val, exc_tb):
-        self.close()
 
     def close(self):
         self._closed = True
@@ -131,8 +130,9 @@ class VectorDbChannelProvider(object):
     def _createChannelFromHostPort(self, host: types.HostPort) -> grpc.Channel:
         return self._createChannel(host.address, host.port, host.isTls)
 
-    def _createChannelFromServerEndpointList(self,
-                                             endpoints: vector_db_pb2.ServerEndpointList) -> grpc.Channel:
+    def _createChannelFromServerEndpointList(
+        self,
+        endpoints: vector_db_pb2.ServerEndpointList) -> grpc.Channel:
         # TODO: Create channel with all endpoints
         for endpoint in endpoints.endpoints:
             if ":" in endpoint.address:
@@ -144,7 +144,17 @@ class VectorDbChannelProvider(object):
             except:
                 continue
 
-    def _createChannel(self, host: str, port: int, isTls: bool) -> grpc.Channel:
+    def _createChannel(
+        self,
+        host: str,
+        port: int,
+        isTls: bool) -> grpc.Channel:
         # TODO: Take care of TLS
         host = re.sub(r'%.*', '', host)
         return grpc.insecure_channel(f'{host}:{port}')
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        self.close()

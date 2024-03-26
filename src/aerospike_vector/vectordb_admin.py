@@ -17,8 +17,11 @@ empty = google.protobuf.empty_pb2.Empty()
 class VectorDbAdminClient(object):
     """Vector DB Admin client"""
 
-    def __init__(self, seeds: types.HostPort | tuple[types.HostPort, ...],
-                 listener_name: str = None):
+    def __init__(
+        self, *,
+        seeds: Union[types.HostPort, tuple[types.HostPort, ...]],
+        listener_name: Optional[str] = None) -> None:
+
         if not seeds:
             raise Exception("at least one seed host needed")
 
@@ -28,13 +31,18 @@ class VectorDbAdminClient(object):
         self.__channelProvider = vectordb_channel_provider.VectorDbChannelProvider(
             seeds, listener_name)
 
-    def indexCreate(self, namespace: str, name: str,
-                    vector_bin_name: str, dimensions: int,
-                    vector_distance_metric: types_pb2.VectorDistanceMetric =
-                    types_pb2.VectorDistanceMetric.SQUARED_EUCLIDEAN,
-                    setFilter: str = None,
-                    indexParams: types_pb2.HnswParams = None,
-                    labels: dict[str, str] = None):
+    def indexCreate(
+        self, *,
+        namespace: str,
+        name: str,
+        vector_bin_name: str,
+        dimensions: int,
+        vector_distance_metric: Optional[types.DistanceMetric] = (
+            types.DistanceMetric.SQUARED_EUCLIDEAN
+        ),
+        sets: Optional[str] = None,
+        index_params: Optional[types_pb2.HnswParams] = None,
+        labels: Optional[dict[str, str]] = None):
         """Create an index"""
         index_stub = index_pb2_grpc.IndexServiceStub(
             self.__channelProvider.getChannel())
@@ -46,14 +54,17 @@ class VectorDbAdminClient(object):
                 id=types_pb2.IndexId(namespace=namespace, name=name),
                 vectorDistanceMetric=vector_distance_metric,
                 setFilter=setFilter,
-                hnswParams=indexParams,
+                hnswParams=index_params,
                 bin=vector_bin_name,
                 dimensions=dimensions,
                 labels=labels))
 
         self.__waitForIndexCreation(namespace, name, 100_000)
 
-    def indexDrop(self, namespace: str, name: str):
+    def indexDrop(
+        self, *,
+        namespace: str,
+        name: str):
         index_stub = index_pb2_grpc.IndexServiceStub(
             self.__channelProvider.getChannel())
         index_stub.Drop(types_pb2.IndexId(namespace=namespace, name=name))
@@ -63,13 +74,18 @@ class VectorDbAdminClient(object):
             self.__channelProvider.getChannel())
         return index_stub.List(empty).indices
 
-    def indexGet(self, namespace: str, name: str) -> types_pb2.IndexDefinition:
+    def indexGet(
+        self, *,
+        namespace: str,
+        name: str) -> types_pb2.IndexDefinition:
         index_stub = index_pb2_grpc.IndexServiceStub(
             self.__channelProvider.getChannel())
         return index_stub.Get(types_pb2.IndexId(namespace=namespace, name=name))
 
-    def indexGetStatus(self, namespace: str,
-                       name: str) -> index_pb2.IndexStatusResponse:
+    def indexGetStatus(
+        self, *,
+        namespace: str,
+        name: str) -> index_pb2.IndexStatusResponse:
         """
         This API is subject to change.
         """
@@ -78,8 +94,11 @@ class VectorDbAdminClient(object):
         return index_stub.GetStatus(
             types_pb2.IndexId(namespace=namespace, name=name))
 
-    def __waitForIndexCreation(self, namespace: str, name: str,
-                               timeout: int = sys.maxsize):
+    def __waitForIndexCreation(
+        self, *,
+        namespace: str,
+        name: str,
+        timeout: int = sys.maxsize):
         """
         Wait for the index to be created.
         """
