@@ -67,7 +67,8 @@ class VectorDbChannelProvider(object):
         return self._seedChannels[0]
 
     def _tend(self):
-        if not self._is_loadbalancer:
+        if self._is_loadbalancer:
+            # Skip tend if we are behind a load-balancer
             return
 
         # TODO: Worry about thread safety
