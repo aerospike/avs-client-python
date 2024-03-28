@@ -18,7 +18,7 @@ class VectorDbClient(object):
     """Vector DB client"""
 
     def __init__(self, seeds: types.HostPort | tuple[types.HostPort, ...],
-                 listener_name: str = None):
+                 listener_name: str = None, is_loadbalancer: bool = False):
         if not seeds:
             raise Exception("at least one seed host needed")
 
@@ -27,7 +27,7 @@ class VectorDbClient(object):
 
         self.__channelProvider = (
             vectordb_channel_provider.VectorDbChannelProvider(
-                seeds, listener_name))
+                seeds, listener_name, is_loadbalancer))
 
     def put(self, namespace: str, set: str, key: Any, bins: dict[str, Any]):
         """Write a record to vector DB"""

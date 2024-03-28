@@ -18,7 +18,7 @@ class VectorDbAdminClient(object):
     """Vector DB Admin client"""
 
     def __init__(self, seeds: types.HostPort | tuple[types.HostPort, ...],
-                 listener_name: str = None):
+                 listener_name: str = None, is_loadbalancer: bool = False):
         if not seeds:
             raise Exception("at least one seed host needed")
 
@@ -26,7 +26,7 @@ class VectorDbAdminClient(object):
             seeds = (seeds,)
 
         self.__channelProvider = vectordb_channel_provider.VectorDbChannelProvider(
-            seeds, listener_name)
+            seeds, listener_name, is_loadbalancer)
 
     def indexCreate(self, namespace: str, name: str,
                     vector_bin_name: str, dimensions: int,

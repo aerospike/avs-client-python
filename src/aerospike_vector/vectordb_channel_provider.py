@@ -22,7 +22,8 @@ class ChannelAndEndpoints(object):
 class VectorDbChannelProvider(object):
     """Vector DB client"""
 
-    def __init__(self, seeds: tuple[types.HostPort], listener_name: str = None):
+    def __init__(self, seeds: tuple[types.HostPort], listener_name: str =
+    None, is_loadbalancer: bool = False):
         if not seeds:
             raise Exception("at least one seed host needed")
         self._nodeChannels: dict[int, ChannelAndEndpoints] = {}
@@ -31,6 +32,7 @@ class VectorDbChannelProvider(object):
         self._clusterId = 0
         self.seeds = seeds
         self.listener_name = listener_name
+        self._is_loadbalancer = is_loadbalancer
         self._seedChannels = [self._createChannelFromHostPort(seed) for seed in
                               self.seeds]
         self._tend()
@@ -51,19 +53,23 @@ class VectorDbChannelProvider(object):
                 channelEndpoints.channel.close()
 
     def getChannel(self) -> grpc.Channel:
-        discoveredChannels: list[ChannelAndEndpoints] = list(
-            self._nodeChannels.values())
-        if len(discoveredChannels) <= 0:
-            return self._seedChannels[0]
+        if not self._is_loadbalancer:
+            discoveredChannels: list[ChannelAndEndpoints] = list(
+                self._nodeChannels.values())
+            if len(discoveredChannels) <= 0:
+                return self._seedChannels[0]
 
-        # Return a random channel.
-        channel = random.choice(discoveredChannels).channel
-        if channel:
-            return channel
+            # Return a random channel.
+            channel = random.choice(discoveredChannels).channel
+            if channel:
+                return channel
 
         return self._seedChannels[0]
 
     def _tend(self):
+        if not self._is_loadbalancer:
+            return
+
         # TODO: Worry about thread safety
         temp_endpoints: dict[int, vector_db_pb2.ServerEndpointList] = {}
 
