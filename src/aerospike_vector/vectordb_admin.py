@@ -17,7 +17,15 @@ empty = google.protobuf.empty_pb2.Empty()
 
 
 class VectorDbAdminClient(object):
-    """Vector DB Admin client"""
+    """
+    Vector DB Admin client.
+
+    This client allows interaction with the Vector DB administrative features such as index management.
+
+    Attributes:
+        __channelProvider (vectordb_channel_provider.VectorDbChannelProvider):
+            Channel provider for Vector DB connections.
+    """
 
     def __init__(
         self,
@@ -35,6 +43,18 @@ class VectorDbAdminClient(object):
         self.__channelProvider = vectordb_channel_provider.VectorDbChannelProvider(
             seeds, listener_name
         )
+        """
+        Initialize the VectorDbAdminClient.
+
+        Args:
+            seeds (Union[types.HostPort, tuple[types.HostPort, ...]]):
+                Seeds for establishing connections with Vector DB nodes.
+            listener_name (Optional[str], optional):
+                Listener name for the client. Defaults to None.
+
+        Raises:
+            Exception: Raised when no seed host is provided.
+        """
 
     async def index_create(
         self,
@@ -50,8 +70,28 @@ class VectorDbAdminClient(object):
         index_params: Optional[types_pb2.HnswParams] = None,
         labels: Optional[dict[str, str]] = None,
     ):
-        """Create an index"""
+        """
+        Create an index.
 
+        Args:
+            namespace (str): The namespace for the index.
+            name (str): The name of the index.
+            vector_bin_name (str): The name of the bin containing vector data.
+            dimensions (int): The number of dimensions in the vector data.
+            vector_distance_metric (Optional[types.VectorDistanceMetric], optional):
+                The distance metric for the vectors. Defaults to SQUARED_EUCLIDEAN.
+            sets (Optional[str], optional): The set filter for the index. Defaults to None.
+            index_params (Optional[types_pb2.HnswParams], optional):
+                Parameters for the index creation. Defaults to None.
+            labels (Optional[dict[str, str]], optional): Additional labels for the index. Defaults to None.
+
+        Raises:
+            [List any exceptions raised]
+
+        Note:
+            This method creates an index with the specified parameters and waits for the index creation to complete.
+            It waits for up to 100,000 seconds for the index creation to complete.
+        """
         index_stub = index_pb2_grpc.IndexServiceStub(
             self.__channelProvider.get_channel()
         )
@@ -70,7 +110,7 @@ class VectorDbAdminClient(object):
             )
         )
 
-        await self.__wait_for_index_creation(
+        await self._wait_for_index_creation(
             namespace=namespace, name=name, timeout=100_000
         )
 
@@ -78,10 +118,34 @@ class VectorDbAdminClient(object):
         index_stub = index_pb2_grpc.IndexServiceStub(
             self.__channelProvider.get_channel()
         )
+        """
+        Drop an index.
+
+        Args:
+            namespace (str): The namespace of the index.
+            name (str): The name of the index.
+
+        Raises:
+            [List any exceptions raised]
+
+        Note:
+            This method drops the specified index.
+        """
         await index_stub.Drop(types_pb2.IndexId(namespace=namespace, name=name))
 
     async def index_list(self) -> list[Any]:
+        """
+        List all indices.
 
+        Returns:
+            list[Any]: A list of indices.
+
+        Raises:
+            [List any exceptions raised]
+
+        Note:
+            This method lists all indices available in the Vector DB.
+        """
         try:
             index_stub = index_pb2_grpc.IndexServiceStub(
                 self.__channelProvider.get_channel()
@@ -94,6 +158,23 @@ class VectorDbAdminClient(object):
     async def index_get(
         self, *, namespace: str, name: str
     ) -> types_pb2.IndexDefinition:
+        """
+        Retrieve the definition of an index.
+
+        Args:
+            namespace (str): The namespace of the index.
+            name (str): The name of the index.
+
+        Returns:
+            types_pb2.IndexDefinition: The definition of the index.
+
+        Raises:
+            [List any exceptions raised]
+
+        Note:
+            This method retrieves the definition of the specified index.
+        """
+
         index_stub = index_pb2_grpc.IndexServiceStub(
             self.__channelProvider.get_channel()
         )
@@ -106,9 +187,22 @@ class VectorDbAdminClient(object):
         self, *, namespace: str, name: str
     ) -> index_pb2.IndexStatusResponse:
         """
-        This API is subject to change.
-        """
+        Get the status of an index.
 
+        Args:
+            namespace (str): The namespace of the index.
+            name (str): The name of the index.
+
+        Returns:
+            index_pb2.IndexStatusResponse: The status of the index.
+
+        Raises:
+            [List any exceptions raised]
+
+        Note:
+            This method retrieves the status of the specified index.
+            Warning: This API is subject to change.
+        """
         index_stub = index_pb2_grpc.IndexServiceStub(
             self.__channelProvider.get_channel()
         )
@@ -118,7 +212,7 @@ class VectorDbAdminClient(object):
 
         return response
 
-    async def __wait_for_index_creation(
+    async def _wait_for_index_creation(
         self, *, namespace: str, name: str, timeout: int = sys.maxsize
     ):
         """
@@ -144,11 +238,22 @@ class VectorDbAdminClient(object):
                 else:
                     raise e
 
+    async def close(self):
+        """
+        Close the VectorDbAdminClient.
+
+        This method closes the connection to Vector DB.
+
+        Note:
+            This method should be called when the VectorDbAdminClient is no longer needed to release resources.
+
+        Raises:
+            [List any exceptions raised]
+        """
+        await self.__channelProvider.close()
+
     def __enter__(self):
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         asyncio.run(self.close())
-
-    async def close(self):
-        await self.__channelProvider.close()

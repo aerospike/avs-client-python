@@ -96,7 +96,7 @@ class VectorDbChannelProvider(object):
                         temp_endpoints = endpoints
                 except Exception as e:
                     print("INSIDE OF TEND FUNCTION")
-                    
+
                     warnings.warn("error tending: " + str(e))
             if update_endpoints:
                 for node, newEndpoints in temp_endpoints.items():
