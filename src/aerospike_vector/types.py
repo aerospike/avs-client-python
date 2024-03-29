@@ -5,11 +5,7 @@ from . import types_pb2
 
 
 class HostPort(object):
-    def __init__(
-        self, *,
-        host: str,
-        port: int,
-        isTls: Optional[bool]=False) -> None:
+    def __init__(self, *, host: str, port: int, isTls: Optional[bool] = False) -> None:
         self.host = host
         self.port = port
         self.isTls = isTls
@@ -17,11 +13,8 @@ class HostPort(object):
 
 class Key(object):
     def __init__(
-        self, *,
-        namespace: str,
-        set: str,
-        digest: bytearray,
-        key: Any) -> None:
+        self, *, namespace: str, set: str, digest: bytearray, key: Any
+    ) -> None:
         self.namespace = namespace
         self.set = set
         self.digest = digest
@@ -29,23 +22,17 @@ class Key(object):
 
 
 class RecordWithKey(object):
-    def __init__(
-        self, *,
-        key: Key, 
-        bins: dict[str, Any]) -> None:
+    def __init__(self, *, key: Key, bins: dict[str, Any]) -> None:
         self.key = key
         self.bins = bins
 
 
 class Neighbor(object):
-    def __init__(
-        self, *,
-        key: Key,
-        bins: dict[str, Any],
-        distance: float) -> None:
+    def __init__(self, *, key: Key, bins: dict[str, Any], distance: float) -> None:
         self.key = key
         self.bins = bins
         self.distance = distance
+
 
 class VectorDistanceMetric(enum.Enum):
     SQUARED_EUCLIDEAN = types_pb2.VectorDistanceMetric.SQUARED_EUCLIDEAN
@@ -57,28 +44,32 @@ class VectorDistanceMetric(enum.Enum):
 
 class HnswBatchingParams(object):
     def __init__(
-        self, *,
+        self,
+        *,
         maxRecords: Optional[int] = 10000,
         interval: Optional[int] = 10000,
-        disabled: Optional[bool] = False) -> None:
+        disabled: Optional[bool] = False,
+    ) -> None:
         self.maxRecords = maxRecords
         self.interval = interval
         self.disabled = disabled
 
+
 class HnswParams(object):
     def __init__(
-        self, *,
+        self,
+        *,
         m: Optional[int] = 16,
         efConstruction: Optional[int] = 100,
         ef: Optional[int] = 100,
-        batchingParams: Optional[HnswBatchingParams] = HnswBatchingParams()) -> None:
+        batchingParams: Optional[HnswBatchingParams] = HnswBatchingParams(),
+    ) -> None:
         self.m = m
         self.efConstruction = efConstruction
         self.ef = ef
         self.batchingParams = batchingParams
 
+
 class HnswSearchParams(object):
-    def __init__(
-        self, *,
-        ef: Optional[int] = None) -> None:
+    def __init__(self, *, ef: Optional[int] = None) -> None:
         self.ef = ef
