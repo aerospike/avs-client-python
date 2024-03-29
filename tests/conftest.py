@@ -1,5 +1,3 @@
-# test_example.py
-
 import pytest
 import pytest_asyncio  # Import pytest_asyncio module
 

@@ -3,6 +3,7 @@ import asyncio
 import pytest_asyncio  # Import pytest_asyncio module
 import random
 
+
 @pytest_asyncio.fixture
 def initializeIndex(event_loop, truncated_admin_client):
     try:
@@ -29,7 +30,7 @@ async def test_vector_put(truncated_vector_client, random_choice):
         set_name='demo'
     )
     await asyncio.sleep(10)
-    print("FINISHED")
+    #print("FINISHED")
 
 
 @pytest.mark.asyncio
@@ -40,8 +41,8 @@ async def test_vector_get(truncated_vector_client):
         set_name='demo',
         bin_names=['chocolate']
     )
-    print(type(result))
-    print(result.__dict__)  # If `result` is an object
+    #print(type(result))
+    #print(result.__dict__)  # If `result` is an object
 
 @pytest.mark.asyncio
 async def test_vector_exists(truncated_vector_client):
@@ -50,7 +51,7 @@ async def test_vector_exists(truncated_vector_client):
         key='example',
         set_name='demo'
     )
-    print(result)
+    #print(result)
 
 @pytest.mark.asyncio
 async def try_multiple_times(initializeIndex, truncated_vector_client):
@@ -64,9 +65,9 @@ async def try_multiple_times(initializeIndex, truncated_vector_client):
         print(result)
 
     for i in range(5):
-        print(f"Attempt {i+1}:")
+        #print(f"Attempt {i+1}:")
         await test_vector_is_indexed()
-        print()
+        #print()
 
 
 @pytest.mark.asyncio
@@ -78,4 +79,4 @@ async def test_vector_vector_search(truncated_vector_client, random_choice):
         limit=20,
         bin_names=['chocolate']
     )
-    print(result)
+    #print(result)

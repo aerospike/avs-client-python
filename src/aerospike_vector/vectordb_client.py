@@ -1,16 +1,19 @@
+import asyncio
 import sys
 import time
-import grpc
-import asyncio
 from typing import Any, Optional, Union
 
 import google.protobuf.empty_pb2
+import grpc
 
 from . import conversions
-from . import transact_pb2, types_pb2, transact_pb2_grpc
+from . import index_pb2
+from . import index_pb2_grpc
+from . import transact_pb2
+from . import transact_pb2_grpc
 from . import types
+from . import types_pb2
 from . import vectordb_channel_provider
-from . import index_pb2_grpc, index_pb2
 
 empty = google.protobuf.empty_pb2.Empty()
 

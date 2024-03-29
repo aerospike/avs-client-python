@@ -1,17 +1,15 @@
-import random
 import re
 import threading
 import warnings
-import asyncio
+from typing import Optional
 
-import google.protobuf.empty_pb2
+import google.protobuf.empty_pb2 as empty
 import grpc
+import random
 
-from . import types, vector_db_pb2
+from . import types
+from . import vector_db_pb2
 from . import vector_db_pb2_grpc
-
-empty = google.protobuf.empty_pb2.Empty()
-from typing import Optional, Union
 
 
 class ChannelAndEndpoints(object):
@@ -96,9 +94,10 @@ class VectorDbChannelProvider(object):
 
                     if len(endpoints) > len(temp_endpoints):
                         temp_endpoints = endpoints
-                except:
-                    continue
-
+                except Exception as e:
+                    print("INSIDE OF TEND FUNCTION")
+                    
+                    warnings.warn("error tending: " + str(e))
             if update_endpoints:
                 for node, newEndpoints in temp_endpoints.items():
                     channel_endpoints = self._nodeChannels.get(node)
@@ -130,6 +129,8 @@ class VectorDbChannelProvider(object):
 
         except Exception as e:
             # TODO: log this exception
+            print("END OF TEND FUNCTION")
+            raise e
             warnings.warn("error tending: " + str(e))
 
         if not self._closed:
@@ -151,8 +152,10 @@ class VectorDbChannelProvider(object):
                 return self._create_channel(
                     endpoint.address, endpoint.port, endpoint.isTls
                 )
-            except:
-                continue
+            except Exception as e:
+                print("ENDPOINT LIST FUNCTION")
+                raise e
+                warnings.warn("error creating channel: " + str(e))
 
     def _create_channel(self, host: str, port: int, isTls: bool) -> grpc.aio.Channel:
         # TODO: Take care of TLS

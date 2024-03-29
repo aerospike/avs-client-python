@@ -1,19 +1,19 @@
+import asyncio
 import sys
 import time
-import grpc
-import asyncio
 from typing import Any, Optional, Union
 
 import google.protobuf.empty_pb2
+from google.protobuf.json_format import MessageToDict
+import grpc
 
-from . import index_pb2_grpc
 from . import index_pb2
+from . import index_pb2_grpc
 from . import types
 from . import types_pb2
 from . import vectordb_channel_provider
 
 empty = google.protobuf.empty_pb2.Empty()
-from google.protobuf.json_format import MessageToDict
 
 
 class VectorDbAdminClient(object):
@@ -89,7 +89,7 @@ class VectorDbAdminClient(object):
             response = await index_stub.List(empty)
             return response.indices
         except Exception as e:
-            raise
+            raise e
 
     async def index_get(
         self, *, namespace: str, name: str
@@ -133,15 +133,12 @@ class VectorDbAdminClient(object):
             if start_time + timeout < time.monotonic():
                 raise "timed-out waiting for index creation"
             try:
-                res = await self.index_get_status(namespace=namespace, name=name)
+                await self.index_get_status(namespace=namespace, name=name)
 
                 # Index has been created
                 return
             except grpc.RpcError as e:
-                if (
-                    e.code() == grpc.StatusCode.UNAVAILABLE
-                    or e.code() == grpc.StatusCode.NOT_FOUND
-                ):
+                if e.code() in (grpc.StatusCode.UNAVAILABLE, grpc.StatusCode.NOT_FOUND):
                     # Wait for some more time.
                     time.sleep(wait_interval)
                 else:
