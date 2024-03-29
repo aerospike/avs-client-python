@@ -1,6 +1,7 @@
 import sys
 import time
 import grpc
+import asyncio
 from typing import Any, Optional, Union
 
 import google.protobuf.empty_pb2
@@ -12,6 +13,7 @@ from . import types_pb2
 from . import vectordb_channel_provider
 
 empty = google.protobuf.empty_pb2.Empty()
+from google.protobuf.json_format import MessageToDict
 
 
 class VectorDbAdminClient(object):
@@ -31,7 +33,7 @@ class VectorDbAdminClient(object):
         self.__channelProvider = vectordb_channel_provider.VectorDbChannelProvider(
             seeds, listener_name)
 
-    def index_create(
+    async def index_create(
         self, *,
         namespace: str,
         name: str,
@@ -44,12 +46,13 @@ class VectorDbAdminClient(object):
         index_params: Optional[types_pb2.HnswParams] = None,
         labels: Optional[dict[str, str]] = None):
         """Create an index"""
+
         index_stub = index_pb2_grpc.IndexServiceStub(
             self.__channelProvider.get_channel())
         if sets and not sets.strip():
             sets = None
 
-        index_stub.Create(
+        await index_stub.Create(
             types_pb2.IndexDefinition(
                 id=types_pb2.IndexId(namespace=namespace, name=name),
                 vectorDistanceMetric=vector_distance_metric.value,
@@ -59,42 +62,52 @@ class VectorDbAdminClient(object):
                 dimensions=dimensions,
                 labels=labels))
 
-        self.__wait_for_index_creation(namespace=namespace, name=name, timeout=100_000)
+        await self.__wait_for_index_creation(namespace=namespace, name=name, timeout=100_000)
 
-    def index_drop(
+
+    async def index_drop(
         self, *,
         namespace: str,
         name: str):
         index_stub = index_pb2_grpc.IndexServiceStub(
             self.__channelProvider.get_channel())
-        index_stub.Drop(types_pb2.IndexId(namespace=namespace, name=name))
+        await index_stub.Drop(types_pb2.IndexId(namespace=namespace, name=name))
 
-    def index_list(self) -> list[Any]:
-        index_stub = index_pb2_grpc.IndexServiceStub(
-            self.__channelProvider.get_channel())
-        return index_stub.List(empty).indices
+    async def index_list(self) -> list[Any]:
 
-    def index_get(
+        try:
+            index_stub = index_pb2_grpc.IndexServiceStub(
+                self.__channelProvider.get_channel())
+            response = await index_stub.List(empty)
+            return response.indices
+        except Exception as e:
+            raise
+
+    async def index_get(
         self, *,
         namespace: str,
         name: str) -> types_pb2.IndexDefinition:
         index_stub = index_pb2_grpc.IndexServiceStub(
             self.__channelProvider.get_channel())
-        return index_stub.Get(types_pb2.IndexId(namespace=namespace, name=name))
+        response = await index_stub.Get(types_pb2.IndexId(namespace=namespace, name=name))
+        return MessageToDict(response)
 
-    def index_get_status(
+    async def index_get_status(
         self, *,
         namespace: str,
         name: str) -> index_pb2.IndexStatusResponse:
         """
         This API is subject to change.
         """
+
         index_stub = index_pb2_grpc.IndexServiceStub(
             self.__channelProvider.get_channel())
-        return index_stub.GetStatus(
+        response = await index_stub.GetStatus(
             types_pb2.IndexId(namespace=namespace, name=name))
 
-    def __wait_for_index_creation(
+        return response
+
+    async def __wait_for_index_creation(
         self, *,
         namespace: str,
         name: str,
@@ -111,7 +124,8 @@ class VectorDbAdminClient(object):
             if start_time + timeout < time.monotonic():
                 raise "timed-out waiting for index creation"
             try:
-                index_status = self.index_get(namespace=namespace, name=name)
+                res = await self.index_get_status(namespace=namespace, name=name)
+
                 # Index has been created
                 return
             except grpc.RpcError as e:
@@ -126,7 +140,7 @@ class VectorDbAdminClient(object):
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
-        self.close()
+        asyncio.run(self.close())
 
-    def close(self):
-        self.__channelProvider.close()
+    async def close(self):
+        await self.__channelProvider.close()

@@ -1,7 +1,7 @@
 import sys
 import time
 import grpc
-
+import asyncio
 from typing import Any, Optional, Union
 
 import google.protobuf.empty_pb2
@@ -32,22 +32,23 @@ class VectorDbClient(object):
             vectordb_channel_provider.VectorDbChannelProvider(
                 seeds, listener_name))
 
-    def put(
+    async def put(
         self, *,
         namespace: str,
         key: Union[int, str, bytes],
         record_data: dict[str, Any], 
-        set_name: Optional[str] = None):
+        set_name: Optional[str] = None
+    ):
         """Write a record to vector DB"""
         transact_stub = transact_pb2_grpc.TransactStub(
             self.__channelProvider.get_channel())
-        key = self.get_key(key, set_name, namespace)
+        key = self.__get_key(key, set_name, namespace)
         binList = [types_pb2.Bin(name=k, value=conversions.toVectorDbValue(v))
                    for (k, v) in record_data.items()]
-        transact_stub.Put(
+        await transact_stub.Put(
             transact_pb2.PutRequest(key=key, bins=binList))
 
-    def get(
+    async def get(
         self, *,
         namespace: str, 
         key: Union[int, str, bytes],
@@ -57,14 +58,16 @@ class VectorDbClient(object):
         transact_stub = transact_pb2_grpc.TransactStub(
             self.__channelProvider.get_channel())
         key = self.__get_key(key, set_name, namespace)
-        bin_selector = self.__get_bin_selector(*bin_names)
+        bin_selector = self.__get_bin_selector(bin_names=bin_names)
+        result = await transact_stub.Get(
+            transact_pb2.GetRequest(
+                key=key, binSelector=bin_selector
+            )
+        )
+        return types.RecordWithKey(key=conversions.fromVectorDbKey(key),
+                                   bins=conversions.fromVectorDbRecord(result))
 
-        result = transact_stub.Get(
-            transact_pb2.GetRequest(key=key, binSelector=bin_selector))
-        return types.RecordWithKey(conversions.fromVectorDbKey(key),
-                              conversions.fromVectorDbRecord(result))
-
-    def exists(
+    async def exists(
         self, *,
         namespace: str,
         key: Any,
@@ -73,10 +76,10 @@ class VectorDbClient(object):
         transact_stub = transact_pb2_grpc.TransactStub(
             self.__channelProvider.get_channel())
         key = self.__get_key(key, set_name, namespace)
+        result = await transact_stub.Exists(key)
+        return result.value
 
-        return transact_stub.Exists(key).value
-
-    def is_indexed(
+    async def is_indexed(
         self, *,
         namespace: str,
         key: Any,
@@ -91,9 +94,10 @@ class VectorDbClient(object):
         key = self.__get_key(key, set_name, namespace)
         request = transact_pb2.IsIndexedRequest(key=key, indexId=index_id)
         transact_stub = transact_pb2_grpc.TransactStub(self.__channelProvider.get_channel())
-        return transact_stub.IsIndexed(request).value
+        result = await transact_stub.IsIndexed(request)
+        return result.value
 
-    def vector_search(
+    async def vector_search(
         self, *, 
         namespace: str,
         index_name: str,
@@ -104,19 +108,23 @@ class VectorDbClient(object):
 
         transact_stub = transact_pb2_grpc.TransactStub(
             self.__channelProvider.get_channel())
-        results = transact_stub.VectorSearch(
+        results_stream = transact_stub.VectorSearch(
             transact_pb2.VectorSearchRequest(
                 index=types_pb2.IndexId(namespace=namespace, name=index_name),
                 queryVector=(conversions.toVectorDbValue(query).vectorValue),
                 limit=limit,
                 hnswSearchParams=search_params,
-                binSelector=self.__get_bin_selector(*bin_names)
+                binSelector=self.__get_bin_selector(bin_names=bin_names)
             )
         )
-        return [conversions.fromVectorDbNeighbor(result) for result in
-                results]
 
-    def wait_for_index_completion(
+        async_results = []
+        async for result in results_stream:
+            async_results.append(conversions.fromVectorDbNeighbor(result))
+
+        return async_results
+
+    async def wait_for_index_completion(
         self, *,
         namespace: str,
         name: str,
@@ -137,7 +145,7 @@ class VectorDbClient(object):
             time.sleep(wait_interval)
 
             try:
-                index_status = self.__index_get_status(namespace, name)
+                index_status = await self.__index_get_status(namespace, name)
             except grpc.RpcError as e:
                 if e.code() == grpc.StatusCode.UNAVAILABLE:
                     continue
@@ -149,14 +157,14 @@ class VectorDbClient(object):
             # Update.
             unmerged_record_count = index_status.unmergedRecordCount
 
-    def close(self):
-        self.__channelProvider.close()
-
     def __enter__(self):
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
-        self.close()
+        asyncio.run(self.close())
+
+    async def close(self):
+        await self.__channelProvider.close()
 
     def __get_key(self, key, set, namespace):
         if isinstance(key, str):
@@ -169,7 +177,8 @@ class VectorDbClient(object):
             raise Exception("Invalid key type" + type(key))
         return key
 
-    def __get_bin_selector(self, bin_names):
+    def __get_bin_selector(self, *,  bin_names: [list] = None):
+
         if not bin_names:
             bin_selector = transact_pb2.BinSelector(
                 type=transact_pb2.BinSelectorType.ALL, binNames=bin_names)
@@ -178,11 +187,17 @@ class VectorDbClient(object):
                 type=transact_pb2.BinSelectorType.SPECIFIED, binNames=bin_names)
         return bin_selector
 
-    def __index_get_status(self, namespace: str,name: str) -> index_pb2.IndexStatusResponse:
+    async def __index_get_status(
+        self, *,
+        namespace: str,
+        name: str) -> index_pb2.IndexStatusResponse:
         """
         This API is subject to change.
         """
+
         index_stub = index_pb2_grpc.IndexServiceStub(
             self.__channelProvider.get_channel())
-        return index_stub.GetStatus(
+        response = await index_stub.GetStatus(
             types_pb2.IndexId(namespace=namespace, name=name))
+
+        return response
