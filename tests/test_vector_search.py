@@ -126,7 +126,6 @@ async def test_vector_search(
         binList = []
 
         for j, result in enumerate(results[i]):
-            print(result)
             binList.append(result.bins["unit_test"])
         for j, index in enumerate(outside):
             vector = base_numpy[index].tolist()

@@ -50,16 +50,16 @@ class VectorDbChannelProvider(object):
             if channelEndpoints.channel:
                 await channelEndpoints.channel.close()
 
-    def getChannel(self) -> grpc.Channel:
+    def get_channel(self) -> grpc.Channel:
         if not self._is_loadbalancer:
-            discoveredChannels: list[ChannelAndEndpoints] = list(
+            discovered_channels: list[ChannelAndEndpoints] = list(
                 self._nodeChannels.values())
-            if len(discoveredChannels) <= 0:
+            if len(discovered_channels) <= 0:
                 return self._seedChannels[0]
 
 
             # Return a random channel.
-            channel = random.choice(discoveredChannels).channel
+            channel = random.choice(discovered_channels).channel
             if channel:
                 return channel
 
