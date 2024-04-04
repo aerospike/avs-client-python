@@ -17,9 +17,11 @@ jobs:
     - name: Start Aerospike Server
       run: |
         docker run --network=host --name aerospike -p 3000:3000 -v .:/etc/aerospike aerospike/aerospike-server-enterprise:latest
+      working-directory: tests
     - name: Start Aerospike Proximus
       run: |
         docker run --network=host -p 5000:5000 -v ./aerospike-proximus.yml:/etc/aerospike-proximus/aerospike-proximus.yml -v ./features.conf:/etc/aerospike-proximus/features.conf aerospike/aerospike-proximus:0.3.1
+      working-directory: tests
 
     - name: Set up Python
       uses: actions/setup-python@v2
