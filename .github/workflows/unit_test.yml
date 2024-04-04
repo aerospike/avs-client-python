@@ -1,10 +1,10 @@
 name: Run Unit Tests
 
 on:
+  workflow_dispatch:
   pull_request:
     branches:
       - dev
-  workflow_dispatch:
 
 jobs:
   test:
@@ -35,6 +35,4 @@ jobs:
     - name: Run unit tests
       run: |
         python -m pytest -s
-      working-directory: tests
-
       working-directory: tests
