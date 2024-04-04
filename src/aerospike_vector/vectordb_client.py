@@ -33,6 +33,7 @@ class VectorDbClient(object):
         *,
         seeds: Union[types.HostPort, tuple[types.HostPort, ...]],
         listener_name: str = None,
+        is_loadbalancer: Optional[bool] = False
     ) -> None:
         """
         Initialize the VectorDbClient.
@@ -52,9 +53,9 @@ class VectorDbClient(object):
         if isinstance(seeds, types.HostPort):
             seeds = (seeds,)
 
-        self.__channelProvider = vectordb_channel_provider.VectorDbChannelProvider(
-            seeds, listener_name
-        )
+        self.__channelProvider = (
+            vectordb_channel_provider.VectorDbChannelProvider(
+                seeds, listener_name, is_loadbalancer))
 
     async def put(
         self,

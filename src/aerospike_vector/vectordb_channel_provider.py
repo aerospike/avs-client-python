@@ -22,9 +22,8 @@ class ChannelAndEndpoints(object):
 
 class VectorDbChannelProvider(object):
     """Vector DB client"""
-
     def __init__(
-        self, seeds: tuple[types.HostPort, ...], listener_name: Optional[str] = None
+        self, seeds: tuple[types.HostPort, ...], listener_name: Optional[str] = None, is_loadbalancer: Optional[bool] = False
     ) -> None:
         if not seeds:
             raise Exception("at least one seed host needed")
@@ -34,6 +33,7 @@ class VectorDbChannelProvider(object):
         self._clusterId = 0
         self.seeds = seeds
         self.listener_name = listener_name
+        self._is_loadbalancer = is_loadbalancer
         self._seedChannels = [
             self._create_channel_from_host_port(seed) for seed in self.seeds
         ]
@@ -50,21 +50,26 @@ class VectorDbChannelProvider(object):
             if channelEndpoints.channel:
                 await channelEndpoints.channel.close()
 
-    def get_channel(self) -> grpc.aio.Channel:
-        discoveredChannels: list[ChannelAndEndpoints] = list(
-            self._nodeChannels.values()
-        )
-        if len(discoveredChannels) <= 0:
-            return self._seedChannels[0]
+    def getChannel(self) -> grpc.Channel:
+        if not self._is_loadbalancer:
+            discoveredChannels: list[ChannelAndEndpoints] = list(
+                self._nodeChannels.values())
+            if len(discoveredChannels) <= 0:
+                return self._seedChannels[0]
 
-        # Return a random channel.
-        channel = random.choice(discoveredChannels).channel
-        if channel:
-            return channel
+
+            # Return a random channel.
+            channel = random.choice(discoveredChannels).channel
+            if channel:
+                return channel
 
         return self._seedChannels[0]
 
     def _tend(self):
+        if self._is_loadbalancer:
+            # Skip tend if we are behind a load-balancer
+            return
+
         # TODO: Worry about thread safety
         temp_endpoints: dict[int, vector_db_pb2.ServerEndpointList] = {}
 
