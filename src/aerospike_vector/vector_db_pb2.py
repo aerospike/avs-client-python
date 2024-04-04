@@ -6,6 +6,7 @@ from google.protobuf import descriptor as _descriptor
 from google.protobuf import descriptor_pool as _descriptor_pool
 from google.protobuf import symbol_database as _symbol_database
 from google.protobuf.internal import builder as _builder
+
 # @@protoc_insertion_point(imports)
 
 _sym_db = _symbol_database.Default()
@@ -14,44 +15,48 @@ _sym_db = _symbol_database.Default()
 from google.protobuf import empty_pb2 as google_dot_protobuf_dot_empty__pb2
 
 
-DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x0fvector-db.proto\x12\x10\x61\x65rospike.vector\x1a\x1bgoogle/protobuf/empty.proto\"\x0e\n\x0c\x41\x62outRequest\" \n\rAboutResponse\x12\x0f\n\x07version\x18\x01 \x01(\t\"\x17\n\tClusterId\x12\n\n\x02id\x18\x01 \x01(\x04\"\x14\n\x06NodeId\x12\n\n\x02id\x18\x01 \x01(\x04\">\n\x0eServerEndpoint\x12\x0f\n\x07\x61\x64\x64ress\x18\x01 \x01(\t\x12\x0c\n\x04port\x18\x02 \x01(\r\x12\r\n\x05isTls\x18\x03 \x01(\x08\"I\n\x12ServerEndpointList\x12\x33\n\tendpoints\x18\x01 \x03(\x0b\x32 .aerospike.vector.ServerEndpoint\"\xb8\x01\n\x14\x43lusterNodeEndpoints\x12H\n\tendpoints\x18\x01 \x03(\x0b\x32\x35.aerospike.vector.ClusterNodeEndpoints.EndpointsEntry\x1aV\n\x0e\x45ndpointsEntry\x12\x0b\n\x03key\x18\x01 \x01(\x04\x12\x33\n\x05value\x18\x02 \x01(\x0b\x32$.aerospike.vector.ServerEndpointList:\x02\x38\x01\"I\n\x1b\x43lusterNodeEndpointsRequest\x12\x19\n\x0clistenerName\x18\x01 \x01(\tH\x00\x88\x01\x01\x42\x0f\n\r_listenerName\"*\n\x0fOwnedPartitions\x12\x17\n\x0fownedPartitions\x18\x01 \x03(\x04\"\xb2\x01\n\x11\x43lusterPartitions\x12G\n\npartitions\x18\x01 \x03(\x0b\x32\x33.aerospike.vector.ClusterPartitions.PartitionsEntry\x1aT\n\x0fPartitionsEntry\x12\x0b\n\x03key\x18\x01 \x01(\x04\x12\x30\n\x05value\x18\x02 \x01(\x0b\x32!.aerospike.vector.OwnedPartitions:\x02\x38\x01\x32Q\n\x05\x41\x62out\x12H\n\x03Get\x12\x1e.aerospike.vector.AboutRequest\x1a\x1f.aerospike.vector.AboutResponse\"\x00\x32\xda\x02\n\x0b\x43lusterInfo\x12?\n\tGetNodeId\x12\x16.google.protobuf.Empty\x1a\x18.aerospike.vector.NodeId\"\x00\x12\x45\n\x0cGetClusterId\x12\x16.google.protobuf.Empty\x1a\x1b.aerospike.vector.ClusterId\"\x00\x12n\n\x13GetClusterEndpoints\x12-.aerospike.vector.ClusterNodeEndpointsRequest\x1a&.aerospike.vector.ClusterNodeEndpoints\"\x00\x12S\n\x12GetOwnedPartitions\x12\x16.google.protobuf.Empty\x1a#.aerospike.vector.ClusterPartitions\"\x00\x42=\n\x1b\x63om.aerospike.vector.clientP\x01Z\x1c\x61\x65rospike.com/vector/protos/b\x06proto3')
+DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(
+    b'\n\x0fvector-db.proto\x12\x10\x61\x65rospike.vector\x1a\x1bgoogle/protobuf/empty.proto"\x0e\n\x0c\x41\x62outRequest" \n\rAboutResponse\x12\x0f\n\x07version\x18\x01 \x01(\t"\x17\n\tClusterId\x12\n\n\x02id\x18\x01 \x01(\x04"\x14\n\x06NodeId\x12\n\n\x02id\x18\x01 \x01(\x04">\n\x0eServerEndpoint\x12\x0f\n\x07\x61\x64\x64ress\x18\x01 \x01(\t\x12\x0c\n\x04port\x18\x02 \x01(\r\x12\r\n\x05isTls\x18\x03 \x01(\x08"I\n\x12ServerEndpointList\x12\x33\n\tendpoints\x18\x01 \x03(\x0b\x32 .aerospike.vector.ServerEndpoint"\xb8\x01\n\x14\x43lusterNodeEndpoints\x12H\n\tendpoints\x18\x01 \x03(\x0b\x32\x35.aerospike.vector.ClusterNodeEndpoints.EndpointsEntry\x1aV\n\x0e\x45ndpointsEntry\x12\x0b\n\x03key\x18\x01 \x01(\x04\x12\x33\n\x05value\x18\x02 \x01(\x0b\x32$.aerospike.vector.ServerEndpointList:\x02\x38\x01"I\n\x1b\x43lusterNodeEndpointsRequest\x12\x19\n\x0clistenerName\x18\x01 \x01(\tH\x00\x88\x01\x01\x42\x0f\n\r_listenerName"*\n\x0fOwnedPartitions\x12\x17\n\x0fownedPartitions\x18\x01 \x03(\x04"\xb2\x01\n\x11\x43lusterPartitions\x12G\n\npartitions\x18\x01 \x03(\x0b\x32\x33.aerospike.vector.ClusterPartitions.PartitionsEntry\x1aT\n\x0fPartitionsEntry\x12\x0b\n\x03key\x18\x01 \x01(\x04\x12\x30\n\x05value\x18\x02 \x01(\x0b\x32!.aerospike.vector.OwnedPartitions:\x02\x38\x01\x32Q\n\x05\x41\x62out\x12H\n\x03Get\x12\x1e.aerospike.vector.AboutRequest\x1a\x1f.aerospike.vector.AboutResponse"\x00\x32\xda\x02\n\x0b\x43lusterInfo\x12?\n\tGetNodeId\x12\x16.google.protobuf.Empty\x1a\x18.aerospike.vector.NodeId"\x00\x12\x45\n\x0cGetClusterId\x12\x16.google.protobuf.Empty\x1a\x1b.aerospike.vector.ClusterId"\x00\x12n\n\x13GetClusterEndpoints\x12-.aerospike.vector.ClusterNodeEndpointsRequest\x1a&.aerospike.vector.ClusterNodeEndpoints"\x00\x12S\n\x12GetOwnedPartitions\x12\x16.google.protobuf.Empty\x1a#.aerospike.vector.ClusterPartitions"\x00\x42=\n\x1b\x63om.aerospike.vector.clientP\x01Z\x1c\x61\x65rospike.com/vector/protos/b\x06proto3'
+)
 
 _globals = globals()
 _builder.BuildMessageAndEnumDescriptors(DESCRIPTOR, _globals)
-_builder.BuildTopDescriptorsAndMessages(DESCRIPTOR, 'vector_db_pb2', _globals)
+_builder.BuildTopDescriptorsAndMessages(DESCRIPTOR, "vector_db_pb2", _globals)
 if _descriptor._USE_C_DESCRIPTORS == False:
-  DESCRIPTOR._options = None
-  DESCRIPTOR._serialized_options = b'\n\033com.aerospike.vector.clientP\001Z\034aerospike.com/vector/protos/'
-  _CLUSTERNODEENDPOINTS_ENDPOINTSENTRY._options = None
-  _CLUSTERNODEENDPOINTS_ENDPOINTSENTRY._serialized_options = b'8\001'
-  _CLUSTERPARTITIONS_PARTITIONSENTRY._options = None
-  _CLUSTERPARTITIONS_PARTITIONSENTRY._serialized_options = b'8\001'
-  _globals['_ABOUTREQUEST']._serialized_start=66
-  _globals['_ABOUTREQUEST']._serialized_end=80
-  _globals['_ABOUTRESPONSE']._serialized_start=82
-  _globals['_ABOUTRESPONSE']._serialized_end=114
-  _globals['_CLUSTERID']._serialized_start=116
-  _globals['_CLUSTERID']._serialized_end=139
-  _globals['_NODEID']._serialized_start=141
-  _globals['_NODEID']._serialized_end=161
-  _globals['_SERVERENDPOINT']._serialized_start=163
-  _globals['_SERVERENDPOINT']._serialized_end=225
-  _globals['_SERVERENDPOINTLIST']._serialized_start=227
-  _globals['_SERVERENDPOINTLIST']._serialized_end=300
-  _globals['_CLUSTERNODEENDPOINTS']._serialized_start=303
-  _globals['_CLUSTERNODEENDPOINTS']._serialized_end=487
-  _globals['_CLUSTERNODEENDPOINTS_ENDPOINTSENTRY']._serialized_start=401
-  _globals['_CLUSTERNODEENDPOINTS_ENDPOINTSENTRY']._serialized_end=487
-  _globals['_CLUSTERNODEENDPOINTSREQUEST']._serialized_start=489
-  _globals['_CLUSTERNODEENDPOINTSREQUEST']._serialized_end=562
-  _globals['_OWNEDPARTITIONS']._serialized_start=564
-  _globals['_OWNEDPARTITIONS']._serialized_end=606
-  _globals['_CLUSTERPARTITIONS']._serialized_start=609
-  _globals['_CLUSTERPARTITIONS']._serialized_end=787
-  _globals['_CLUSTERPARTITIONS_PARTITIONSENTRY']._serialized_start=703
-  _globals['_CLUSTERPARTITIONS_PARTITIONSENTRY']._serialized_end=787
-  _globals['_ABOUT']._serialized_start=789
-  _globals['_ABOUT']._serialized_end=870
-  _globals['_CLUSTERINFO']._serialized_start=873
-  _globals['_CLUSTERINFO']._serialized_end=1219
+    DESCRIPTOR._options = None
+    DESCRIPTOR._serialized_options = (
+        b"\n\033com.aerospike.vector.clientP\001Z\034aerospike.com/vector/protos/"
+    )
+    _CLUSTERNODEENDPOINTS_ENDPOINTSENTRY._options = None
+    _CLUSTERNODEENDPOINTS_ENDPOINTSENTRY._serialized_options = b"8\001"
+    _CLUSTERPARTITIONS_PARTITIONSENTRY._options = None
+    _CLUSTERPARTITIONS_PARTITIONSENTRY._serialized_options = b"8\001"
+    _globals["_ABOUTREQUEST"]._serialized_start = 66
+    _globals["_ABOUTREQUEST"]._serialized_end = 80
+    _globals["_ABOUTRESPONSE"]._serialized_start = 82
+    _globals["_ABOUTRESPONSE"]._serialized_end = 114
+    _globals["_CLUSTERID"]._serialized_start = 116
+    _globals["_CLUSTERID"]._serialized_end = 139
+    _globals["_NODEID"]._serialized_start = 141
+    _globals["_NODEID"]._serialized_end = 161
+    _globals["_SERVERENDPOINT"]._serialized_start = 163
+    _globals["_SERVERENDPOINT"]._serialized_end = 225
+    _globals["_SERVERENDPOINTLIST"]._serialized_start = 227
+    _globals["_SERVERENDPOINTLIST"]._serialized_end = 300
+    _globals["_CLUSTERNODEENDPOINTS"]._serialized_start = 303
+    _globals["_CLUSTERNODEENDPOINTS"]._serialized_end = 487
+    _globals["_CLUSTERNODEENDPOINTS_ENDPOINTSENTRY"]._serialized_start = 401
+    _globals["_CLUSTERNODEENDPOINTS_ENDPOINTSENTRY"]._serialized_end = 487
+    _globals["_CLUSTERNODEENDPOINTSREQUEST"]._serialized_start = 489
+    _globals["_CLUSTERNODEENDPOINTSREQUEST"]._serialized_end = 562
+    _globals["_OWNEDPARTITIONS"]._serialized_start = 564
+    _globals["_OWNEDPARTITIONS"]._serialized_end = 606
+    _globals["_CLUSTERPARTITIONS"]._serialized_start = 609
+    _globals["_CLUSTERPARTITIONS"]._serialized_end = 787
+    _globals["_CLUSTERPARTITIONS_PARTITIONSENTRY"]._serialized_start = 703
+    _globals["_CLUSTERPARTITIONS_PARTITIONSENTRY"]._serialized_end = 787
+    _globals["_ABOUT"]._serialized_start = 789
+    _globals["_ABOUT"]._serialized_end = 870
+    _globals["_CLUSTERINFO"]._serialized_start = 873
+    _globals["_CLUSTERINFO"]._serialized_end = 1219
 # @@protoc_insertion_point(module_scope)

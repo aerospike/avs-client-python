@@ -1,69 +1,75 @@
-import random
 import re
 import threading
 import warnings
+from typing import Optional
 
-import google.protobuf.empty_pb2
+import google.protobuf.empty_pb2 as empty
 import grpc
+import random
 
-from . import types, vector_db_pb2
+from . import types
+from . import vector_db_pb2
 from . import vector_db_pb2_grpc
-
-empty = google.protobuf.empty_pb2.Empty()
 
 
 class ChannelAndEndpoints(object):
-    def __init__(self, channel: grpc.Channel,
-                 endpoints: vector_db_pb2.ServerEndpointList):
+    def __init__(
+        self, channel: grpc.aio.Channel, endpoints: vector_db_pb2.ServerEndpointList
+    ) -> None:
         self.channel = channel
         self.endpoints = endpoints
 
 
 class VectorDbChannelProvider(object):
     """Vector DB client"""
-
-    def __init__(self, seeds: tuple[types.HostPort], listener_name: str = None):
+    def __init__(
+        self, seeds: tuple[types.HostPort, ...], listener_name: Optional[str] = None, is_loadbalancer: Optional[bool] = False
+    ) -> None:
         if not seeds:
             raise Exception("at least one seed host needed")
         self._nodeChannels: dict[int, ChannelAndEndpoints] = {}
-        self._seedChannels: list[grpc.Channel] = {}
+        self._seedChannels: dict[grpc.aio.Channel] = {}
         self._closed = False
         self._clusterId = 0
         self.seeds = seeds
         self.listener_name = listener_name
-        self._seedChannels = [self._createChannelFromHostPort(seed) for seed in
-                              self.seeds]
+        self._is_loadbalancer = is_loadbalancer
+        self._seedChannels = [
+            self._create_channel_from_host_port(seed) for seed in self.seeds
+        ]
         self._tend()
 
-    def __enter__(self):
-        return self
+    dimensions = (1024,)
 
-    def __exit__(self, exc_type, exc_val, exc_tb):
-        self.close()
-
-    def close(self):
+    async def close(self):
         self._closed = True
         for channel in self._seedChannels:
-            channel.close()
+            await channel.close()
 
         for k, channelEndpoints in self._nodeChannels.items():
             if channelEndpoints.channel:
-                channelEndpoints.channel.close()
+                await channelEndpoints.channel.close()
 
     def getChannel(self) -> grpc.Channel:
-        discoveredChannels: list[ChannelAndEndpoints] = list(
-            self._nodeChannels.values())
-        if len(discoveredChannels) <= 0:
-            return self._seedChannels[0]
+        if not self._is_loadbalancer:
+            discoveredChannels: list[ChannelAndEndpoints] = list(
+                self._nodeChannels.values())
+            if len(discoveredChannels) <= 0:
+                return self._seedChannels[0]
 
-        # Return a random channel.
-        channel = random.choice(discoveredChannels).channel
-        if channel:
-            return channel
+
+            # Return a random channel.
+            channel = random.choice(discoveredChannels).channel
+            if channel:
+                return channel
 
         return self._seedChannels[0]
 
     def _tend(self):
+        if self._is_loadbalancer:
+            # Skip tend if we are behind a load-balancer
+            return
+
         # TODO: Worry about thread safety
         temp_endpoints: dict[int, vector_db_pb2.ServerEndpointList] = {}
 
@@ -72,8 +78,9 @@ class VectorDbChannelProvider(object):
 
         try:
             update_endpoints = False
-            channels = self._seedChannels + [x.channel for x in
-                                             self._nodeChannels.values()]
+            channels = self._seedChannels + [
+                x.channel for x in self._nodeChannels.values()
+            ]
             for seedChannel in channels:
                 try:
                     stub = vector_db_pb2_grpc.ClusterInfoStub(seedChannel)
@@ -86,13 +93,16 @@ class VectorDbChannelProvider(object):
                     self._clusterId = newClusterId
                     endpoints = stub.GetClusterEndpoints(
                         vector_db_pb2.ClusterNodeEndpointsRequest(
-                            listenerName=self.listener_name)).endpoints
+                            listenerName=self.listener_name
+                        )
+                    ).endpoints
 
                     if len(endpoints) > len(temp_endpoints):
                         temp_endpoints = endpoints
-                except:
-                    continue
 
+                except Exception as e:
+                    pass
+                    #warnings.warn("error tending cluster endpoints: " + str(e))
             if update_endpoints:
                 for node, newEndpoints in temp_endpoints.items():
                     channel_endpoints = self._nodeChannels.get(node)
@@ -109,10 +119,12 @@ class VectorDbChannelProvider(object):
 
                     if add_new_channel:
                         # We have discovered a new node
-                        new_channel = self._createChannelFromServerEndpointList(
-                            newEndpoints)
+                        new_channel = self._create_channel_from_server_endpoint_list(
+                            newEndpoints
+                        )
                         self._nodeChannels[node] = ChannelAndEndpoints(
-                            new_channel, newEndpoints)
+                            new_channel, newEndpoints
+                        )
 
                 for node, channel_endpoints in self._nodeChannels.items():
                     if not temp_endpoints.get(node):
@@ -128,23 +140,31 @@ class VectorDbChannelProvider(object):
             # TODO: check tend interval.
             threading.Timer(1, self._tend).start()
 
-    def _createChannelFromHostPort(self, host: types.HostPort) -> grpc.Channel:
-        return self._createChannel(host.address, host.port, host.isTls)
+    def _create_channel_from_host_port(self, host: types.HostPort) -> grpc.aio.Channel:
+        return self._create_channel(host.host, host.port, host.isTls)
 
-    def _createChannelFromServerEndpointList(self,
-                                             endpoints: vector_db_pb2.ServerEndpointList) -> grpc.Channel:
+    def _create_channel_from_server_endpoint_list(
+        self, endpoints: vector_db_pb2.ServerEndpointList
+    ) -> grpc.aio.Channel:
         # TODO: Create channel with all endpoints
         for endpoint in endpoints.endpoints:
             if ":" in endpoint.address:
                 # TODO: Ignoring IPv6 for now. Needs fix
                 continue
             try:
-                return self._createChannel(endpoint.address, endpoint.port,
-                                           endpoint.isTls)
-            except:
-                continue
+                return self._create_channel(
+                    endpoint.address, endpoint.port, endpoint.isTls
+                )
+            except Exception as e:
+                warnings.warn("error creating channel: " + str(e))
 
-    def _createChannel(self, host: str, port: int, isTls: bool) -> grpc.Channel:
+    def _create_channel(self, host: str, port: int, isTls: bool) -> grpc.aio.Channel:
         # TODO: Take care of TLS
-        host = re.sub(r'%.*', '', host)
-        return grpc.insecure_channel(f'{host}:{port}')
+        host = re.sub(r"%.*", "", host)
+        return grpc.aio.insecure_channel(f"{host}:{port}")
+
+    async def __aenter__(self):
+        return self
+
+    async def __aexit__(self, exc_type, exc_val, exc_tb):
+        await self.close()

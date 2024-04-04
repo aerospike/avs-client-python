@@ -8,8 +8,7 @@ from . import types_pb2 as types__pb2
 
 
 class TransactStub(object):
-    """Record transaction services.
-    """
+    """Record transaction services."""
 
     def __init__(self, channel):
         """Constructor.
@@ -18,186 +17,245 @@ class TransactStub(object):
             channel: A grpc.Channel.
         """
         self.Put = channel.unary_unary(
-                '/aerospike.vector.Transact/Put',
-                request_serializer=transact__pb2.PutRequest.SerializeToString,
-                response_deserializer=google_dot_protobuf_dot_empty__pb2.Empty.FromString,
-                )
+            "/aerospike.vector.Transact/Put",
+            request_serializer=transact__pb2.PutRequest.SerializeToString,
+            response_deserializer=google_dot_protobuf_dot_empty__pb2.Empty.FromString,
+        )
         self.Get = channel.unary_unary(
-                '/aerospike.vector.Transact/Get',
-                request_serializer=transact__pb2.GetRequest.SerializeToString,
-                response_deserializer=types__pb2.Record.FromString,
-                )
+            "/aerospike.vector.Transact/Get",
+            request_serializer=transact__pb2.GetRequest.SerializeToString,
+            response_deserializer=types__pb2.Record.FromString,
+        )
         self.Exists = channel.unary_unary(
-                '/aerospike.vector.Transact/Exists',
-                request_serializer=types__pb2.Key.SerializeToString,
-                response_deserializer=types__pb2.Boolean.FromString,
-                )
+            "/aerospike.vector.Transact/Exists",
+            request_serializer=types__pb2.Key.SerializeToString,
+            response_deserializer=types__pb2.Boolean.FromString,
+        )
         self.IsIndexed = channel.unary_unary(
-                '/aerospike.vector.Transact/IsIndexed',
-                request_serializer=transact__pb2.IsIndexedRequest.SerializeToString,
-                response_deserializer=types__pb2.Boolean.FromString,
-                )
+            "/aerospike.vector.Transact/IsIndexed",
+            request_serializer=transact__pb2.IsIndexedRequest.SerializeToString,
+            response_deserializer=types__pb2.Boolean.FromString,
+        )
         self.VectorSearch = channel.unary_stream(
-                '/aerospike.vector.Transact/VectorSearch',
-                request_serializer=transact__pb2.VectorSearchRequest.SerializeToString,
-                response_deserializer=types__pb2.Neighbor.FromString,
-                )
+            "/aerospike.vector.Transact/VectorSearch",
+            request_serializer=transact__pb2.VectorSearchRequest.SerializeToString,
+            response_deserializer=types__pb2.Neighbor.FromString,
+        )
 
 
 class TransactServicer(object):
-    """Record transaction services.
-    """
+    """Record transaction services."""
 
     def Put(self, request, context):
         """Missing associated documentation comment in .proto file."""
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
-        context.set_details('Method not implemented!')
-        raise NotImplementedError('Method not implemented!')
+        context.set_details("Method not implemented!")
+        raise NotImplementedError("Method not implemented!")
 
     def Get(self, request, context):
         """Missing associated documentation comment in .proto file."""
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
-        context.set_details('Method not implemented!')
-        raise NotImplementedError('Method not implemented!')
+        context.set_details("Method not implemented!")
+        raise NotImplementedError("Method not implemented!")
 
     def Exists(self, request, context):
         """Missing associated documentation comment in .proto file."""
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
-        context.set_details('Method not implemented!')
-        raise NotImplementedError('Method not implemented!')
+        context.set_details("Method not implemented!")
+        raise NotImplementedError("Method not implemented!")
 
     def IsIndexed(self, request, context):
         """Missing associated documentation comment in .proto file."""
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
-        context.set_details('Method not implemented!')
-        raise NotImplementedError('Method not implemented!')
+        context.set_details("Method not implemented!")
+        raise NotImplementedError("Method not implemented!")
 
     def VectorSearch(self, request, context):
         """Missing associated documentation comment in .proto file."""
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
-        context.set_details('Method not implemented!')
-        raise NotImplementedError('Method not implemented!')
+        context.set_details("Method not implemented!")
+        raise NotImplementedError("Method not implemented!")
 
 
 def add_TransactServicer_to_server(servicer, server):
     rpc_method_handlers = {
-            'Put': grpc.unary_unary_rpc_method_handler(
-                    servicer.Put,
-                    request_deserializer=transact__pb2.PutRequest.FromString,
-                    response_serializer=google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
-            ),
-            'Get': grpc.unary_unary_rpc_method_handler(
-                    servicer.Get,
-                    request_deserializer=transact__pb2.GetRequest.FromString,
-                    response_serializer=types__pb2.Record.SerializeToString,
-            ),
-            'Exists': grpc.unary_unary_rpc_method_handler(
-                    servicer.Exists,
-                    request_deserializer=types__pb2.Key.FromString,
-                    response_serializer=types__pb2.Boolean.SerializeToString,
-            ),
-            'IsIndexed': grpc.unary_unary_rpc_method_handler(
-                    servicer.IsIndexed,
-                    request_deserializer=transact__pb2.IsIndexedRequest.FromString,
-                    response_serializer=types__pb2.Boolean.SerializeToString,
-            ),
-            'VectorSearch': grpc.unary_stream_rpc_method_handler(
-                    servicer.VectorSearch,
-                    request_deserializer=transact__pb2.VectorSearchRequest.FromString,
-                    response_serializer=types__pb2.Neighbor.SerializeToString,
-            ),
+        "Put": grpc.unary_unary_rpc_method_handler(
+            servicer.Put,
+            request_deserializer=transact__pb2.PutRequest.FromString,
+            response_serializer=google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
+        ),
+        "Get": grpc.unary_unary_rpc_method_handler(
+            servicer.Get,
+            request_deserializer=transact__pb2.GetRequest.FromString,
+            response_serializer=types__pb2.Record.SerializeToString,
+        ),
+        "Exists": grpc.unary_unary_rpc_method_handler(
+            servicer.Exists,
+            request_deserializer=types__pb2.Key.FromString,
+            response_serializer=types__pb2.Boolean.SerializeToString,
+        ),
+        "IsIndexed": grpc.unary_unary_rpc_method_handler(
+            servicer.IsIndexed,
+            request_deserializer=transact__pb2.IsIndexedRequest.FromString,
+            response_serializer=types__pb2.Boolean.SerializeToString,
+        ),
+        "VectorSearch": grpc.unary_stream_rpc_method_handler(
+            servicer.VectorSearch,
+            request_deserializer=transact__pb2.VectorSearchRequest.FromString,
+            response_serializer=types__pb2.Neighbor.SerializeToString,
+        ),
     }
     generic_handler = grpc.method_handlers_generic_handler(
-            'aerospike.vector.Transact', rpc_method_handlers)
+        "aerospike.vector.Transact", rpc_method_handlers
+    )
     server.add_generic_rpc_handlers((generic_handler,))
 
 
- # This class is part of an EXPERIMENTAL API.
+# This class is part of an EXPERIMENTAL API.
 class Transact(object):
-    """Record transaction services.
-    """
+    """Record transaction services."""
 
     @staticmethod
-    def Put(request,
+    def Put(
+        request,
+        target,
+        options=(),
+        channel_credentials=None,
+        call_credentials=None,
+        insecure=False,
+        compression=None,
+        wait_for_ready=None,
+        timeout=None,
+        metadata=None,
+    ):
+        return grpc.experimental.unary_unary(
+            request,
             target,
-            options=(),
-            channel_credentials=None,
-            call_credentials=None,
-            insecure=False,
-            compression=None,
-            wait_for_ready=None,
-            timeout=None,
-            metadata=None):
-        return grpc.experimental.unary_unary(request, target, '/aerospike.vector.Transact/Put',
+            "/aerospike.vector.Transact/Put",
             transact__pb2.PutRequest.SerializeToString,
             google_dot_protobuf_dot_empty__pb2.Empty.FromString,
-            options, channel_credentials,
-            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+        )
 
     @staticmethod
-    def Get(request,
+    def Get(
+        request,
+        target,
+        options=(),
+        channel_credentials=None,
+        call_credentials=None,
+        insecure=False,
+        compression=None,
+        wait_for_ready=None,
+        timeout=None,
+        metadata=None,
+    ):
+        return grpc.experimental.unary_unary(
+            request,
             target,
-            options=(),
-            channel_credentials=None,
-            call_credentials=None,
-            insecure=False,
-            compression=None,
-            wait_for_ready=None,
-            timeout=None,
-            metadata=None):
-        return grpc.experimental.unary_unary(request, target, '/aerospike.vector.Transact/Get',
+            "/aerospike.vector.Transact/Get",
             transact__pb2.GetRequest.SerializeToString,
             types__pb2.Record.FromString,
-            options, channel_credentials,
-            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+        )
 
     @staticmethod
-    def Exists(request,
+    def Exists(
+        request,
+        target,
+        options=(),
+        channel_credentials=None,
+        call_credentials=None,
+        insecure=False,
+        compression=None,
+        wait_for_ready=None,
+        timeout=None,
+        metadata=None,
+    ):
+        return grpc.experimental.unary_unary(
+            request,
             target,
-            options=(),
-            channel_credentials=None,
-            call_credentials=None,
-            insecure=False,
-            compression=None,
-            wait_for_ready=None,
-            timeout=None,
-            metadata=None):
-        return grpc.experimental.unary_unary(request, target, '/aerospike.vector.Transact/Exists',
+            "/aerospike.vector.Transact/Exists",
             types__pb2.Key.SerializeToString,
             types__pb2.Boolean.FromString,
-            options, channel_credentials,
-            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+        )
 
     @staticmethod
-    def IsIndexed(request,
+    def IsIndexed(
+        request,
+        target,
+        options=(),
+        channel_credentials=None,
+        call_credentials=None,
+        insecure=False,
+        compression=None,
+        wait_for_ready=None,
+        timeout=None,
+        metadata=None,
+    ):
+        return grpc.experimental.unary_unary(
+            request,
             target,
-            options=(),
-            channel_credentials=None,
-            call_credentials=None,
-            insecure=False,
-            compression=None,
-            wait_for_ready=None,
-            timeout=None,
-            metadata=None):
-        return grpc.experimental.unary_unary(request, target, '/aerospike.vector.Transact/IsIndexed',
+            "/aerospike.vector.Transact/IsIndexed",
             transact__pb2.IsIndexedRequest.SerializeToString,
             types__pb2.Boolean.FromString,
-            options, channel_credentials,
-            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+        )
 
     @staticmethod
-    def VectorSearch(request,
+    def VectorSearch(
+        request,
+        target,
+        options=(),
+        channel_credentials=None,
+        call_credentials=None,
+        insecure=False,
+        compression=None,
+        wait_for_ready=None,
+        timeout=None,
+        metadata=None,
+    ):
+        return grpc.experimental.unary_stream(
+            request,
             target,
-            options=(),
-            channel_credentials=None,
-            call_credentials=None,
-            insecure=False,
-            compression=None,
-            wait_for_ready=None,
-            timeout=None,
-            metadata=None):
-        return grpc.experimental.unary_stream(request, target, '/aerospike.vector.Transact/VectorSearch',
+            "/aerospike.vector.Transact/VectorSearch",
             transact__pb2.VectorSearchRequest.SerializeToString,
             types__pb2.Neighbor.FromString,
-            options, channel_credentials,
-            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+        )

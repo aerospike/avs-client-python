@@ -6,25 +6,28 @@ from google.protobuf import descriptor as _descriptor
 from google.protobuf import descriptor_pool as _descriptor_pool
 from google.protobuf import symbol_database as _symbol_database
 from google.protobuf.internal import builder as _builder
+
 # @@protoc_insertion_point(imports)
 
 _sym_db = _symbol_database.Default()
 
 
-
-
-DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\nauth.proto\x12\x10\x61\x65rospike.vector\":\n\x14\x41\x65rospikeAuthRequest\x12\x10\n\x08username\x18\x01 \x01(\t\x12\x10\n\x08password\x18\x02 \x01(\t\"&\n\x15\x41\x65rospikeAuthResponse\x12\r\n\x05token\x18\x01 \x01(\t2g\n\x0b\x41uthService\x12X\n\x03Get\x12&.aerospike.vector.AerospikeAuthRequest\x1a\'.aerospike.vector.AerospikeAuthResponse\"\x00\x42=\n\x1b\x63om.aerospike.vector.clientP\x01Z\x1c\x61\x65rospike.com/vector/protos/b\x06proto3')
+DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(
+    b'\n\nauth.proto\x12\x10\x61\x65rospike.vector":\n\x14\x41\x65rospikeAuthRequest\x12\x10\n\x08username\x18\x01 \x01(\t\x12\x10\n\x08password\x18\x02 \x01(\t"&\n\x15\x41\x65rospikeAuthResponse\x12\r\n\x05token\x18\x01 \x01(\t2g\n\x0b\x41uthService\x12X\n\x03Get\x12&.aerospike.vector.AerospikeAuthRequest\x1a\'.aerospike.vector.AerospikeAuthResponse"\x00\x42=\n\x1b\x63om.aerospike.vector.clientP\x01Z\x1c\x61\x65rospike.com/vector/protos/b\x06proto3'
+)
 
 _globals = globals()
 _builder.BuildMessageAndEnumDescriptors(DESCRIPTOR, _globals)
-_builder.BuildTopDescriptorsAndMessages(DESCRIPTOR, 'auth_pb2', _globals)
+_builder.BuildTopDescriptorsAndMessages(DESCRIPTOR, "auth_pb2", _globals)
 if _descriptor._USE_C_DESCRIPTORS == False:
-  DESCRIPTOR._options = None
-  DESCRIPTOR._serialized_options = b'\n\033com.aerospike.vector.clientP\001Z\034aerospike.com/vector/protos/'
-  _globals['_AEROSPIKEAUTHREQUEST']._serialized_start=32
-  _globals['_AEROSPIKEAUTHREQUEST']._serialized_end=90
-  _globals['_AEROSPIKEAUTHRESPONSE']._serialized_start=92
-  _globals['_AEROSPIKEAUTHRESPONSE']._serialized_end=130
-  _globals['_AUTHSERVICE']._serialized_start=132
-  _globals['_AUTHSERVICE']._serialized_end=235
+    DESCRIPTOR._options = None
+    DESCRIPTOR._serialized_options = (
+        b"\n\033com.aerospike.vector.clientP\001Z\034aerospike.com/vector/protos/"
+    )
+    _globals["_AEROSPIKEAUTHREQUEST"]._serialized_start = 32
+    _globals["_AEROSPIKEAUTHREQUEST"]._serialized_end = 90
+    _globals["_AEROSPIKEAUTHRESPONSE"]._serialized_start = 92
+    _globals["_AEROSPIKEAUTHRESPONSE"]._serialized_end = 130
+    _globals["_AUTHSERVICE"]._serialized_start = 132
+    _globals["_AUTHSERVICE"]._serialized_end = 235
 # @@protoc_insertion_point(module_scope)
