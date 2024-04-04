@@ -33,6 +33,7 @@ class VectorDbAdminClient(object):
         *,
         seeds: Union[types.HostPort, tuple[types.HostPort, ...]],
         listener_name: Optional[str] = None,
+        is_loadbalancer: Optional[bool] = False
     ) -> None:
 
         if not seeds:
@@ -42,7 +43,7 @@ class VectorDbAdminClient(object):
             seeds = (seeds,)
 
         self.__channelProvider = vectordb_channel_provider.VectorDbChannelProvider(
-            seeds, listener_name
+            seeds, listener_name, is_loadbalancer
         )
         """
         Initialize the VectorDbAdminClient.
