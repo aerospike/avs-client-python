@@ -19,20 +19,43 @@ class Key(object):
         self.set = set
         self.digest = digest
         self.key = key
-
+    def __str__(self):
+        return f"Key: namespace='{self.namespace}', set='{self.set}', digest={self.digest}, key={self.key}"
 
 class RecordWithKey(object):
     def __init__(self, *, key: Key, bins: dict[str, Any]) -> None:
         self.key = key
         self.bins = bins
-
+    def __str__(self):
+        bins_info = ""
+        for key, value in self.bins.items():
+            if isinstance(value, list):
+                if len(value) > 4:
+                    value_str = "[\n" + ",\n".join("\t\t\t{}".format(val) for val in value[:3]) + ",\n\t\t\t...\n\t\t]"
+                else:
+                    value_str = str(value)
+            else:
+                value_str = str(value)
+            bins_info += "\n\t\t{}: {}".format(key, value_str)
+        return "{{\n\t{},\n\tbins: {{\n{}\n\t}}\n}}".format(self.key, bins_info)
 
 class Neighbor(object):
     def __init__(self, *, key: Key, bins: dict[str, Any], distance: float) -> None:
         self.key = key
         self.bins = bins
         self.distance = distance
-
+    def __str__(self):
+        bins_info = ""
+        for key, value in self.bins.items():
+            if isinstance(value, list):
+                if len(value) > 4:
+                    value_str = "[\n" + ",\n".join("\t\t\t{}".format(val) for val in value[:3]) + ",\n\t\t\t...\n\t\t]"
+                else:
+                    value_str = str(value)
+            else:
+                value_str = str(value)
+            bins_info += "\n\t\t{}: {}".format(key, value_str)
+        return "{{\n\t{},\n\tdistance: {},\n\tbins: {{\n{}\n\t}}\n}}".format(self.key, self.distance, bins_info)
 
 class VectorDistanceMetric(enum.Enum):
     SQUARED_EUCLIDEAN = types_pb2.VectorDistanceMetric.SQUARED_EUCLIDEAN

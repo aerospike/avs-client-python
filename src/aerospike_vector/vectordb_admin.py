@@ -1,4 +1,5 @@
 import asyncio
+import logging
 import sys
 import time
 from typing import Any, Optional, Union
@@ -14,7 +15,7 @@ from . import types_pb2
 from . import vectordb_channel_provider
 
 empty = google.protobuf.empty_pb2.Empty()
-
+logger = logging.getLogger(__name__)
 
 class VectorDbAdminClient(object):
     """
@@ -98,21 +99,32 @@ class VectorDbAdminClient(object):
         if sets and not sets.strip():
             sets = None
 
-        await index_stub.Create(
-            types_pb2.IndexDefinition(
-                id=types_pb2.IndexId(namespace=namespace, name=name),
-                vectorDistanceMetric=vector_distance_metric.value,
-                setFilter=sets,
-                hnswParams=index_params,
-                bin=vector_bin_name,
-                dimensions=dimensions,
-                labels=labels,
+        logger.debug(
+            "Creating index: namespace=%s, name=%s, vector_bin_name=%s, dimensions=%d, vector_distance_metric=%s, "
+            "sets=%s, index_params=%s, labels=%s",
+            namespace, name, vector_bin_name, dimensions, vector_distance_metric, sets, index_params, labels)
+        try:
+            await index_stub.Create(
+                types_pb2.IndexDefinition(
+                    id=types_pb2.IndexId(namespace=namespace, name=name),
+                    vectorDistanceMetric=vector_distance_metric.value,
+                    setFilter=sets,
+                    hnswParams=index_params,
+                    bin=vector_bin_name,
+                    dimensions=dimensions,
+                    labels=labels,
+                )
             )
-        )
-
-        await self._wait_for_index_creation(
-            namespace=namespace, name=name, timeout=100_000
-        )
+        except grpc.RpcError as e:
+            logger.error("Failed with error: %s", e)
+            raise e
+        try:
+            await self._wait_for_index_creation(
+                namespace=namespace, name=name, timeout=100_000
+            )
+        except grpc.RpcError as e:
+            logger.error("Failed waiting for creation with error: %s", e)
+            raise e
 
     async def index_drop(self, *, namespace: str, name: str):
         index_stub = index_pb2_grpc.IndexServiceStub(
@@ -131,7 +143,22 @@ class VectorDbAdminClient(object):
         Note:
             This method drops the specified index.
         """
-        await index_stub.Drop(types_pb2.IndexId(namespace=namespace, name=name))
+        logger.debug(
+            "Dropping index: namespace=%s, name=%s",
+            namespace, name)
+        try:
+            await index_stub.Drop(types_pb2.IndexId(namespace=namespace, name=name))
+        except grpc.RpcError as e:
+            logger.error("Failed with error: %s", e)
+            raise e
+        try:
+            await self._wait_for_index_deletion(
+                namespace=namespace, name=name, timeout=100_000
+            )
+        except grpc.RpcError as e:
+            logger.error("Failed waiting for deletion with error: %s", e)
+            raise e
+
 
     async def index_list(self) -> list[Any]:
         """
@@ -146,14 +173,19 @@ class VectorDbAdminClient(object):
         Note:
             This method lists all indices available in the Vector DB.
         """
+
+        index_stub = index_pb2_grpc.IndexServiceStub(
+            self.__channelProvider.get_channel()
+        )
+
+        logger.debug("Getting index list")
         try:
-            index_stub = index_pb2_grpc.IndexServiceStub(
-                self.__channelProvider.get_channel()
-            )
             response = await index_stub.List(empty)
-            return response.indices
-        except Exception as e:
+        except grpc.RpcError as e:
+            logger.error("Failed with error: %s", e)
             raise e
+
+        return response.indices
 
     async def index_get(
         self, *, namespace: str, name: str
@@ -178,9 +210,15 @@ class VectorDbAdminClient(object):
         index_stub = index_pb2_grpc.IndexServiceStub(
             self.__channelProvider.get_channel()
         )
-        response = await index_stub.Get(
-            types_pb2.IndexId(namespace=namespace, name=name)
-        )
+
+        logger.debug("Getting index information: namespace=%s, name=%s", namespace, name)
+        try:
+            response = await index_stub.Get(
+                types_pb2.IndexId(namespace=namespace, name=name)
+            )
+        except grpc.RpcError as e:
+            logger.error("Failed with error: %s", e)
+            raise e
         return MessageToDict(response)
 
     async def index_get_status(
@@ -206,11 +244,16 @@ class VectorDbAdminClient(object):
         index_stub = index_pb2_grpc.IndexServiceStub(
             self.__channelProvider.get_channel()
         )
-        response = await index_stub.GetStatus(
-            types_pb2.IndexId(namespace=namespace, name=name)
-        )
+        logger.debug("Getting index status: namespace=%s, name=%s", namespace, name)
+        try:
+            response = await index_stub.GetStatus(
+                types_pb2.IndexId(namespace=namespace, name=name)
+            )
+        except grpc.RpcError as e:
+            logger.error("Failed with error: %s", e)
+            raise e
 
-        return response
+        return response.unmergedRecordCount
 
     async def _wait_for_index_creation(
         self, *, namespace: str, name: str, timeout: int = sys.maxsize
@@ -235,6 +278,32 @@ class VectorDbAdminClient(object):
                 if e.code() in (grpc.StatusCode.UNAVAILABLE, grpc.StatusCode.NOT_FOUND):
                     # Wait for some more time.
                     time.sleep(wait_interval)
+                else:
+                    raise e
+
+    async def _wait_for_index_deletion(
+        self, *, namespace: str, name: str, timeout: int = sys.maxsize
+    ):
+        """
+        Wait for the index to be created.
+        """
+
+        # Wait interval between polling
+        wait_interval = 10
+
+        start_time = time.monotonic()
+        while True:
+            if start_time + timeout < time.monotonic():
+                raise "timed-out waiting for index creation"
+            try:
+                await self.index_get_status(namespace=namespace, name=name)
+
+                # Wait for some more time.
+                time.sleep(wait_interval)
+            except grpc.RpcError as e:
+                if e.code() in (grpc.StatusCode.UNAVAILABLE, grpc.StatusCode.NOT_FOUND):
+                    # Index has been created
+                    return
                 else:
                     raise e
 

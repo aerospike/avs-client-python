@@ -84,7 +84,7 @@ def fromVectorDbRecord(record: types_pb2.Record) -> dict[str, Any]:
 
 def fromVectorDbNeighbor(input: types_pb2.Neighbor) -> types.Neighbor:
     return types.Neighbor(
-        fromVectorDbKey(input.key), fromVectorDbRecord(input.record), input.distance
+        key=fromVectorDbKey(input.key), bins=fromVectorDbRecord(input.record), distance=input.distance
     )
 
 

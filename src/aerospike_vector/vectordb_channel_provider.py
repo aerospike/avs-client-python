@@ -94,10 +94,10 @@ class VectorDbChannelProvider(object):
 
                     if len(endpoints) > len(temp_endpoints):
                         temp_endpoints = endpoints
-                except Exception as e:
-                    print("INSIDE OF TEND FUNCTION")
 
-                    warnings.warn("error tending: " + str(e))
+                except Exception as e:
+                    pass
+                    #warnings.warn("error tending cluster endpoints: " + str(e))
             if update_endpoints:
                 for node, newEndpoints in temp_endpoints.items():
                     channel_endpoints = self._nodeChannels.get(node)
@@ -129,8 +129,6 @@ class VectorDbChannelProvider(object):
 
         except Exception as e:
             # TODO: log this exception
-            print("END OF TEND FUNCTION")
-            raise e
             warnings.warn("error tending: " + str(e))
 
         if not self._closed:
@@ -153,8 +151,6 @@ class VectorDbChannelProvider(object):
                     endpoint.address, endpoint.port, endpoint.isTls
                 )
             except Exception as e:
-                print("ENDPOINT LIST FUNCTION")
-                raise e
                 warnings.warn("error creating channel: " + str(e))
 
     def _create_channel(self, host: str, port: int, isTls: bool) -> grpc.aio.Channel:

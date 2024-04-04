@@ -1,4 +1,5 @@
 import asyncio
+import logging
 import sys
 import time
 from typing import Any, Optional, Union
@@ -16,7 +17,7 @@ from . import types_pb2
 from . import vectordb_channel_provider
 
 empty = google.protobuf.empty_pb2.Empty()
-
+logger = logging.getLogger(__name__)
 
 class VectorDbClient(object):
     """
@@ -61,7 +62,7 @@ class VectorDbClient(object):
         namespace: str,
         key: Union[int, str, bytes, bytearray],
         record_data: dict[str, Any],
-        set_name: Optional[str] = None,
+        set_name: Optional[str] = None
     ) -> None:
         """
         Write a record to the Vector DB.
@@ -85,11 +86,16 @@ class VectorDbClient(object):
             self.__channelProvider.get_channel()
         )
         key = _get_key(key, set_name, namespace)
-        binList = [
+        bin_list = [
             types_pb2.Bin(name=k, value=conversions.toVectorDbValue(v))
             for (k, v) in record_data.items()
         ]
-        await transact_stub.Put(transact_pb2.PutRequest(key=key, bins=binList))
+        logger.debug("Putting record: namespace=%s, key=%s, record_data:%s, set_name:%s", namespace, key, record_data, set_name)
+        try:
+            await transact_stub.Put(transact_pb2.PutRequest(key=key, bins=bin_list))
+        except grpc.RpcError as e:
+            logger.error("Failed with error: %s", e)
+            raise e
 
     async def get(
         self,
@@ -123,9 +129,15 @@ class VectorDbClient(object):
         )
         key = _get_key(key, set_name, namespace)
         bin_selector = _get_bin_selector(bin_names=bin_names)
-        result = await transact_stub.Get(
-            transact_pb2.GetRequest(key=key, binSelector=bin_selector)
-        )
+        logger.debug("Getting record: namespace=%s, key=%s, bin_names:%s, set_name:%s", namespace, key, bin_names, set_name)
+        try:
+            result = await transact_stub.Get(
+                transact_pb2.GetRequest(key=key, binSelector=bin_selector)
+            )
+        except grpc.RpcError as e:
+            logger.error("Failed with error: %s", e)
+            raise e
+
         return types.RecordWithKey(
             key=conversions.fromVectorDbKey(key),
             bins=conversions.fromVectorDbRecord(result),
@@ -154,8 +166,14 @@ class VectorDbClient(object):
         transact_stub = transact_pb2_grpc.TransactStub(
             self.__channelProvider.get_channel()
         )
-        key = self.__get_key(key, set_name, namespace)
-        result = await transact_stub.Exists(key)
+        key = _get_key(key, set_name, namespace)
+        logger.debug("Getting record existence: namespace=%s, key=%s, set_name:%s", namespace, key, set_name)
+        try:
+            result = await transact_stub.Exists(key)
+        except grpc.RpcError as e:
+            logger.error("Failed with error: %s", e)
+            raise e
+
         return result.value
 
     async def is_indexed(
@@ -196,7 +214,12 @@ class VectorDbClient(object):
         transact_stub = transact_pb2_grpc.TransactStub(
             self.__channelProvider.get_channel()
         )
-        result = await transact_stub.IsIndexed(request)
+        logger.debug("Checking if index exists: namespace=%s, key=%s, index_name=%s, index_namespace=%s, set_name=%s", namespace, key, index_name, index_namespace, set_name)
+        try:
+            result = await transact_stub.IsIndexed(request)
+        except grpc.RpcError as e:
+            logger.error("Failed with error: %s", e)
+            raise e
         return result.value
 
     async def vector_search(
@@ -234,16 +257,22 @@ class VectorDbClient(object):
         transact_stub = transact_pb2_grpc.TransactStub(
             self.__channelProvider.get_channel()
         )
-        results_stream = transact_stub.VectorSearch(
-            transact_pb2.VectorSearchRequest(
-                index=types_pb2.IndexId(namespace=namespace, name=index_name),
-                queryVector=(conversions.toVectorDbValue(query).vectorValue),
-                limit=limit,
-                hnswSearchParams=search_params,
-                binSelector=self.__get_bin_selector(bin_names=bin_names),
+        logger.debug(
+            "Performing vector search: namespace=%s, index_name=%s, query=%s, limit=%s, search_params=%s, bin_names=%s",
+            namespace, index_name, query, limit, search_params, bin_names)
+        try:
+            results_stream = transact_stub.VectorSearch(
+                transact_pb2.VectorSearchRequest(
+                    index=types_pb2.IndexId(namespace=namespace, name=index_name),
+                    queryVector=(conversions.toVectorDbValue(query).vectorValue),
+                    limit=limit,
+                    hnswSearchParams=search_params,
+                    binSelector=_get_bin_selector(bin_names=bin_names),
+                )
             )
-        )
-
+        except grpc.RpcError as e:
+            logger.error("Failed with error: %s", e)
+            raise e
         async_results = []
         async for result in results_stream:
             async_results.append(conversions.fromVectorDbNeighbor(result))
@@ -281,11 +310,12 @@ class VectorDbClient(object):
             time.sleep(wait_interval)
 
             try:
-                index_status = await self.__index_get_status(namespace, name)
+                index_status = await self._index_get_status(namespace=namespace, name=name)
             except grpc.RpcError as e:
                 if e.code() == grpc.StatusCode.UNAVAILABLE:
                     continue
                 else:
+                    logger.error("Failed with error: %s", e)
                     raise e
 
             if unmerged_record_count == 0 and index_status.unmergedRecordCount == 0:
