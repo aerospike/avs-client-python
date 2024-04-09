@@ -1,6 +1,7 @@
 import re
 import threading
 import warnings
+import logging
 from typing import Optional
 
 import google.protobuf.empty_pb2 as empty
@@ -11,6 +12,7 @@ from . import types
 from . import vector_db_pb2
 from . import vector_db_pb2_grpc
 
+logger = logging.getLogger(__name__)
 
 class ChannelAndEndpoints(object):
     def __init__(
@@ -101,8 +103,8 @@ class VectorDbChannelProvider(object):
                         temp_endpoints = endpoints
 
                 except Exception as e:
-                    pass
-                    #warnings.warn("error tending cluster endpoints: " + str(e))
+                    logger.debug("failure tending cluster endpoints: " + str(e))
+
             if update_endpoints:
                 for node, newEndpoints in temp_endpoints.items():
                     channel_endpoints = self._nodeChannels.get(node)
@@ -133,8 +135,7 @@ class VectorDbChannelProvider(object):
                         del self._nodeChannels[node]
 
         except Exception as e:
-            # TODO: log this exception
-            warnings.warn("error tending: " + str(e))
+            logger.debug("failure tending: " + str(e))
 
         if not self._closed:
             # TODO: check tend interval.
@@ -156,15 +157,9 @@ class VectorDbChannelProvider(object):
                     endpoint.address, endpoint.port, endpoint.isTls
                 )
             except Exception as e:
-                warnings.warn("error creating channel: " + str(e))
+                logger.debug("failure creating channel: " + str(e))
 
     def _create_channel(self, host: str, port: int, isTls: bool) -> grpc.aio.Channel:
         # TODO: Take care of TLS
         host = re.sub(r"%.*", "", host)
         return grpc.aio.insecure_channel(f"{host}:{port}")
-
-    async def __aenter__(self):
-        return self
-
-    async def __aexit__(self, exc_type, exc_val, exc_tb):
-        await self.close()

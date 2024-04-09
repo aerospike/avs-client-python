@@ -69,7 +69,7 @@ class VectorDbAdminClient(object):
             types.VectorDistanceMetric.SQUARED_EUCLIDEAN
         ),
         sets: Optional[str] = None,
-        index_params: Optional[types_pb2.HnswParams] = None,
+        index_params: Optional[types.HnswParams] = None,
         labels: Optional[dict[str, str]] = None,
     ):
         """
@@ -104,6 +104,8 @@ class VectorDbAdminClient(object):
             "Creating index: namespace=%s, name=%s, vector_bin_name=%s, dimensions=%d, vector_distance_metric=%s, "
             "sets=%s, index_params=%s, labels=%s",
             namespace, name, vector_bin_name, dimensions, vector_distance_metric, sets, index_params, labels)
+        if index_params != None:
+            index_params = index_params.to_pb2()
         try:
             await index_stub.Create(
                 types_pb2.IndexDefinition(
@@ -272,14 +274,16 @@ class VectorDbAdminClient(object):
                 raise "timed-out waiting for index creation"
             try:
                 await self.index_get_status(namespace=namespace, name=name)
-
+                logger.debug("Index created succesfully")
                 # Index has been created
                 return
             except grpc.RpcError as e:
                 if e.code() in (grpc.StatusCode.UNAVAILABLE, grpc.StatusCode.NOT_FOUND):
+
                     # Wait for some more time.
                     time.sleep(wait_interval)
                 else:
+                    logger.error("Failed with error: %s", e)
                     raise e
 
     async def _wait_for_index_deletion(
@@ -298,11 +302,11 @@ class VectorDbAdminClient(object):
                 raise "timed-out waiting for index creation"
             try:
                 await self.index_get_status(namespace=namespace, name=name)
-
                 # Wait for some more time.
                 time.sleep(wait_interval)
             except grpc.RpcError as e:
                 if e.code() in (grpc.StatusCode.UNAVAILABLE, grpc.StatusCode.NOT_FOUND):
+                    logger.debug("Index deleted succesfully")
                     # Index has been created
                     return
                 else:
@@ -322,8 +326,8 @@ class VectorDbAdminClient(object):
         """
         await self.__channelProvider.close()
 
-    def __enter__(self):
+    async def __aenter__(self):
         return self
 
-    def __exit__(self, exc_type, exc_val, exc_tb):
-        asyncio.run(self.close())
+    async def __aexit__(self, exc_type, exc_val, exc_tb):
+        await self.close()

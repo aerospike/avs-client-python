@@ -86,7 +86,7 @@ class VectorDbClient(object):
         transact_stub = transact_pb2_grpc.TransactStub(
             self.__channelProvider.get_channel()
         )
-        key = _get_key(key, set_name, namespace)
+        key = _get_key(namespace, set_name, key)
         bin_list = [
             types_pb2.Bin(name=k, value=conversions.toVectorDbValue(v))
             for (k, v) in record_data.items()
@@ -128,7 +128,7 @@ class VectorDbClient(object):
         transact_stub = transact_pb2_grpc.TransactStub(
             self.__channelProvider.get_channel()
         )
-        key = _get_key(key, set_name, namespace)
+        key = _get_key(namespace, set_name, key)
         bin_selector = _get_bin_selector(bin_names=bin_names)
         logger.debug("Getting record: namespace=%s, key=%s, bin_names:%s, set_name:%s", namespace, key, bin_names, set_name)
         try:
@@ -167,7 +167,7 @@ class VectorDbClient(object):
         transact_stub = transact_pb2_grpc.TransactStub(
             self.__channelProvider.get_channel()
         )
-        key = _get_key(key, set_name, namespace)
+        key = _get_key(namespace, set_name, key)
         logger.debug("Getting record existence: namespace=%s, key=%s, set_name:%s", namespace, key, set_name)
         try:
             result = await transact_stub.Exists(key)
@@ -210,7 +210,7 @@ class VectorDbClient(object):
             index_namespace = namespace
 
         index_id = types_pb2.IndexId(namespace=index_namespace, name=index_name)
-        key = _get_key(key, set_name, namespace)
+        key = _get_key(namespace, set_name, key)
         request = transact_pb2.IsIndexedRequest(key=key, indexId=index_id)
         transact_stub = transact_pb2_grpc.TransactStub(
             self.__channelProvider.get_channel()
@@ -230,7 +230,7 @@ class VectorDbClient(object):
         index_name: str,
         query: list[Union[bool, float]],
         limit: int,
-        search_params: Optional[types_pb2.HnswSearchParams] = None,
+        search_params: Optional[types.HnswSearchParams] = None,
         bin_names: Optional[list[str]] = None,
     ) -> list[types.Neighbor]:
         """
@@ -261,6 +261,8 @@ class VectorDbClient(object):
         logger.debug(
             "Performing vector search: namespace=%s, index_name=%s, query=%s, limit=%s, search_params=%s, bin_names=%s",
             namespace, index_name, query, limit, search_params, bin_names)
+        if search_params != None:
+            search_params = search_params.to_pb2()
         try:
             results_stream = transact_stub.VectorSearch(
                 transact_pb2.VectorSearchRequest(
@@ -351,12 +353,6 @@ class VectorDbClient(object):
         """
         await self.__channelProvider.close()
 
-    def __enter__(self):
-        return self
-
-    def __exit__(self, exc_type, exc_val, exc_tb):
-        asyncio.run(self.close())
-
 
 def _get_bin_selector(*, bin_names: Optional[list] = None):
 
@@ -371,7 +367,7 @@ def _get_bin_selector(*, bin_names: Optional[list] = None):
     return bin_selector
 
 
-def _get_key(key: Union[int, str, bytes, bytearray], set: str, namespace: str):
+def _get_key(namespace: str, set: str, key: Union[int, str, bytes, bytearray]):
     if isinstance(key, str):
         key = types_pb2.Key(namespace=namespace, set=set, stringValue=key)
     elif isinstance(key, int):
@@ -381,3 +377,9 @@ def _get_key(key: Union[int, str, bytes, bytearray], set: str, namespace: str):
     else:
         raise Exception("Invalid key type" + type(key))
     return key
+
+    async def __aenter__(self):
+        return self
+
+    async def __aexit__(self, exc_type, exc_val, exc_tb):
+        await self.close()

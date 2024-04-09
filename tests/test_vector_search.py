@@ -2,6 +2,7 @@ import numpy as np
 import asyncio
 import pytest
 import random
+from aerospike_vector import types
 
 dimensions = 128
 truth_vector_dimensions = 100
@@ -85,15 +86,26 @@ async def vector_search(client, vector):
     return result
 
 
+async def vector_search_ef_80(client, vector):
+    result = await client.vector_search(
+        namespace="test",
+        index_name="demo",
+        query=vector,
+        limit=100,
+        bin_names=["unit_test"],
+        search_params=types.HnswSearchParams(ef=80)
+    )
+    return result
+
 async def test_vector_search(
     base_numpy,
     truth_numpy,
     query_numpy,
-    truncated_vector_client,
-    truncated_admin_client,
+    session_vector_client,
+    session_admin_client,
 ):
 
-    await truncated_admin_client.index_create(
+    await session_admin_client.index_create(
         namespace="test",
         name="demo",
         vector_bin_name="unit_test",
@@ -104,18 +116,22 @@ async def test_vector_search(
     # Put base vectors for search
     tasks = []
     for j, vector in enumerate(base_numpy):
-        tasks.append(put_vector(truncated_vector_client, vector.tolist(), j))
+        tasks.append(put_vector(session_vector_client, vector.tolist(), j))
 
     await asyncio.gather(*tasks)
 
-    await truncated_vector_client.wait_for_index_completion(
-        namespace="test", name="demo"
-    )
+    await session_vector_client.wait_for_index_completion(namespace="test", name="demo")
 
     # Vector search all query vectors
     tasks = []
+    count = 0
     for i in query_numpy:
-        tasks.append(vector_search(truncated_vector_client, i.tolist()))
+        if count % 2:
+            tasks.append(vector_search(session_vector_client, i.tolist()))
+        else:
+            tasks.append(vector_search_ef_80(session_vector_client, i.tolist()))
+        count += 1
+
     results = await asyncio.gather(*tasks)
     # Get recall numbers for each query
     recall_for_each_query = []
@@ -148,8 +164,8 @@ async def test_vector_search(
         assert recall > 0.9
 
 
-async def test_vector_is_indexed(truncated_vector_client, truncated_admin_client):
-    result = await truncated_vector_client.is_indexed(
+async def test_vector_is_indexed(session_vector_client, session_admin_client):
+    result = await session_vector_client.is_indexed(
         namespace="test",
         key=str(random.randrange(10_000)),
         set_name="demo",
