@@ -63,14 +63,14 @@ class VectorDbAdminClient(object):
         *,
         namespace: str,
         name: str,
-        vector_bin_name: str,
+        vector_field: str,
         dimensions: int,
         vector_distance_metric: Optional[types.VectorDistanceMetric] = (
             types.VectorDistanceMetric.SQUARED_EUCLIDEAN
         ),
         sets: Optional[str] = None,
         index_params: Optional[types.HnswParams] = None,
-        labels: Optional[dict[str, str]] = None,
+        index_meta_data: Optional[dict[str, str]] = None,
     ):
         """
         Create an index.
@@ -78,14 +78,14 @@ class VectorDbAdminClient(object):
         Args:
             namespace (str): The namespace for the index.
             name (str): The name of the index.
-            vector_bin_name (str): The name of the bin containing vector data.
+            vector_field (str): The name of the bin containing vector data.
             dimensions (int): The number of dimensions in the vector data.
             vector_distance_metric (Optional[types.VectorDistanceMetric], optional):
                 The distance metric for the vectors. Defaults to SQUARED_EUCLIDEAN.
             sets (Optional[str], optional): The set filter for the index. Defaults to None.
             index_params (Optional[types_pb2.HnswParams], optional):
                 Parameters for the index creation. Defaults to None.
-            labels (Optional[dict[str, str]], optional): Additional labels for the index. Defaults to None.
+            index_meta_data (Optional[dict[str, str]], optional): Additional labels for the index. Defaults to None.
 
         Raises:
             [List any exceptions raised]
@@ -101,9 +101,9 @@ class VectorDbAdminClient(object):
             sets = None
 
         logger.debug(
-            "Creating index: namespace=%s, name=%s, vector_bin_name=%s, dimensions=%d, vector_distance_metric=%s, "
-            "sets=%s, index_params=%s, labels=%s",
-            namespace, name, vector_bin_name, dimensions, vector_distance_metric, sets, index_params, labels)
+            "Creating index: namespace=%s, name=%s, vector_field=%s, dimensions=%d, vector_distance_metric=%s, "
+            "sets=%s, index_params=%s, index_meta_data=%s",
+            namespace, name, vector_field, dimensions, vector_distance_metric, sets, index_params, index_meta_data)
         if index_params != None:
             index_params = index_params.to_pb2()
         try:
@@ -113,9 +113,9 @@ class VectorDbAdminClient(object):
                     vectorDistanceMetric=vector_distance_metric.value,
                     setFilter=sets,
                     hnswParams=index_params,
-                    bin=vector_bin_name,
+                    bin=vector_field,
                     dimensions=dimensions,
-                    labels=labels,
+                    labels=index_meta_data,
                 )
             )
         except grpc.RpcError as e:

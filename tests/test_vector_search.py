@@ -108,7 +108,7 @@ async def test_vector_search(
     await session_admin_client.index_create(
         namespace="test",
         name="demo",
-        vector_bin_name="unit_test",
+        vector_field="unit_test",
         dimensions=128,
         sets="demo",
     )

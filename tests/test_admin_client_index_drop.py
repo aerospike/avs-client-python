@@ -5,7 +5,7 @@ async def add_index(function_admin_client):
     await function_admin_client.index_create(
         namespace="test",
         name="index_drop_1",
-        vector_bin_name="art",
+        vector_field="art",
         dimensions=1024,
     )
 
