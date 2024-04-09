@@ -266,14 +266,19 @@ class VectorDbAdminClient(object):
         """
 
         # Wait interval between polling
-        wait_interval = 10
+        index_stub = index_pb2_grpc.IndexServiceStub(
+            self.__channelProvider.get_channel()
+        )
+        wait_interval = 0.100
 
         start_time = time.monotonic()
         while True:
             if start_time + timeout < time.monotonic():
                 raise "timed-out waiting for index creation"
             try:
-                await self.index_get_status(namespace=namespace, name=name)
+                await index_stub.GetStatus(
+                    types_pb2.IndexId(namespace=namespace, name=name)
+                )
                 logger.debug("Index created succesfully")
                 # Index has been created
                 return
@@ -281,7 +286,7 @@ class VectorDbAdminClient(object):
                 if e.code() in (grpc.StatusCode.UNAVAILABLE, grpc.StatusCode.NOT_FOUND):
 
                     # Wait for some more time.
-                    time.sleep(wait_interval)
+                    await asyncio.sleep(wait_interval)
                 else:
                     logger.error("Failed with error: %s", e)
                     raise e
@@ -294,16 +299,21 @@ class VectorDbAdminClient(object):
         """
 
         # Wait interval between polling
-        wait_interval = 10
+        index_stub = index_pb2_grpc.IndexServiceStub(
+            self.__channelProvider.get_channel()
+        )
+        wait_interval = 0.100
 
         start_time = time.monotonic()
         while True:
             if start_time + timeout < time.monotonic():
                 raise "timed-out waiting for index creation"
             try:
-                await self.index_get_status(namespace=namespace, name=name)
+                await index_stub.GetStatus(
+                    types_pb2.IndexId(namespace=namespace, name=name)
+                )
                 # Wait for some more time.
-                time.sleep(wait_interval)
+                await asyncio.sleep(wait_interval)
             except grpc.RpcError as e:
                 if e.code() in (grpc.StatusCode.UNAVAILABLE, grpc.StatusCode.NOT_FOUND):
                     logger.debug("Index deleted succesfully")

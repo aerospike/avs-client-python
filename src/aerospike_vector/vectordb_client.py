@@ -302,6 +302,10 @@ class VectorDbClient(object):
             the timeout is reached or the index has no pending index update operations.
         """
         # Wait interval between polling
+        index_stub = index_pb2_grpc.IndexServiceStub(
+            self.__channelProvider.get_channel()
+        )
+
         wait_interval = 10
 
         unmerged_record_count = sys.maxsize
@@ -310,10 +314,13 @@ class VectorDbClient(object):
             if start_time + timeout < time.monotonic():
                 raise "timed-out waiting for index completion"
             # Wait for in-memory batches to be flushed to storage.
-            time.sleep(wait_interval)
+            await asyncio.sleep(wait_interval)
 
             try:
-                index_status = await self._index_get_status(namespace=namespace, name=name)
+                index_status = await index_stub.GetStatus(
+                    types_pb2.IndexId(namespace=namespace, name=name)
+                )
+
             except grpc.RpcError as e:
                 if e.code() == grpc.StatusCode.UNAVAILABLE:
                     continue
@@ -326,18 +333,7 @@ class VectorDbClient(object):
             # Update.
             unmerged_record_count = index_status.unmergedRecordCount
 
-    async def _index_get_status(
-        self, *, namespace: str, name: str
-    ) -> index_pb2.IndexStatusResponse:
 
-        index_stub = index_pb2_grpc.IndexServiceStub(
-            self.__channelProvider.get_channel()
-        )
-        response = await index_stub.GetStatus(
-            types_pb2.IndexId(namespace=namespace, name=name)
-        )
-
-        return response
 
     async def close(self):
         """
