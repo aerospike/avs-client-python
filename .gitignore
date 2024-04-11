@@ -155,3 +155,11 @@ cython_debug/
 # PyCharm
 .idea/
 
+# Vector search test files
+tests/siftsmall/*
+tests/siftsmall.tar.gz
+
+# Notes
+notes.txt
+
+public-key.asc
