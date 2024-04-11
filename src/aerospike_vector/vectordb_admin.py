@@ -46,15 +46,13 @@ class VectorDbAdminClient(object):
         Initialize the Aerospike Vector Admin Client.
 
         Args:
-            seeds (Union[types.HostPort, tuple[types.HostPort, ...]]):
-                Used to create appropriate gRPC channels for interacting with Aerospike Vector.
-            listener_name (Optional[str], optional):
-                Advertised listener for the client. Defaults to None.
-            is_loadbalancer (bool, optional):
-                If true, the first seed address will be treated as a load balancer node.
+            seeds (Union[types.HostPort, tuple[types.HostPort, ...]]): Used to create appropriate gRPC channels for interacting with Aerospike Vector.
+            listener_name (Optional[str], optional): Advertised listener for the client. Defaults to None.
+            is_loadbalancer (bool, optional): If true, the first seed address will be treated as a load balancer node.
 
         Raises:
             Exception: Raised when no seed host is provided.
+
         """
 
     async def index_create(
