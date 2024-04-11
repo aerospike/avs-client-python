@@ -8,24 +8,21 @@ import google.protobuf.empty_pb2
 from google.protobuf.json_format import MessageToDict
 import grpc
 
-from . import index_pb2
-from . import index_pb2_grpc
+from .private import index_pb2
+from .private import index_pb2_grpc
 from . import types
-from . import types_pb2
-from . import vectordb_channel_provider
+from .private import types_pb2
+from .private import vectordb_channel_provider
 
 empty = google.protobuf.empty_pb2.Empty()
 logger = logging.getLogger(__name__)
 
+
 class VectorDbAdminClient(object):
     """
-    Vector DB Admin client.
+    Proximus Admin Client
 
-    This client allows interaction with the Vector DB administrative features such as index management.
-
-    Attributes:
-        __channelProvider (vectordb_channel_provider.VectorDbChannelProvider):
-            Channel provider for Vector DB connections.
+    This client is designed to conduct Proximus administrative operation such as creating indexes, querying index information, and dropping indexes.
     """
 
     def __init__(
@@ -33,7 +30,7 @@ class VectorDbAdminClient(object):
         *,
         seeds: Union[types.HostPort, tuple[types.HostPort, ...]],
         listener_name: Optional[str] = None,
-        is_loadbalancer: Optional[bool] = False
+        is_loadbalancer: Optional[bool] = False,
     ) -> None:
 
         if not seeds:
@@ -42,17 +39,19 @@ class VectorDbAdminClient(object):
         if isinstance(seeds, types.HostPort):
             seeds = (seeds,)
 
-        self.__channelProvider = vectordb_channel_provider.VectorDbChannelProvider(
+        self._channelProvider = vectordb_channel_provider.VectorDbChannelProvider(
             seeds, listener_name, is_loadbalancer
         )
         """
-        Initialize the VectorDbAdminClient.
+        Initialize the Proximus Admin Client.
 
         Args:
             seeds (Union[types.HostPort, tuple[types.HostPort, ...]]):
-                Seeds for establishing connections with Vector DB nodes.
+                Used to create appropriate gRPC channels for interacting with Proximus.
             listener_name (Optional[str], optional):
-                Listener name for the client. Defaults to None.
+                Advertised listener for the client. Defaults to None.
+            is_loadbalancer (bool, optional):
+                If true, the first seed address will be treated as a load balancer node.
 
         Raises:
             Exception: Raised when no seed host is provided.
@@ -71,31 +70,34 @@ class VectorDbAdminClient(object):
         sets: Optional[str] = None,
         index_params: Optional[types.HnswParams] = None,
         index_meta_data: Optional[dict[str, str]] = None,
-    ):
+    ) -> None:
         """
         Create an index.
 
         Args:
             namespace (str): The namespace for the index.
             name (str): The name of the index.
-            vector_field (str): The name of the bin containing vector data.
+            vector_field (str): The name of the field containing vector data.
             dimensions (int): The number of dimensions in the vector data.
             vector_distance_metric (Optional[types.VectorDistanceMetric], optional):
-                The distance metric for the vectors. Defaults to SQUARED_EUCLIDEAN.
-            sets (Optional[str], optional): The set filter for the index. Defaults to None.
-            index_params (Optional[types_pb2.HnswParams], optional):
-                Parameters for the index creation. Defaults to None.
-            index_meta_data (Optional[dict[str, str]], optional): Additional labels for the index. Defaults to None.
+                The distance metric used to compare when performing a vector search.
+                Defaults to VectorDistanceMetric.SQUARED_EUCLIDEAN.
+            sets (Optional[str], optional): The set used for the index. Defaults to None.
+            index_params (Optional[types.HnswParams], optional):
+                Parameters used for tuning vector search. Defaults to None. If index_params is None, then the default values specified for
+                types.HnswParams will be used.
+            index_meta_data (Optional[dict[str, str]], optional): Meta data associated with the index. Defaults to None.
 
         Raises:
-            [List any exceptions raised]
+            grpc.RpcError: Raised if an error occurs during the RPC communication with the server while attempting to create the index.
+            This error could occur due to various reasons such as network issues, server-side failures, or invalid request parameters.
 
         Note:
             This method creates an index with the specified parameters and waits for the index creation to complete.
             It waits for up to 100,000 seconds for the index creation to complete.
         """
         index_stub = index_pb2_grpc.IndexServiceStub(
-            self.__channelProvider.get_channel()
+            self._channelProvider.get_channel()
         )
         if sets and not sets.strip():
             sets = None
@@ -103,9 +105,17 @@ class VectorDbAdminClient(object):
         logger.debug(
             "Creating index: namespace=%s, name=%s, vector_field=%s, dimensions=%d, vector_distance_metric=%s, "
             "sets=%s, index_params=%s, index_meta_data=%s",
-            namespace, name, vector_field, dimensions, vector_distance_metric, sets, index_params, index_meta_data)
+            namespace,
+            name,
+            vector_field,
+            dimensions,
+            vector_distance_metric,
+            sets,
+            index_params,
+            index_meta_data,
+        )
         if index_params != None:
-            index_params = index_params.to_pb2()
+            index_params = index_params._to_pb2()
         try:
             await index_stub.Create(
                 types_pb2.IndexDefinition(
@@ -129,9 +139,9 @@ class VectorDbAdminClient(object):
             logger.error("Failed waiting for creation with error: %s", e)
             raise e
 
-    async def index_drop(self, *, namespace: str, name: str):
+    async def index_drop(self, *, namespace: str, name: str) -> None:
         index_stub = index_pb2_grpc.IndexServiceStub(
-            self.__channelProvider.get_channel()
+            self._channelProvider.get_channel()
         )
         """
         Drop an index.
@@ -141,14 +151,14 @@ class VectorDbAdminClient(object):
             name (str): The name of the index.
 
         Raises:
-            [List any exceptions raised]
+            grpc.RpcError: Raised if an error occurs during the RPC communication with the server while attempting to create the index.
+            This error could occur due to various reasons such as network issues, server-side failures, or invalid request parameters.
 
         Note:
-            This method drops the specified index.
+            This method drops an index with the specified parameters and waits for the index deletion to complete.
+            It waits for up to 100,000 seconds for the index deletion to complete.
         """
-        logger.debug(
-            "Dropping index: namespace=%s, name=%s",
-            namespace, name)
+        logger.debug("Dropping index: namespace=%s, name=%s", namespace, name)
         try:
             await index_stub.Drop(types_pb2.IndexId(namespace=namespace, name=name))
         except grpc.RpcError as e:
@@ -162,23 +172,20 @@ class VectorDbAdminClient(object):
             logger.error("Failed waiting for deletion with error: %s", e)
             raise e
 
-
-    async def index_list(self) -> list[Any]:
+    async def index_list(self) -> list[dict]:
         """
         List all indices.
 
         Returns:
-            list[Any]: A list of indices.
+            list[dict]: A list of indices.
 
         Raises:
-            [List any exceptions raised]
-
-        Note:
-            This method lists all indices available in the Vector DB.
+            grpc.RpcError: Raised if an error occurs during the RPC communication with the server while attempting to create the index.
+            This error could occur due to various reasons such as network issues, server-side failures, or invalid request parameters.
         """
 
         index_stub = index_pb2_grpc.IndexServiceStub(
-            self.__channelProvider.get_channel()
+            self._channelProvider.get_channel()
         )
 
         logger.debug("Getting index list")
@@ -187,34 +194,53 @@ class VectorDbAdminClient(object):
         except grpc.RpcError as e:
             logger.error("Failed with error: %s", e)
             raise e
+        response_list = []
+        for index in response.indices:
+            response_dict = MessageToDict(index)
 
-        return response.indices
+            # Modifying dict to adhere to PEP-8 naming
+            hnsw_params_dict = response_dict.pop("hnswParams", None)
+
+            hnsw_params_dict["ef_construction"] = hnsw_params_dict.pop(
+                "efConstruction", None
+            )
+
+            batching_params_dict = hnsw_params_dict.pop("batchingParams", None)
+            batching_params_dict["max_records"] = batching_params_dict.pop(
+                "maxRecords", None
+            )
+            hnsw_params_dict["batching_params"] = batching_params_dict
+
+            response_dict["hnsw_params"] = hnsw_params_dict
+            response_list.append(response_dict)
+        return response_list
 
     async def index_get(
         self, *, namespace: str, name: str
-    ) -> types_pb2.IndexDefinition:
+    ) -> dict[str, Union[int, str]]:
         """
-        Retrieve the definition of an index.
+        Retrieve the information related with an index.
 
         Args:
             namespace (str): The namespace of the index.
             name (str): The name of the index.
 
         Returns:
-            types_pb2.IndexDefinition: The definition of the index.
+            dict[str, Union[int, str]: Information about an index.
 
         Raises:
-            [List any exceptions raised]
+            grpc.RpcError: Raised if an error occurs during the RPC communication with the server while attempting to create the index.
+            This error could occur due to various reasons such as network issues, server-side failures, or invalid request parameters.
 
-        Note:
-            This method retrieves the definition of the specified index.
         """
 
         index_stub = index_pb2_grpc.IndexServiceStub(
-            self.__channelProvider.get_channel()
+            self._channelProvider.get_channel()
         )
 
-        logger.debug("Getting index information: namespace=%s, name=%s", namespace, name)
+        logger.debug(
+            "Getting index information: namespace=%s, name=%s", namespace, name
+        )
         try:
             response = await index_stub.Get(
                 types_pb2.IndexId(namespace=namespace, name=name)
@@ -222,30 +248,48 @@ class VectorDbAdminClient(object):
         except grpc.RpcError as e:
             logger.error("Failed with error: %s", e)
             raise e
-        return MessageToDict(response)
 
-    async def index_get_status(
-        self, *, namespace: str, name: str
-    ) -> index_pb2.IndexStatusResponse:
+        response_dict = MessageToDict(response)
+
+        # Modifying dict to adhere to PEP-8 naming
+        hnsw_params_dict = response_dict.pop("hnswParams", None)
+
+        hnsw_params_dict["ef_construction"] = hnsw_params_dict.pop(
+            "efConstruction", None
+        )
+
+        batching_params_dict = hnsw_params_dict.pop("batchingParams", None)
+        batching_params_dict["max_records"] = batching_params_dict.pop(
+            "maxRecords", None
+        )
+        hnsw_params_dict["batching_params"] = batching_params_dict
+
+        response_dict["hnsw_params"] = hnsw_params_dict
+        return response_dict
+
+    async def index_get_status(self, *, namespace: str, name: str) -> int:
         """
-        Get the status of an index.
+        Retrieve the number of records queued to be merged into an index.
 
         Args:
             namespace (str): The namespace of the index.
             name (str): The name of the index.
 
         Returns:
-            index_pb2.IndexStatusResponse: The status of the index.
+            int: Records queued to be merged into an index.
 
         Raises:
-            [List any exceptions raised]
+            grpc.RpcError: Raised if an error occurs during the RPC communication with the server while attempting to create the index.
+            This error could occur due to various reasons such as network issues, server-side failures, or invalid request parameters.
 
         Note:
-            This method retrieves the status of the specified index.
+            This method retrieves the status of the specified index. If index_get_status is called the vector client puts some records into proximus,
+            the records may not immediately begin to merge into the index. To wait for all records to be merged into an index, use vector_client.wait_for_index_completion.
+
             Warning: This API is subject to change.
         """
         index_stub = index_pb2_grpc.IndexServiceStub(
-            self.__channelProvider.get_channel()
+            self._channelProvider.get_channel()
         )
         logger.debug("Getting index status: namespace=%s, name=%s", namespace, name)
         try:
@@ -260,16 +304,16 @@ class VectorDbAdminClient(object):
 
     async def _wait_for_index_creation(
         self, *, namespace: str, name: str, timeout: int = sys.maxsize
-    ):
+    ) -> None:
         """
         Wait for the index to be created.
         """
 
         # Wait interval between polling
         index_stub = index_pb2_grpc.IndexServiceStub(
-            self.__channelProvider.get_channel()
+            self._channelProvider.get_channel()
         )
-        wait_interval = 0.100
+        wait_interval = 1
 
         start_time = time.monotonic()
         while True:
@@ -293,14 +337,14 @@ class VectorDbAdminClient(object):
 
     async def _wait_for_index_deletion(
         self, *, namespace: str, name: str, timeout: int = sys.maxsize
-    ):
+    ) -> None:
         """
-        Wait for the index to be created.
+        Wait for the index to be deleted.
         """
 
         # Wait interval between polling
         index_stub = index_pb2_grpc.IndexServiceStub(
-            self.__channelProvider.get_channel()
+            self._channelProvider.get_channel()
         )
         wait_interval = 0.100
 
@@ -324,20 +368,26 @@ class VectorDbAdminClient(object):
 
     async def close(self):
         """
-        Close the VectorDbAdminClient.
+        Close the Proximus Admin Client.
 
-        This method closes the connection to Vector DB.
+        This method closes gRPC channels connected to Proximus.
 
         Note:
             This method should be called when the VectorDbAdminClient is no longer needed to release resources.
-
-        Raises:
-            [List any exceptions raised]
         """
-        await self.__channelProvider.close()
+        await self._channelProvider.close()
 
     async def __aenter__(self):
+        """
+        Enter an asynchronous context manager for the admin client.
+
+        Returns:
+            VectorDbAdminlient: Proximus Admin Client instance.
+        """
         return self
 
     async def __aexit__(self, exc_type, exc_val, exc_tb):
+        """
+        Exit an asynchronous context manager for the admin client.
+        """
         await self.close()

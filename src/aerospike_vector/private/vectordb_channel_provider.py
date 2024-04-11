@@ -4,13 +4,15 @@ import warnings
 import logging
 from typing import Optional
 
-import google.protobuf.empty_pb2 as empty
+import google.protobuf.empty_pb2
 import grpc
 import random
 
-from . import types
+from .. import types
 from . import vector_db_pb2
 from . import vector_db_pb2_grpc
+
+empty = google.protobuf.empty_pb2.Empty()
 
 logger = logging.getLogger(__name__)
 
@@ -23,7 +25,7 @@ class ChannelAndEndpoints(object):
 
 
 class VectorDbChannelProvider(object):
-    """Vector DB client"""
+    """Proximus Channel Provider"""
     def __init__(
         self, seeds: tuple[types.HostPort, ...], listener_name: Optional[str] = None, is_loadbalancer: Optional[bool] = False
     ) -> None:
@@ -40,8 +42,6 @@ class VectorDbChannelProvider(object):
             self._create_channel_from_host_port(seed) for seed in self.seeds
         ]
         self._tend()
-
-    dimensions = (1024,)
 
     async def close(self):
         self._closed = True
