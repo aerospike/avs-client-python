@@ -18,20 +18,28 @@ def toVectorDbValue(value: Any) -> types_pb2.Value:
         if isinstance(value[0], float):
             return types_pb2.Value(
                 vectorValue=types_pb2.Vector(
-                    floatData={"value": [float(x) for x in value]}))
+                    floatData={"value": [float(x) for x in value]}
+                )
+            )
         elif isinstance(value[0], bool):
             return types_pb2.Value(
                 vectorValue=types_pb2.Vector(
-                    boolData={"value": [True if x else False for x in value]}))
+                    boolData={"value": [True if x else False for x in value]}
+                )
+            )
         else:
             return types_pb2.Value(
-                listValue=types_pb2.List(
-                    entries=[toVectorDbValue(x) for x in value]))
+                listValue=types_pb2.List(entries=[toVectorDbValue(x) for x in value])
+            )
     elif isinstance(value, dict):
         d = types_pb2.Value(
-            mapValue=types_pb2.Map(entries=[
-                types_pb2.MapEntry(key=toMapKey(k), value=toVectorDbValue(v))
-                for k, v in value.items()]))
+            mapValue=types_pb2.Map(
+                entries=[
+                    types_pb2.MapEntry(key=toMapKey(k), value=toVectorDbValue(v))
+                    for k, v in value.items()
+                ]
+            )
+        )
         return d
     else:
         raise Exception("Invalid type " + str(type(value)))
@@ -61,7 +69,9 @@ def fromVectorDbKey(key: types_pb2.Key) -> types.Key:
     elif key.HasField("bytesValue"):
         keyValue = key.bytesValue
 
-    return types.Key(key.namespace, key.set, key.digest, keyValue)
+    return types.Key(
+        namespace=key.namespace, set=key.set, digest=key.digest, key=keyValue
+    )
 
 
 def fromVectorDbRecord(record: types_pb2.Record) -> dict[str, Any]:
@@ -72,11 +82,12 @@ def fromVectorDbRecord(record: types_pb2.Record) -> dict[str, Any]:
     return bins
 
 
-def fromVectorDbNeighbor(input: types_pb2.Neighbor) -> (
-        types.Neighbor):
-    return types.Neighbor(fromVectorDbKey(input.key),
-                          fromVectorDbRecord(input.record),
-                          input.distance)
+def fromVectorDbNeighbor(input: types_pb2.Neighbor) -> types.Neighbor:
+    return types.Neighbor(
+        key=fromVectorDbKey(input.key),
+        bins=fromVectorDbRecord(input.record),
+        distance=input.distance,
+    )
 
 
 def fromVectorDbValue(input: types_pb2.Value) -> Any:

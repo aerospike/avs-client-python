@@ -6,10 +6,10 @@ cd "$(dirname "$0")"
 python3 -m pip install grpcio-tools
 python3 -m grpc_tools.protoc \
   --proto_path=. \
-  --python_out=../src/aerospike_vector \
-  --grpc_python_out=../src/aerospike_vector \
+  --python_out=../src/aerospike_vector/ \
+  --grpc_python_out=../src/aerospike_vector/ \
   *.proto
 
 # The generated imports are not relative and fail in generated packages.
 # Fix with relative imports.
-find ../src/aerospike_vector -name "*.py" -exec sed -i -e 's/^import \(.*\)_pb2 /from . import \1_pb2 /g' {} \;
+find ../src/aerospike_vector/ -name "*.py" -exec sed -i -e 's/^import \(.*\)_pb2 /from . import \1_pb2 /g' {} \;

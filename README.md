@@ -1,10 +1,10 @@
-# Aerospike Proximus Vector Client Python
-Python client for Aerospike Proximus VectorDB
+# Aerospike Vector Client Python
+Python client for Aerospike VectorDB
 
 ## Prerequisites
  - Python 3.8 or higher
  - pip version 9.0.1 or higher
- - Proximus and Aerospike clusters running. See [Proximus server](https://github.com/citrusleaf/proximus/tree/main/server#aerospike-proximus-server)
+ - Aerospike VectorDB and Aerospike clusters running.
 
 
 ## Using the client from your application using pip
@@ -17,11 +17,11 @@ extra-index-url=https://<jfrog-username>:<jfrog-access-token>@aerospike.jfrog.io
 
 ### Install the aerospike_vector using pip
 ```shell
-python3 -m pip install aerospike-proximus
+python3 -m pip install aerospike-vector
 ```
 Or 
 
-You can add the package name `aerospike-proximus` to your application's `requirements.txt` and install all dependencies using
+You can add the package name `aerospike-vector` to your application's `requirements.txt` and install all dependencies using
 ```shell
 python3 -m pip install -r requirements.txt
 ```
@@ -51,42 +51,6 @@ python3 -m pip install -vvv  -r requirements.txt
 ```shell
 python3 -m pip install build
 python3 -m build
-```
-
-### Publish to PyPI repository
-Make sure [pyproject.toml](pyproject.toml) has the correct version.
-
-Create or update `$HOME/.pypirc` with following contents
-
-```ini
-[distutils]
-index-servers = 
-    ecosystem-python-dev-local
-    ecosystem-python-prod-local
-
-[ecosystem-python-dev-local]
-repository: https://aerospike.jfrog.io/artifactory/api/pypi/ecosystem-python-dev-local
-username: <jfrog-username>
-password: <jfrog-access-token>
-
-[ecosystem-python-prod-local]
-repository: https://aerospike.jfrog.io/artifactory/api/pypi/ecosystem-python-prod-local
-username: <jfrog-username>
-password: <jfrog-access-token>
-```
-
-### Upload the packages to the repository
-
-To upload dev packages run
-```shell
-python3 -m pip install twine
-python3 -m twine upload --repository ecosystem-python-dev-local dist/*
-```
-
-To upload release packages run
-```shell
-python3 -m pip install twine
-python3 -m twine upload --repository ecosystem-python-prod-local dist/*
 ```
 
 ## Examples
