@@ -15,4 +15,4 @@ async def test_index_drop(add_index, session_admin_client):
     result = session_admin_client.index_list()
     result = await result
     for index in result:
-        assert index.id.name != "index_drop_1"
+        assert index["id"]["name"] != "index_drop_1"

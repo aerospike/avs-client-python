@@ -13,7 +13,7 @@ async def drop_all_indexes():
         index_list = await client.index_list()
         tasks = []
         for item in index_list:
-            tasks.append(client.index_drop(namespace="test", name=item.id.name))
+            tasks.append(client.index_drop(namespace="test", name=item['id']['name']))
         await asyncio.gather(*tasks)
 
 

@@ -5,29 +5,21 @@
 
 # -- Project information -----------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
-import os
-import sys
-sys.path.insert(0, os.path.abspath('../src/aerospike_vector'))
-import sphinx.ext.autodoc
 
-project = 'D'
-copyright = '2024, D'
-author = 'D'
-release = 'D'
+project = 'aerospike-vector'
+copyright = '2024, Dominic Pelini'
+author = 'Dominic Pelini'
+release = '0.4.0'
 
 # -- General configuration ---------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
 
 extensions = [
-    # Other extensions...
     'sphinx.ext.autodoc',
 ]
 
-
 templates_path = ['_templates']
 exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']
-
-
 
 # -- Options for HTML output -------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#options-for-html-output

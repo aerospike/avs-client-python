@@ -19,11 +19,11 @@ async def test_index_get(add_index, session_admin_client):
     assert result["id"]["namespace"] == "test"
     assert result["dimensions"] == 1024
     assert result["bin"] == "science"
-    assert result["hnswParams"]["m"] == 16
-    assert result["hnswParams"]["efConstruction"] == 100
-    assert result["hnswParams"]["ef"] == 100
-    assert result["hnswParams"]["batchingParams"]["maxRecords"] == 100000
-    assert result["hnswParams"]["batchingParams"]["interval"] == 30000
-    assert not result["hnswParams"]["batchingParams"]["disabled"]
+    assert result["hnsw_params"]["m"] == 16
+    assert result["hnsw_params"]["ef_construction"] == 100
+    assert result["hnsw_params"]["ef"] == 100
+    assert result["hnsw_params"]["batching_params"]["max_records"] == 100000
+    assert result["hnsw_params"]["batching_params"]["interval"] == 30000
+    assert not result["hnsw_params"]["batching_params"]["disabled"]
     assert result["aerospikeStorage"]["namespace"] == "test"
     assert result["aerospikeStorage"]["set"] == "index_get_1"

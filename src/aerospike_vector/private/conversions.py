@@ -1,6 +1,6 @@
 from typing import Any
 
-from . import types
+from .. import types
 from . import types_pb2
 
 
@@ -84,7 +84,9 @@ def fromVectorDbRecord(record: types_pb2.Record) -> dict[str, Any]:
 
 def fromVectorDbNeighbor(input: types_pb2.Neighbor) -> types.Neighbor:
     return types.Neighbor(
-        key=fromVectorDbKey(input.key), bins=fromVectorDbRecord(input.record), distance=input.distance
+        key=fromVectorDbKey(input.key),
+        bins=fromVectorDbRecord(input.record),
+        distance=input.distance,
     )
 
 

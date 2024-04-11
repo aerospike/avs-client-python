@@ -111,16 +111,21 @@ async def test_vector_search(
         vector_field="unit_test",
         dimensions=128,
         sets="demo",
+        index_params=types.HnswParams(
+            batching_params=types.HnswBatchingParams(
+                max_records=22, interval=3000, disabled=False
+            )
+        ),
     )
-
     # Put base vectors for search
     tasks = []
+
     for j, vector in enumerate(base_numpy):
         tasks.append(put_vector(session_vector_client, vector.tolist(), j))
 
+    tasks.append(session_vector_client.wait_for_index_completion(namespace='test', name='demo'))
     await asyncio.gather(*tasks)
 
-    await session_vector_client.wait_for_index_completion(namespace="test", name="demo")
 
     # Vector search all query vectors
     tasks = []
@@ -133,6 +138,7 @@ async def test_vector_search(
         count += 1
 
     results = await asyncio.gather(*tasks)
+
     # Get recall numbers for each query
     recall_for_each_query = []
     for i, outside in enumerate(truth_numpy):
