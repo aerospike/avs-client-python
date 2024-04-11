@@ -1,7 +1,7 @@
 import enum
 from typing import Any, Optional
 
-from .private import types_pb2
+from . import types_pb2
 
 
 class HostPort(object):

@@ -7,14 +7,14 @@ from typing import Any, Optional, Union
 import google.protobuf.empty_pb2
 import grpc
 
-from .private import conversions
-from .private import index_pb2
-from .private import index_pb2_grpc
-from .private import transact_pb2
-from .private import transact_pb2_grpc
+from . import conversions
+from . import index_pb2
+from . import index_pb2_grpc
+from . import transact_pb2
+from . import transact_pb2_grpc
 from . import types
-from .private import types_pb2
-from .private import vectordb_channel_provider
+from . import types_pb2
+from . import vectordb_channel_provider
 
 empty = google.protobuf.empty_pb2.Empty()
 logger = logging.getLogger(__name__)

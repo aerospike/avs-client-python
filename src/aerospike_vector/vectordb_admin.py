@@ -8,11 +8,11 @@ import google.protobuf.empty_pb2
 from google.protobuf.json_format import MessageToDict
 import grpc
 
-from .private import index_pb2
-from .private import index_pb2_grpc
+from . import index_pb2
+from . import index_pb2_grpc
 from . import types
-from .private import types_pb2
-from .private import vectordb_channel_provider
+from . import types_pb2
+from . import vectordb_channel_provider
 
 empty = google.protobuf.empty_pb2.Empty()
 logger = logging.getLogger(__name__)
@@ -20,9 +20,9 @@ logger = logging.getLogger(__name__)
 
 class VectorDbAdminClient(object):
     """
-    Proximus Admin Client
+    Aerospike Vector Admin Client
 
-    This client is designed to conduct Proximus administrative operation such as creating indexes, querying index information, and dropping indexes.
+    This client is designed to conduct Aerospike Vector administrative operation such as creating indexes, querying index information, and dropping indexes.
     """
 
     def __init__(
@@ -43,11 +43,11 @@ class VectorDbAdminClient(object):
             seeds, listener_name, is_loadbalancer
         )
         """
-        Initialize the Proximus Admin Client.
+        Initialize the Aerospike Vector Admin Client.
 
         Args:
             seeds (Union[types.HostPort, tuple[types.HostPort, ...]]):
-                Used to create appropriate gRPC channels for interacting with Proximus.
+                Used to create appropriate gRPC channels for interacting with Aerospike Vector.
             listener_name (Optional[str], optional):
                 Advertised listener for the client. Defaults to None.
             is_loadbalancer (bool, optional):
@@ -283,7 +283,7 @@ class VectorDbAdminClient(object):
             This error could occur due to various reasons such as network issues, server-side failures, or invalid request parameters.
 
         Note:
-            This method retrieves the status of the specified index. If index_get_status is called the vector client puts some records into proximus,
+            This method retrieves the status of the specified index. If index_get_status is called the vector client puts some records into Aerospike Vector,
             the records may not immediately begin to merge into the index. To wait for all records to be merged into an index, use vector_client.wait_for_index_completion.
 
             Warning: This API is subject to change.
@@ -368,9 +368,9 @@ class VectorDbAdminClient(object):
 
     async def close(self):
         """
-        Close the Proximus Admin Client.
+        Close the Aerospike Vector Admin Client.
 
-        This method closes gRPC channels connected to Proximus.
+        This method closes gRPC channels connected to Aerospike Vector.
 
         Note:
             This method should be called when the VectorDbAdminClient is no longer needed to release resources.
@@ -382,7 +382,7 @@ class VectorDbAdminClient(object):
         Enter an asynchronous context manager for the admin client.
 
         Returns:
-            VectorDbAdminlient: Proximus Admin Client instance.
+            VectorDbAdminlient: Aerospike Vector Admin Client instance.
         """
         return self
 

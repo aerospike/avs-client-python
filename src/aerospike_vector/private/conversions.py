@@ -1,6 +1,6 @@
 from typing import Any
 
-from .. import types
+from . import types
 from . import types_pb2
 
 

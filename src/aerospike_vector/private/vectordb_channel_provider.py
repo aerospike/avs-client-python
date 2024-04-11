@@ -8,7 +8,7 @@ import google.protobuf.empty_pb2
 import grpc
 import random
 
-from .. import types
+from . import types
 from . import vector_db_pb2
 from . import vector_db_pb2_grpc
 
