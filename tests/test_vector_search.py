@@ -111,11 +111,6 @@ async def test_vector_search(
         vector_field="unit_test",
         dimensions=128,
         sets="demo",
-        index_params=types.HnswParams(
-            batching_params=types.HnswBatchingParams(
-                max_records=22, interval=3000, disabled=False
-            )
-        ),
     )
     # Put base vectors for search
     tasks = []

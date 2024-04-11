@@ -313,7 +313,7 @@ class VectorDbAdminClient(object):
         index_stub = index_pb2_grpc.IndexServiceStub(
             self._channelProvider.get_channel()
         )
-        wait_interval = 1
+        wait_interval = 0.100
 
         start_time = time.monotonic()
         while True:
