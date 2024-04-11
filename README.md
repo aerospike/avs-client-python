@@ -1,10 +1,10 @@
-# Aerospike Proximus Vector Client Python
-Python client for Aerospike Proximus VectorDB
+# Aerospike Vector Client Python
+Python client for Aerospike VectorDB
 
 ## Prerequisites
  - Python 3.8 or higher
  - pip version 9.0.1 or higher
- - Proximus and Aerospike clusters running. See [Proximus server](https://github.com/citrusleaf/proximus/tree/main/server#aerospike-proximus-server)
+ - Aerospike VectorDB and Aerospike clusters running.
 
 
 ## Using the client from your application using pip
@@ -17,11 +17,11 @@ extra-index-url=https://<jfrog-username>:<jfrog-access-token>@aerospike.jfrog.io
 
 ### Install the aerospike_vector using pip
 ```shell
-python3 -m pip install aerospike-proximus
+python3 -m pip install aerospike-vector
 ```
 Or 
 
-You can add the package name `aerospike-proximus` to your application's `requirements.txt` and install all dependencies using
+You can add the package name `aerospike-vector` to your application's `requirements.txt` and install all dependencies using
 ```shell
 python3 -m pip install -r requirements.txt
 ```
