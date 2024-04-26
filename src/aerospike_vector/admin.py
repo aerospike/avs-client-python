@@ -1,24 +1,16 @@
-import asyncio
 import logging
 import sys
 import time
 from typing import Any, Optional, Union
-
-import google.protobuf.empty_pb2
-from google.protobuf.json_format import MessageToDict
 import grpc
 
-from . import index_pb2
-from . import index_pb2_grpc
 from . import types
-from . import types_pb2
-from . import vectordb_channel_provider
+from .internal import channel_provider
+from .shared import admin_helpers
 
-empty = google.protobuf.empty_pb2.Empty()
 logger = logging.getLogger(__name__)
 
-
-class VectorDbAdminClient(object):
+class Client(object):
     """
     Aerospike Vector Admin Client
 
@@ -33,13 +25,9 @@ class VectorDbAdminClient(object):
         is_loadbalancer: Optional[bool] = False,
     ) -> None:
 
-        if not seeds:
-            raise Exception("at least one seed host needed")
+        seeds = admin_helpers.prepare_seeds(seeds)
 
-        if isinstance(seeds, types.HostPort):
-            seeds = (seeds,)
-
-        self._channelProvider = vectordb_channel_provider.VectorDbChannelProvider(
+        self._channelProvider = channel_provider.ChannelProvider(
             seeds, listener_name, is_loadbalancer
         )
         """
@@ -55,7 +43,7 @@ class VectorDbAdminClient(object):
 
         """
 
-    async def index_create(
+    def index_create(
         self,
         *,
         namespace: str,
@@ -94,53 +82,21 @@ class VectorDbAdminClient(object):
             This method creates an index with the specified parameters and waits for the index creation to complete.
             It waits for up to 100,000 seconds for the index creation to complete.
         """
-        index_stub = index_pb2_grpc.IndexServiceStub(
-            self._channelProvider.get_channel()
-        )
-        if sets and not sets.strip():
-            sets = None
-
-        logger.debug(
-            "Creating index: namespace=%s, name=%s, vector_field=%s, dimensions=%d, vector_distance_metric=%s, "
-            "sets=%s, index_params=%s, index_meta_data=%s",
-            namespace,
-            name,
-            vector_field,
-            dimensions,
-            vector_distance_metric,
-            sets,
-            index_params,
-            index_meta_data,
-        )
-        if index_params != None:
-            index_params = index_params._to_pb2()
+        (index_stub, index_create_request) = admin_helpers.prepare_index_create(self, namespace, name, vector_field, dimensions, vector_distance_metric, sets, index_params, index_meta_data, logger)
         try:
-            await index_stub.Create(
-                types_pb2.IndexDefinition(
-                    id=types_pb2.IndexId(namespace=namespace, name=name),
-                    vectorDistanceMetric=vector_distance_metric.value,
-                    setFilter=sets,
-                    hnswParams=index_params,
-                    bin=vector_field,
-                    dimensions=dimensions,
-                    labels=index_meta_data,
-                )
-            )
+            index_stub.Create(index_create_request)
         except grpc.RpcError as e:
             logger.error("Failed with error: %s", e)
             raise e
         try:
-            await self._wait_for_index_creation(
+            self._wait_for_index_creation(
                 namespace=namespace, name=name, timeout=100_000
             )
         except grpc.RpcError as e:
             logger.error("Failed waiting for creation with error: %s", e)
             raise e
 
-    async def index_drop(self, *, namespace: str, name: str) -> None:
-        index_stub = index_pb2_grpc.IndexServiceStub(
-            self._channelProvider.get_channel()
-        )
+    def index_drop(self, *, namespace: str, name: str) -> None:
         """
         Drop an index.
 
@@ -156,21 +112,21 @@ class VectorDbAdminClient(object):
             This method drops an index with the specified parameters and waits for the index deletion to complete.
             It waits for up to 100,000 seconds for the index deletion to complete.
         """
-        logger.debug("Dropping index: namespace=%s, name=%s", namespace, name)
+        (index_stub, index_drop_request) = admin_helpers.prepare_index_drop(self, namespace, name, logger)
         try:
-            await index_stub.Drop(types_pb2.IndexId(namespace=namespace, name=name))
+            index_stub.Drop(index_drop_request)
         except grpc.RpcError as e:
             logger.error("Failed with error: %s", e)
             raise e
         try:
-            await self._wait_for_index_deletion(
+            self._wait_for_index_deletion(
                 namespace=namespace, name=name, timeout=100_000
             )
         except grpc.RpcError as e:
             logger.error("Failed waiting for deletion with error: %s", e)
             raise e
 
-    async def index_list(self) -> list[dict]:
+    def index_list(self) -> list[dict]:
         """
         List all indices.
 
@@ -181,39 +137,15 @@ class VectorDbAdminClient(object):
             grpc.RpcError: Raised if an error occurs during the RPC communication with the server while attempting to create the index.
             This error could occur due to various reasons such as network issues, server-side failures, or invalid request parameters.
         """
-
-        index_stub = index_pb2_grpc.IndexServiceStub(
-            self._channelProvider.get_channel()
-        )
-
-        logger.debug("Getting index list")
+        (index_stub, index_list_request) = admin_helpers.prepare_index_list(self, logger)
         try:
-            response = await index_stub.List(empty)
+            response = index_stub.List(index_list_request)
         except grpc.RpcError as e:
             logger.error("Failed with error: %s", e)
             raise e
-        response_list = []
-        for index in response.indices:
-            response_dict = MessageToDict(index)
+        return admin_helpers.respond_index_list(response)
 
-            # Modifying dict to adhere to PEP-8 naming
-            hnsw_params_dict = response_dict.pop("hnswParams", None)
-
-            hnsw_params_dict["ef_construction"] = hnsw_params_dict.pop(
-                "efConstruction", None
-            )
-
-            batching_params_dict = hnsw_params_dict.pop("batchingParams", None)
-            batching_params_dict["max_records"] = batching_params_dict.pop(
-                "maxRecords", None
-            )
-            hnsw_params_dict["batching_params"] = batching_params_dict
-
-            response_dict["hnsw_params"] = hnsw_params_dict
-            response_list.append(response_dict)
-        return response_list
-
-    async def index_get(
+    def index_get(
         self, *, namespace: str, name: str
     ) -> dict[str, Union[int, str]]:
         """
@@ -231,41 +163,16 @@ class VectorDbAdminClient(object):
             This error could occur due to various reasons such as network issues, server-side failures, or invalid request parameters.
 
         """
-
-        index_stub = index_pb2_grpc.IndexServiceStub(
-            self._channelProvider.get_channel()
-        )
-
-        logger.debug(
-            "Getting index information: namespace=%s, name=%s", namespace, name
-        )
+        (index_stub, index_get_request) = admin_helpers.prepare_index_get(self, namespace, name, logger)
         try:
-            response = await index_stub.Get(
-                types_pb2.IndexId(namespace=namespace, name=name)
-            )
+            response = index_stub.Get(index_get_request)
         except grpc.RpcError as e:
             logger.error("Failed with error: %s", e)
             raise e
+        return admin_helpers.respond_index_get(response)
 
-        response_dict = MessageToDict(response)
 
-        # Modifying dict to adhere to PEP-8 naming
-        hnsw_params_dict = response_dict.pop("hnswParams", None)
-
-        hnsw_params_dict["ef_construction"] = hnsw_params_dict.pop(
-            "efConstruction", None
-        )
-
-        batching_params_dict = hnsw_params_dict.pop("batchingParams", None)
-        batching_params_dict["max_records"] = batching_params_dict.pop(
-            "maxRecords", None
-        )
-        hnsw_params_dict["batching_params"] = batching_params_dict
-
-        response_dict["hnsw_params"] = hnsw_params_dict
-        return response_dict
-
-    async def index_get_status(self, *, namespace: str, name: str) -> int:
+    def index_get_status(self, *, namespace: str, name: str) -> int:
         """
         Retrieve the number of records queued to be merged into an index.
 
@@ -286,41 +193,26 @@ class VectorDbAdminClient(object):
 
             Warning: This API is subject to change.
         """
-        index_stub = index_pb2_grpc.IndexServiceStub(
-            self._channelProvider.get_channel()
-        )
-        logger.debug("Getting index status: namespace=%s, name=%s", namespace, name)
+        (index_stub, index_get_status_request) = admin_helpers.prepare_index_get_status(self, namespace, name, logger)
         try:
-            response = await index_stub.GetStatus(
-                types_pb2.IndexId(namespace=namespace, name=name)
-            )
+            response = index_stub.GetStatus(index_get_status_request)
         except grpc.RpcError as e:
             logger.error("Failed with error: %s", e)
             raise e
 
-        return response.unmergedRecordCount
+        return admin_helpers.respond_index_get_status(response)
 
-    async def _wait_for_index_creation(
+    def _wait_for_index_creation(
         self, *, namespace: str, name: str, timeout: int = sys.maxsize
     ) -> None:
         """
         Wait for the index to be created.
         """
-
-        # Wait interval between polling
-        index_stub = index_pb2_grpc.IndexServiceStub(
-            self._channelProvider.get_channel()
-        )
-        wait_interval = 0.100
-
-        start_time = time.monotonic()
+        (index_stub, wait_interval, start_time, _, _, index_creation_request) = admin_helpers.prepare_wait_for_index_waiting(self, namespace, name)
         while True:
-            if start_time + timeout < time.monotonic():
-                raise "timed-out waiting for index creation"
+            admin_helpers.check_timeout(start_time, timeout)
             try:
-                await index_stub.GetStatus(
-                    types_pb2.IndexId(namespace=namespace, name=name)
-                )
+                index_stub.GetStatus(index_creation_request)
                 logger.debug("Index created succesfully")
                 # Index has been created
                 return
@@ -328,12 +220,12 @@ class VectorDbAdminClient(object):
                 if e.code() in (grpc.StatusCode.UNAVAILABLE, grpc.StatusCode.NOT_FOUND):
 
                     # Wait for some more time.
-                    await asyncio.sleep(wait_interval)
+                    time.sleep(wait_interval)
                 else:
                     logger.error("Failed with error: %s", e)
                     raise e
 
-    async def _wait_for_index_deletion(
+    def _wait_for_index_deletion(
         self, *, namespace: str, name: str, timeout: int = sys.maxsize
     ) -> None:
         """
@@ -341,21 +233,15 @@ class VectorDbAdminClient(object):
         """
 
         # Wait interval between polling
-        index_stub = index_pb2_grpc.IndexServiceStub(
-            self._channelProvider.get_channel()
-        )
-        wait_interval = 0.100
+        (index_stub, wait_interval, start_time, _, _, index_deletion_request) = admin_helpers.prepare_wait_for_index_waiting(self, namespace, name)
 
-        start_time = time.monotonic()
         while True:
-            if start_time + timeout < time.monotonic():
-                raise "timed-out waiting for index creation"
+            admin_helpers.check_timeout(start_time, timeout)
+
             try:
-                await index_stub.GetStatus(
-                    types_pb2.IndexId(namespace=namespace, name=name)
-                )
+                index_stub.GetStatus(index_deletion_request)
                 # Wait for some more time.
-                await asyncio.sleep(wait_interval)
+                time.sleep(wait_interval)
             except grpc.RpcError as e:
                 if e.code() in (grpc.StatusCode.UNAVAILABLE, grpc.StatusCode.NOT_FOUND):
                     logger.debug("Index deleted succesfully")
@@ -364,7 +250,7 @@ class VectorDbAdminClient(object):
                 else:
                     raise e
 
-    async def close(self):
+    def close(self):
         """
         Close the Aerospike Vector Admin Client.
 
@@ -373,9 +259,9 @@ class VectorDbAdminClient(object):
         Note:
             This method should be called when the VectorDbAdminClient is no longer needed to release resources.
         """
-        await self._channelProvider.close()
+        self._channelProvider.close()
 
-    async def __aenter__(self):
+    def __enter__(self):
         """
         Enter an asynchronous context manager for the admin client.
 
@@ -384,8 +270,8 @@ class VectorDbAdminClient(object):
         """
         return self
 
-    async def __aexit__(self, exc_type, exc_val, exc_tb):
+    def __exit__(self, exc_type, exc_val, exc_tb):
         """
         Exit an asynchronous context manager for the admin client.
         """
-        await self.close()
+        self.close()

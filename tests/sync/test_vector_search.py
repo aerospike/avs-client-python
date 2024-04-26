@@ -1,5 +1,4 @@
 import numpy as np
-import asyncio
 import pytest
 import random
 from aerospike_vector import types
@@ -10,6 +9,7 @@ base_vector_number = 10_000
 query_vector_number = 100
 
 
+# Print the current working directory
 def parse_sift_to_numpy_array(length, dim, byte_buffer, dtype):
     numpy = np.empty((length,), dtype=object)
 
@@ -65,18 +65,18 @@ def query_numpy():
     return truth_numpy
 
 
-async def put_vector(client, vector, j):
-    await client.put(
+def put_vector(client, vector, j):
+    client.put(
         namespace="test", key=str(j), record_data={"unit_test": vector}, set_name="demo"
     )
 
 
-async def get_vector(client, j):
-    result = await client.get(namespace="test", key=str(j), set_name="demo")
+def get_vector(client, j):
+    result = client.get(namespace="test", key=str(j), set_name="demo")
 
 
-async def vector_search(client, vector):
-    result = await client.vector_search(
+def vector_search(client, vector):
+    result = client.vector_search(
         namespace="test",
         index_name="demo",
         query=vector,
@@ -86,8 +86,8 @@ async def vector_search(client, vector):
     return result
 
 
-async def vector_search_ef_80(client, vector):
-    result = await client.vector_search(
+def vector_search_ef_80(client, vector):
+    result = client.vector_search(
         namespace="test",
         index_name="demo",
         query=vector,
@@ -97,7 +97,7 @@ async def vector_search_ef_80(client, vector):
     )
     return result
 
-async def test_vector_search(
+def test_vector_search(
     base_numpy,
     truth_numpy,
     query_numpy,
@@ -105,34 +105,30 @@ async def test_vector_search(
     session_admin_client,
 ):
 
-    await session_admin_client.index_create(
+    session_admin_client.index_create(
         namespace="test",
         name="demo",
         vector_field="unit_test",
         dimensions=128,
         sets="demo",
     )
+
     # Put base vectors for search
-    tasks = []
-
     for j, vector in enumerate(base_numpy):
-        tasks.append(put_vector(session_vector_client, vector.tolist(), j))
+        put_vector(session_vector_client, vector.tolist(), j)
 
-    tasks.append(session_vector_client.wait_for_index_completion(namespace='test', name='demo'))
-    await asyncio.gather(*tasks)
+    session_vector_client.wait_for_index_completion(namespace='test', name='demo')
 
 
     # Vector search all query vectors
-    tasks = []
+    results = []
     count = 0
     for i in query_numpy:
         if count % 2:
-            tasks.append(vector_search(session_vector_client, i.tolist()))
+            results.append(vector_search(session_vector_client, i.tolist()))
         else:
-            tasks.append(vector_search_ef_80(session_vector_client, i.tolist()))
+            results.append(vector_search_ef_80(session_vector_client, i.tolist()))
         count += 1
-
-    results = await asyncio.gather(*tasks)
 
     # Get recall numbers for each query
     recall_for_each_query = []
@@ -165,8 +161,8 @@ async def test_vector_search(
         assert recall > 0.9
 
 
-async def test_vector_is_indexed(session_vector_client, session_admin_client):
-    result = await session_vector_client.is_indexed(
+def test_vector_is_indexed(session_vector_client, session_admin_client):
+    result = session_vector_client.is_indexed(
         namespace="test",
         key=str(random.randrange(10_000)),
         set_name="demo",
