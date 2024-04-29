@@ -24,7 +24,7 @@ class Client(object):
         self,
         *,
         seeds: Union[types.HostPort, tuple[types.HostPort, ...]],
-        listener_name: str = None,
+        listener_name: Optional[str] = None,
         is_loadbalancer: Optional[bool] = False,
     ) -> None:
         """
