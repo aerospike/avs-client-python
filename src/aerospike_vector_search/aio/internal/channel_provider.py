@@ -11,7 +11,6 @@ from ... import types
 from ...shared.proto_generated import vector_db_pb2
 from ...shared.proto_generated import vector_db_pb2_grpc
 from ...shared import base_channel_provider
-from ...shared import channel_provider_helpers
 
 empty = google.protobuf.empty_pb2.Empty()
 
@@ -31,12 +30,12 @@ class ChannelProvider(base_channel_provider.BaseChannelProvider):
         for channel in self._seedChannels:
             await channel.close()
 
-        for k, channelEndpoints in self._nodeChannels.items():
+        for k, channelEndpoints in self._node_channels.items():
             if channelEndpoints.channel:
                 await channelEndpoints.channel.close()
 
     async def _tend(self):
-        (temp_endpoints, update_endpoints, channels, end_tend) = channel_provider_helpers.init_tend(self)
+        (temp_endpoints, update_endpoints, channels, end_tend) = self.init_tend()
         if end_tend:
             return
 
@@ -46,7 +45,7 @@ class ChannelProvider(base_channel_provider.BaseChannelProvider):
             
             try:
                 new_cluster_id = await stub.GetClusterId(empty).id
-                if channel_provider_helpers.check_cluster_id(self, new_cluster_id):
+                if self.check_cluster_id(new_cluster_id):
                     update_endpoints = True
                 else:
                     continue
@@ -64,11 +63,11 @@ class ChannelProvider(base_channel_provider.BaseChannelProvider):
             except Exception as e:
                 logger.debug("While tending, failed to get cluster endpoints with error:" + str(e))
 
-            temp_endpoints = channel_provider_helpers.update_temp_endpoints(response, temp_endpoints)
+            temp_endpoints = self.update_temp_endpoints(response, temp_endpoints)
 
         if update_endpoints:
             for node, newEndpoints in temp_endpoints.items():
-                (channel_endpoints, add_new_channel) = channel_provider_helpers.check_for_new_endpoints(self, node, newEndpoints)
+                (channel_endpoints, add_new_channel) = self.check_for_new_endpoints(node, newEndpoints)
                 if add_new_channel:
                     try:
                         # TODO: Wait for all calls to drain
@@ -78,12 +77,12 @@ class ChannelProvider(base_channel_provider.BaseChannelProvider):
 
                     self.add_new_channel_to_node_channels(node, newEndpoints)
 
-            for node, channel_endpoints in self._nodeChannels.items():
+            for node, channel_endpoints in self._node_channels.items():
                 if not temp_endpoints.get(node):
                     # TODO: Wait for all calls to drain
                     try:
                         await channel_endpoints.channel.close()
-                        del self._nodeChannels[node]
+                        del self._node_channels[node]
                         
                     except Exception as e:
                         logger.debug("While tending, failed to close GRPC channel:" + str(e))
@@ -92,7 +91,7 @@ class ChannelProvider(base_channel_provider.BaseChannelProvider):
         await asyncio.sleep(1)
         asyncio.create_task(self._tend())
 
-    def _create_channel(self, host: str, port: int, isTls: bool) -> grpc.aio.Channel:
+    def _create_channel(self, host: str, port: int, is_tls: bool) -> grpc.aio.Channel:
         # TODO: Take care of TLS
         host = re.sub(r"%.*", "", host)
         return grpc.aio.insecure_channel(f"{host}:{port}")

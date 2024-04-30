@@ -1,5 +1,5 @@
 import pytest
-from aerospike_vector import types
+from aerospike_vector_search import types
 
 
 class index_create_test_case:

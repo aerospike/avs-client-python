@@ -1,8 +1,8 @@
 import pytest
 import asyncio
-from aerospike_vector import Client
-from aerospike_vector.admin import Client as AdminClient
-from aerospike_vector import types
+from aerospike_vector_search import Client
+from aerospike_vector_search.admin import Client as AdminClient
+from aerospike_vector_search import types
 
 host = 'localhost'
 port = 5000

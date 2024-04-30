@@ -1,19 +1,19 @@
-import asyncio
 import logging
 import sys
+import time
 from typing import Any, Optional, Union
 
 import grpc
 
-from .. import types
+from . import types
 from .internal import channel_provider
-from ..shared import client_helpers
+from .shared.client_helpers import BaseClient
 
 logger = logging.getLogger(__name__)
 
-class Client(object):
+class Client(BaseClient):
     """
-    Aerospike Vector Admin Client
+    Aerospike Vector Search Admin Client
 
     This client specializes in performing database operations with vector data.
     Moreover, the client supports Hierarchical Navigable Small World (HNSW) vector searches,
@@ -24,15 +24,15 @@ class Client(object):
         self,
         *,
         seeds: Union[types.HostPort, tuple[types.HostPort, ...]],
-        listener_name: str = None,
+        listener_name: Optional[str] = None,
         is_loadbalancer: Optional[bool] = False,
     ) -> None:
         """
-        Initialize the Aerospike Vector Vector Client.
+        Initialize the Aerospike Vector Search Vector Client.
 
         Args:
             seeds (Union[types.HostPort, tuple[types.HostPort, ...]]):
-                Used to create appropriate gRPC channels for interacting with Aerospike Vector.
+                Used to create appropriate gRPC channels for interacting with Aerospike Vector Search.
             listener_name (Optional[str], optional):
                 Advertised listener for the client. Defaults to None.
             is_loadbalancer (bool, optional):
@@ -41,12 +41,12 @@ class Client(object):
         Raises:
             Exception: Raised when no seed host is provided.
         """
-        seeds = client_helpers.prepare_seeds(seeds)
+        seeds = self.prepare_seeds(seeds)
         self._channelProvider = channel_provider.ChannelProvider(
             seeds, listener_name, is_loadbalancer
         )
 
-    async def put(
+    def put(
         self,
         *,
         namespace: str,
@@ -55,7 +55,7 @@ class Client(object):
         set_name: Optional[str] = None,
     ) -> None:
         """
-        Write a record to Aerospike Vector.
+        Write a record to Aerospike Vector Search.
 
         Args:
             namespace (str): The namespace for the record.
@@ -68,15 +68,15 @@ class Client(object):
             This error could occur due to various reasons such as network issues, server-side failures, or invalid request parameters.
 
         """
-        (transact_stub, put_request) = client_helpers.prepare_put(self, namespace, key, record_data, set_name, logger)
+        (transact_stub, put_request) = self.prepare_put(namespace, key, record_data, set_name, logger)
 
         try:
-            await transact_stub.Put(put_request)
+            transact_stub.Put(put_request)
         except grpc.RpcError as e:
             logger.error("Failed with error: %s", e)
             raise e
 
-    async def get(
+    def get(
         self,
         *,
         namespace: str,
@@ -85,7 +85,7 @@ class Client(object):
         set_name: Optional[str] = None,
     ) -> types.RecordWithKey:
         """
-        Read a record from Aerospike Vector.
+        Read a record from Aerospike Vector Search.
 
         Args:
             namespace (str): The namespace for the record.
@@ -101,20 +101,20 @@ class Client(object):
             grpc.RpcError: Raised if an error occurs during the RPC communication with the server while attempting to create the index.
             This error could occur due to various reasons such as network issues, server-side failures, or invalid request parameters.
         """
-        (transact_stub, key, get_request) = client_helpers.prepare_get(self, namespace, key, bin_names, set_name, logger)
+        (transact_stub, key, get_request) = self.prepare_get(namespace, key, bin_names, set_name, logger)
         try:
-            response = await transact_stub.Get(get_request)
+            response = transact_stub.Get(get_request)
         except grpc.RpcError as e:
             logger.error("Failed with error: %s", e)
             raise e
 
-        return client_helpers.respond_get(response, key)
+        return self.respond_get(response, key)
 
-    async def exists(
+    def exists(
         self, *, namespace: str, key: Any, set_name: Optional[str] = None
     ) -> bool:
         """
-        Check if a record exists in Aerospike Vector.
+        Check if a record exists in Aerospike Vector Search.
 
         Args:
             namespace (str): The namespace for the record.
@@ -128,16 +128,16 @@ class Client(object):
             grpc.RpcError: Raised if an error occurs during the RPC communication with the server while attempting to create the index.
             This error could occur due to various reasons such as network issues, server-side failures, or invalid request parameters.
         """
-        (transact_stub, key) = client_helpers.prepare_exists(self, namespace, key, set_name, logger)
+        (transact_stub, key) = self.prepare_exists(namespace, key, set_name, logger)
         try:
-            response = await transact_stub.Exists(key)
+            response = transact_stub.Exists(key)
         except grpc.RpcError as e:
             logger.error("Failed with error: %s", e)
             raise e
 
-        return client_helpers.respond_exists(response)
+        return self.respond_exists(response)
 
-    async def is_indexed(
+    def is_indexed(
         self,
         *,
         namespace: str,
@@ -164,15 +164,15 @@ class Client(object):
             grpc.RpcError: Raised if an error occurs during the RPC communication with the server while attempting to create the index.
             This error could occur due to various reasons such as network issues, server-side failures, or invalid request parameters.
         """
-        (transact_stub, is_indexed_request) = client_helpers.prepare_is_indexed(self, namespace, key, index_name, index_namespace, set_name, logger)
+        (transact_stub, is_indexed_request) = self.prepare_is_indexed(namespace, key, index_name, index_namespace, set_name, logger)
         try:
-            response = await transact_stub.IsIndexed(is_indexed_request)
+            response = transact_stub.IsIndexed(is_indexed_request)
         except grpc.RpcError as e:
             logger.error("Failed with error: %s", e)
             raise e
-        return client_helpers.respond_is_indexed(response)
+        return self.respond_is_indexed(response)
 
-    async def vector_search(
+    def vector_search(
         self,
         *,
         namespace: str,
@@ -183,7 +183,7 @@ class Client(object):
         bin_names: Optional[list[str]] = None,
     ) -> list[types.Neighbor]:
         """
-        Perform a Hierarchical Navigable Small World (HNSW) vector search in Aerospike Vector.
+        Perform a Hierarchical Navigable Small World (HNSW) vector search in Aerospike Vector Search. 
 
         Args:
             namespace (str): The namespace for the records.
@@ -202,20 +202,20 @@ class Client(object):
             grpc.RpcError: Raised if an error occurs during the RPC communication with the server while attempting to create the index.
             This error could occur due to various reasons such as network issues, server-side failures, or invalid request parameters.
         """
-        (transact_stub, vector_search_request) = client_helpers.prepare_vector_search(self, namespace, index_name, query, limit, search_params, bin_names, logger)
+        (transact_stub, vector_search_request) = self.prepare_vector_search(namespace, index_name, query, limit, search_params, bin_names, logger)
 
         try:
             results_stream = transact_stub.VectorSearch(vector_search_request)
         except grpc.RpcError as e:
             logger.error("Failed with error: %s", e)
             raise e
-        async_results = []
-        async for result in results_stream:
-            async_results.append(client_helpers.respond_neighbor(result))
+        results = []
+        for result in results_stream:
+            results.append(self.respond_neighbor(result))
 
-        return async_results
+        return results
 
-    async def wait_for_index_completion(
+    def wait_for_index_completion(
         self, *, namespace: str, name: str, timeout: Optional[int] = sys.maxsize
     ) -> None:
         """
@@ -237,10 +237,10 @@ class Client(object):
             the timeout is reached or the index has no pending index update operations.
         """
         # Wait interval between polling
-        (index_stub, wait_interval, start_time, unmerged_record_initialized, double_check, index_completion_request) = client_helpers.prepare_wait_for_index_waiting(self, namespace, name)
+        (index_stub, wait_interval, start_time, unmerged_record_initialized, double_check, index_completion_request) = self.prepare_wait_for_index_waiting(namespace, name)
         while True:
             try:
-                index_status = await index_stub.GetStatus(index_completion_request)
+                index_status = index_stub.GetStatus(index_completion_request)
 
             except grpc.RpcError as e:
                 if e.code() == grpc.StatusCode.UNAVAILABLE:
@@ -248,36 +248,37 @@ class Client(object):
                 else:
                     logger.error("Failed with error: %s", e)
                     raise e
-            if client_helpers.check_completion_condition(start_time, timeout, index_status, unmerged_record_initialized):
+            if self.check_completion_condition(start_time, timeout, index_status, unmerged_record_initialized):
                 if double_check:
                     return
                 else:
                     double_check = True
             else:
-                await asyncio.sleep(wait_interval)
+                double_check = False
+            time.sleep(wait_interval)
 
-    async def close(self):
+    def close(self):
         """
-        Close the Aerospike Vector Vector Client.
+        Close the Aerospike Vector Search Vector Client.
 
-        This method closes gRPC channels connected to Aerospike Vector.
+        This method closes gRPC channels connected to Aerospike Vector Search.
 
         Note:
             This method should be called when the VectorDbAdminClient is no longer needed to release resources.
         """
-        await self._channelProvider.close()
+        self._channelProvider.close()
 
-    async def __aenter__(self):
+    def __enter__(self):
         """
         Enter an asynchronous context manager for the vector client.
 
         Returns:
-            VectorDbClient: Aerospike Vector Vector Client instance.
+            VectorDbClient: Aerospike Vector Search Vector Client instance.
         """
         return self
 
-    async def __aexit__(self, exc_type, exc_val, exc_tb):
+    def __exit__(self, exc_type, exc_val, exc_tb):
         """
         Exit an asynchronous context manager for the vector client.
         """
-        await self.close()
+        self.close()

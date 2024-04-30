@@ -1,9 +1,9 @@
-.. aerospike-vector documentation master file, created by
+.. aerospike-vector-search documentation master file, created by
    sphinx-quickstart on Thu Apr 11 07:35:51 2024.
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-Welcome to Aerospike Vector Client for Python.
+Welcome to Aerospike Vector Search Client for Python.
 
 This package splits the client functionality into two separate clients.
 

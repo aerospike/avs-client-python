@@ -1,2 +1,2 @@
 sphinx_rtd_theme
-aerospike-vector
+aerospike-vector-search

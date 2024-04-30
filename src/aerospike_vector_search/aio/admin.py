@@ -1,20 +1,21 @@
+import asyncio
 import logging
 import sys
 import time
 from typing import Any, Optional, Union
 import grpc
 
-from . import types
+from .. import types
 from .internal import channel_provider
-from .shared import admin_helpers
+from ..shared.admin_helpers import BaseClient
 
 logger = logging.getLogger(__name__)
 
-class Client(object):
+class Client(BaseClient):
     """
-    Aerospike Vector Admin Client
+    Aerospike Vector Search Asyncio Admin Client
 
-    This client is designed to conduct Aerospike Vector administrative operation such as creating indexes, querying index information, and dropping indexes.
+    This client is designed to conduct Aerospike Vector Search administrative operation such as creating indexes, querying index information, and dropping indexes.
     """
 
     def __init__(
@@ -25,16 +26,16 @@ class Client(object):
         is_loadbalancer: Optional[bool] = False,
     ) -> None:
 
-        seeds = admin_helpers.prepare_seeds(seeds)
+        seeds = self.prepare_seeds(seeds)
 
         self._channelProvider = channel_provider.ChannelProvider(
             seeds, listener_name, is_loadbalancer
         )
         """
-        Initialize the Aerospike Vector Admin Client.
+        Initialize the Aerospike Vector Search Admin Client.
 
         Args:
-            seeds (Union[types.HostPort, tuple[types.HostPort, ...]]): Used to create appropriate gRPC channels for interacting with Aerospike Vector.
+            seeds (Union[types.HostPort, tuple[types.HostPort, ...]]): Used to create appropriate gRPC channels for interacting with Aerospike Vector Search.
             listener_name (Optional[str], optional): Advertised listener for the client. Defaults to None.
             is_loadbalancer (bool, optional): If true, the first seed address will be treated as a load balancer node.
 
@@ -43,7 +44,7 @@ class Client(object):
 
         """
 
-    def index_create(
+    async def index_create(
         self,
         *,
         namespace: str,
@@ -82,21 +83,21 @@ class Client(object):
             This method creates an index with the specified parameters and waits for the index creation to complete.
             It waits for up to 100,000 seconds for the index creation to complete.
         """
-        (index_stub, index_create_request) = admin_helpers.prepare_index_create(self, namespace, name, vector_field, dimensions, vector_distance_metric, sets, index_params, index_meta_data, logger)
+        (index_stub, index_create_request) = self.prepare_index_create(namespace, name, vector_field, dimensions, vector_distance_metric, sets, index_params, index_meta_data, logger)
         try:
-            index_stub.Create(index_create_request)
+            await index_stub.Create(index_create_request)
         except grpc.RpcError as e:
             logger.error("Failed with error: %s", e)
             raise e
         try:
-            self._wait_for_index_creation(
+            await self._wait_for_index_creation(
                 namespace=namespace, name=name, timeout=100_000
             )
         except grpc.RpcError as e:
             logger.error("Failed waiting for creation with error: %s", e)
             raise e
 
-    def index_drop(self, *, namespace: str, name: str) -> None:
+    async def index_drop(self, *, namespace: str, name: str) -> None:
         """
         Drop an index.
 
@@ -112,21 +113,21 @@ class Client(object):
             This method drops an index with the specified parameters and waits for the index deletion to complete.
             It waits for up to 100,000 seconds for the index deletion to complete.
         """
-        (index_stub, index_drop_request) = admin_helpers.prepare_index_drop(self, namespace, name, logger)
+        (index_stub, index_drop_request) = self.prepare_index_drop(namespace, name, logger)
         try:
-            index_stub.Drop(index_drop_request)
+            await index_stub.Drop(index_drop_request)
         except grpc.RpcError as e:
             logger.error("Failed with error: %s", e)
             raise e
         try:
-            self._wait_for_index_deletion(
+            await self._wait_for_index_deletion(
                 namespace=namespace, name=name, timeout=100_000
             )
         except grpc.RpcError as e:
             logger.error("Failed waiting for deletion with error: %s", e)
             raise e
 
-    def index_list(self) -> list[dict]:
+    async def index_list(self) -> list[dict]:
         """
         List all indices.
 
@@ -137,15 +138,15 @@ class Client(object):
             grpc.RpcError: Raised if an error occurs during the RPC communication with the server while attempting to create the index.
             This error could occur due to various reasons such as network issues, server-side failures, or invalid request parameters.
         """
-        (index_stub, index_list_request) = admin_helpers.prepare_index_list(self, logger)
+        (index_stub, index_list_request) = self.prepare_index_list(logger)
         try:
-            response = index_stub.List(index_list_request)
+            response = await index_stub.List(index_list_request)
         except grpc.RpcError as e:
             logger.error("Failed with error: %s", e)
             raise e
-        return admin_helpers.respond_index_list(response)
+        return self.respond_index_list(response)
 
-    def index_get(
+    async def index_get(
         self, *, namespace: str, name: str
     ) -> dict[str, Union[int, str]]:
         """
@@ -163,16 +164,16 @@ class Client(object):
             This error could occur due to various reasons such as network issues, server-side failures, or invalid request parameters.
 
         """
-        (index_stub, index_get_request) = admin_helpers.prepare_index_get(self, namespace, name, logger)
+        (index_stub, index_get_request) = self.prepare_index_get(namespace, name, logger)
         try:
-            response = index_stub.Get(index_get_request)
+            response = await index_stub.Get(index_get_request)
         except grpc.RpcError as e:
             logger.error("Failed with error: %s", e)
             raise e
-        return admin_helpers.respond_index_get(response)
+        return self.respond_index_get(response)
 
 
-    def index_get_status(self, *, namespace: str, name: str) -> int:
+    async def index_get_status(self, *, namespace: str, name: str) -> int:
         """
         Retrieve the number of records queued to be merged into an index.
 
@@ -188,31 +189,31 @@ class Client(object):
             This error could occur due to various reasons such as network issues, server-side failures, or invalid request parameters.
 
         Note:
-            This method retrieves the status of the specified index. If index_get_status is called the vector client puts some records into Aerospike Vector,
+            This method retrieves the status of the specified index. If index_get_status is called the vector client puts some records into Aerospike Vector Search,
             the records may not immediately begin to merge into the index. To wait for all records to be merged into an index, use vector_client.wait_for_index_completion.
 
             Warning: This API is subject to change.
         """
-        (index_stub, index_get_status_request) = admin_helpers.prepare_index_get_status(self, namespace, name, logger)
+        (index_stub, index_get_status_request) = self.prepare_index_get_status(namespace, name, logger)
         try:
-            response = index_stub.GetStatus(index_get_status_request)
+            response = await index_stub.GetStatus(index_get_status_request)
         except grpc.RpcError as e:
             logger.error("Failed with error: %s", e)
             raise e
 
-        return admin_helpers.respond_index_get_status(response)
+        return self.respond_index_get_status(response)
 
-    def _wait_for_index_creation(
+    async def _wait_for_index_creation(
         self, *, namespace: str, name: str, timeout: int = sys.maxsize
     ) -> None:
         """
         Wait for the index to be created.
         """
-        (index_stub, wait_interval, start_time, _, _, index_creation_request) = admin_helpers.prepare_wait_for_index_waiting(self, namespace, name)
+        (index_stub, wait_interval, start_time, _, _, index_creation_request) = self.prepare_wait_for_index_waiting(namespace, name)
         while True:
-            admin_helpers.check_timeout(start_time, timeout)
+            self.check_timeout(start_time, timeout)
             try:
-                index_stub.GetStatus(index_creation_request)
+                await index_stub.GetStatus(index_creation_request)
                 logger.debug("Index created succesfully")
                 # Index has been created
                 return
@@ -220,12 +221,12 @@ class Client(object):
                 if e.code() in (grpc.StatusCode.UNAVAILABLE, grpc.StatusCode.NOT_FOUND):
 
                     # Wait for some more time.
-                    time.sleep(wait_interval)
+                    await asyncio.sleep(wait_interval)
                 else:
                     logger.error("Failed with error: %s", e)
                     raise e
 
-    def _wait_for_index_deletion(
+    async def _wait_for_index_deletion(
         self, *, namespace: str, name: str, timeout: int = sys.maxsize
     ) -> None:
         """
@@ -233,15 +234,15 @@ class Client(object):
         """
 
         # Wait interval between polling
-        (index_stub, wait_interval, start_time, _, _, index_deletion_request) = admin_helpers.prepare_wait_for_index_waiting(self, namespace, name)
+        (index_stub, wait_interval, start_time, _, _, index_deletion_request) = self.prepare_wait_for_index_waiting(namespace, name)
 
         while True:
-            admin_helpers.check_timeout(start_time, timeout)
+            self.check_timeout(start_time, timeout)
 
             try:
-                index_stub.GetStatus(index_deletion_request)
+                await index_stub.GetStatus(index_deletion_request)
                 # Wait for some more time.
-                time.sleep(wait_interval)
+                await asyncio.sleep(wait_interval)
             except grpc.RpcError as e:
                 if e.code() in (grpc.StatusCode.UNAVAILABLE, grpc.StatusCode.NOT_FOUND):
                     logger.debug("Index deleted succesfully")
@@ -250,28 +251,28 @@ class Client(object):
                 else:
                     raise e
 
-    def close(self):
+    async def close(self):
         """
-        Close the Aerospike Vector Admin Client.
+        Close the Aerospike Vector Search Admin Client.
 
-        This method closes gRPC channels connected to Aerospike Vector.
+        This method closes gRPC channels connected to Aerospike Vector Search.
 
         Note:
             This method should be called when the VectorDbAdminClient is no longer needed to release resources.
         """
-        self._channelProvider.close()
+        await self._channelProvider.close()
 
-    def __enter__(self):
+    async def __aenter__(self):
         """
         Enter an asynchronous context manager for the admin client.
 
         Returns:
-            VectorDbAdminlient: Aerospike Vector Admin Client instance.
+            VectorDbAdminlient: Aerospike Vector Search Admin Client instance.
         """
         return self
 
-    def __exit__(self, exc_type, exc_val, exc_tb):
+    async def __aexit__(self, exc_type, exc_val, exc_tb):
         """
         Exit an asynchronous context manager for the admin client.
         """
-        self.close()
+        await self.close()

@@ -2,7 +2,7 @@ import numpy as np
 import asyncio
 import pytest
 import random
-from aerospike_vector import types
+from aerospike_vector_search import types
 
 dimensions = 128
 truth_vector_dimensions = 100
@@ -134,7 +134,6 @@ async def test_vector_search(
         count += 1
 
     results = await asyncio.gather(*tasks)
-
     # Get recall numbers for each query
     recall_for_each_query = []
     for i, outside in enumerate(truth_numpy):
@@ -144,6 +143,8 @@ async def test_vector_search(
         binList = []
 
         for j, result in enumerate(results[i]):
+            binList.append(result.bins["unit_test"])
+
             binList.append(result.bins["unit_test"])
         for j, index in enumerate(outside):
             vector = base_numpy[index].tolist()

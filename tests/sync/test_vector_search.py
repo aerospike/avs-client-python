@@ -1,7 +1,7 @@
 import numpy as np
 import pytest
 import random
-from aerospike_vector import types
+from aerospike_vector_search import types
 
 dimensions = 128
 truth_vector_dimensions = 100
@@ -129,7 +129,6 @@ def test_vector_search(
         else:
             results.append(vector_search_ef_80(session_vector_client, i.tolist()))
         count += 1
-
     # Get recall numbers for each query
     recall_for_each_query = []
     for i, outside in enumerate(truth_numpy):

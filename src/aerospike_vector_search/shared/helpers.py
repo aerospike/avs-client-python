@@ -16,7 +16,7 @@ def prepare_seeds(seeds) -> None:
 
 def prepare_wait_for_index_waiting(self, namespace, name):
 
-    wait_interval = 0.100
+    wait_interval = 5
     unmerged_record_initialized = False
     start_time = time.monotonic()
     double_check = False

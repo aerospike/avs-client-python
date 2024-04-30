@@ -1,8 +1,8 @@
 import pytest
 import asyncio
-from aerospike_vector.aio import Client
-from aerospike_vector.aio.admin import Client as AdminClient
-from aerospike_vector import types
+from aerospike_vector_search.aio import Client
+from aerospike_vector_search.aio.admin import Client as AdminClient
+from aerospike_vector_search import types
 
 host = 'localhost'
 port = 5000
@@ -12,6 +12,7 @@ async def drop_all_indexes():
         seeds=types.HostPort(host=host, port=port)
     ) as client:
         index_list = await client.index_list()
+
         tasks = []
         for item in index_list:
             tasks.append(client.index_drop(namespace="test", name=item['id']['name']))
