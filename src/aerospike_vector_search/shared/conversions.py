@@ -1,7 +1,7 @@
 from typing import Any
 
-from . import types
-from . import types_pb2
+from .. import types
+from .proto_generated import types_pb2
 
 
 def toVectorDbValue(value: Any) -> types_pb2.Value:
