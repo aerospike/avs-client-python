@@ -26,12 +26,12 @@ class BaseChannelProvider(object):
         if not seeds:
             raise Exception("at least one seed host needed")
         self._node_channels: dict[int, ChannelAndEndpoints] = {}
+        self.seeds: tuple[types.HostPort, ...] = seeds
         self._seedChannels: Union[list[grpc.Channel], list[grpc.Channel.aio]] = [
             self._create_channel_from_host_port(seed) for seed in self.seeds
         ]
         self._closed: bool = False
         self._cluster_id: int = 0
-        self.seeds: tuple[types.HostPort, ...] = seeds
         self.listener_name: Optional[str] = listener_name
         self._is_loadbalancer: Optional[bool] = is_loadbalancer
 
