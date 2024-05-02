@@ -41,8 +41,8 @@ class Client(BaseClient):
         Raises:
             Exception: Raised when no seed host is provided.
         """
-        seeds = self.prepare_seeds(seeds)
-        self._channelProvider = channel_provider.ChannelProvider(
+        seeds = self._prepare_seeds(seeds)
+        self._channel_provider = channel_provider.ChannelProvider(
             seeds, listener_name, is_loadbalancer
         )
 
@@ -68,7 +68,10 @@ class Client(BaseClient):
             This error could occur due to various reasons such as network issues, server-side failures, or invalid request parameters.
 
         """
-        (transact_stub, put_request) = self.prepare_put(namespace, key, record_data, set_name, logger)
+
+        await self._channel_provider._check_tend()
+
+        (transact_stub, put_request) = self._prepare_put(namespace, key, record_data, set_name, logger)
 
         try:
             await transact_stub.Put(put_request)
@@ -101,14 +104,17 @@ class Client(BaseClient):
             grpc.RpcError: Raised if an error occurs during the RPC communication with the server while attempting to create the index.
             This error could occur due to various reasons such as network issues, server-side failures, or invalid request parameters.
         """
-        (transact_stub, key, get_request) = self.prepare_get(namespace, key, bin_names, set_name, logger)
+
+        await self._channel_provider._check_tend()
+
+        (transact_stub, key, get_request) = self._prepare_get(namespace, key, bin_names, set_name, logger)
         try:
             response = await transact_stub.Get(get_request)
         except grpc.RpcError as e:
             logger.error("Failed with error: %s", e)
             raise e
 
-        return self.respond_get(response, key)
+        return self._respond_get(response, key)
 
     async def exists(
         self, *, namespace: str, key: Any, set_name: Optional[str] = None
@@ -128,14 +134,17 @@ class Client(BaseClient):
             grpc.RpcError: Raised if an error occurs during the RPC communication with the server while attempting to create the index.
             This error could occur due to various reasons such as network issues, server-side failures, or invalid request parameters.
         """
-        (transact_stub, key) = self.prepare_exists(namespace, key, set_name, logger)
+
+        await self._channel_provider._check_tend()
+
+        (transact_stub, key) = self._prepare_exists(namespace, key, set_name, logger)
         try:
             response = await transact_stub.Exists(key)
         except grpc.RpcError as e:
             logger.error("Failed with error: %s", e)
             raise e
 
-        return self.respond_exists(response)
+        return self._respond_exists(response)
 
     async def is_indexed(
         self,
@@ -164,13 +173,16 @@ class Client(BaseClient):
             grpc.RpcError: Raised if an error occurs during the RPC communication with the server while attempting to create the index.
             This error could occur due to various reasons such as network issues, server-side failures, or invalid request parameters.
         """
-        (transact_stub, is_indexed_request) = self.prepare_is_indexed(namespace, key, index_name, index_namespace, set_name, logger)
+
+        await self._channel_provider._check_tend()
+
+        (transact_stub, is_indexed_request) = self._prepare_is_indexed(namespace, key, index_name, index_namespace, set_name, logger)
         try:
             response = await transact_stub.IsIndexed(is_indexed_request)
         except grpc.RpcError as e:
             logger.error("Failed with error: %s", e)
             raise e
-        return self.respond_is_indexed(response)
+        return self._respond_is_indexed(response)
 
     async def vector_search(
         self,
@@ -202,7 +214,9 @@ class Client(BaseClient):
             grpc.RpcError: Raised if an error occurs during the RPC communication with the server while attempting to create the index.
             This error could occur due to various reasons such as network issues, server-side failures, or invalid request parameters.
         """
-        (transact_stub, vector_search_request) = self.prepare_vector_search(namespace, index_name, query, limit, search_params, bin_names, logger)
+        await self._channel_provider._check_tend()
+
+        (transact_stub, vector_search_request) = self._prepare_vector_search(namespace, index_name, query, limit, search_params, bin_names, logger)
 
         try:
             results_stream = transact_stub.VectorSearch(vector_search_request)
@@ -211,12 +225,12 @@ class Client(BaseClient):
             raise e
         async_results = []
         async for result in results_stream:
-            async_results.append(self.respond_neighbor(result))
+            async_results.append(self._respond_neighbor(result))
 
         return async_results
 
     async def wait_for_index_completion(
-        self, *, namespace: str, name: str, timeout: Optional[int] = sys.maxsize
+        self, *, namespace: str, name: str, timeout: Optional[int] = sys.maxsize, wait_interval: Optional[int] = 12
     ) -> None:
         """
         Wait for the index to have no pending index update operations.
@@ -226,7 +240,9 @@ class Client(BaseClient):
             name (str): The name of the index.
             timeout (int, optional): The maximum time (in seconds) to wait for the index to complete.
             Defaults to sys.maxsize.
-
+            wait_interval (int, optional): The time (in seconds) to wait between index completion status request to the server.
+            Lowering this value increases the chance that the index completion status is incorrect, which can result in poor search accuracy.
+            
         Raises:
             Exception: Raised when the timeout occurs while waiting for index completion.
             grpc.RpcError: Raised if an error occurs during the RPC communication with the server while attempting to create the index.
@@ -236,8 +252,10 @@ class Client(BaseClient):
             The function polls the index status with a wait interval of 10 seconds until either
             the timeout is reached or the index has no pending index update operations.
         """
+        await self._channel_provider._check_tend()
+
         # Wait interval between polling
-        (index_stub, wait_interval, start_time, unmerged_record_initialized, double_check, index_completion_request) = self.prepare_wait_for_index_waiting(namespace, name)
+        (index_stub, wait_interval, start_time, unmerged_record_initialized, double_check, index_completion_request) = self._prepare_wait_for_index_waiting(namespace, name, wait_interval)
         while True:
             try:
                 index_status = await index_stub.GetStatus(index_completion_request)
@@ -248,7 +266,7 @@ class Client(BaseClient):
                 else:
                     logger.error("Failed with error: %s", e)
                     raise e
-            if self.check_completion_condition(start_time, timeout, index_status, unmerged_record_initialized):
+            if self._check_completion_condition(start_time, timeout, index_status, unmerged_record_initialized):
                 if double_check:
                     return
                 else:
@@ -266,7 +284,7 @@ class Client(BaseClient):
         Note:
             This method should be called when the VectorDbAdminClient is no longer needed to release resources.
         """
-        await self._channelProvider.close()
+        await self._channel_provider.close()
 
     async def __aenter__(self):
         """
