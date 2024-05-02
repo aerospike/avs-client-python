@@ -6,16 +6,17 @@
 # -- Project information -----------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
 
-project = 'aerospike-vector'
+project = 'aerospike-vector-search'
 copyright = '2024, Dominic Pelini'
 author = 'Dominic Pelini'
-release = '0.4.0'
+release = '0.5.0'
 
 # -- General configuration ---------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
 
 extensions = [
     'sphinx.ext.autodoc',
+    'sphinx_rtd_theme',
 ]
 
 templates_path = ['_templates']

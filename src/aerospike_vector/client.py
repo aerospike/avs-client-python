@@ -1,28 +1,19 @@
-import asyncio
 import logging
 import sys
 import time
 from typing import Any, Optional, Union
 
-import google.protobuf.empty_pb2
 import grpc
 
-from . import conversions
-from . import index_pb2
-from . import index_pb2_grpc
-from . import transact_pb2
-from . import transact_pb2_grpc
 from . import types
-from . import types_pb2
-from . import vectordb_channel_provider
+from .internal import channel_provider
+from .shared import client_helpers
 
-empty = google.protobuf.empty_pb2.Empty()
 logger = logging.getLogger(__name__)
 
-
-class VectorDbClient(object):
+class Client(object):
     """
-    Aerospike Vector Vector Client
+    Aerospike Vector Admin Client
 
     This client specializes in performing database operations with vector data.
     Moreover, the client supports Hierarchical Navigable Small World (HNSW) vector searches,
@@ -33,7 +24,7 @@ class VectorDbClient(object):
         self,
         *,
         seeds: Union[types.HostPort, tuple[types.HostPort, ...]],
-        listener_name: str = None,
+        listener_name: Optional[str] = None,
         is_loadbalancer: Optional[bool] = False,
     ) -> None:
         """
@@ -50,17 +41,12 @@ class VectorDbClient(object):
         Raises:
             Exception: Raised when no seed host is provided.
         """
-        if not seeds:
-            raise Exception("at least one seed host needed")
-
-        if isinstance(seeds, types.HostPort):
-            seeds = (seeds,)
-
-        self._channelProvider = vectordb_channel_provider.VectorDbChannelProvider(
+        seeds = client_helpers.prepare_seeds(seeds)
+        self._channelProvider = channel_provider.ChannelProvider(
             seeds, listener_name, is_loadbalancer
         )
 
-    async def put(
+    def put(
         self,
         *,
         namespace: str,
@@ -82,28 +68,15 @@ class VectorDbClient(object):
             This error could occur due to various reasons such as network issues, server-side failures, or invalid request parameters.
 
         """
-        transact_stub = transact_pb2_grpc.TransactStub(
-            self._channelProvider.get_channel()
-        )
-        key = _get_key(namespace, set_name, key)
-        bin_list = [
-            types_pb2.Bin(name=k, value=conversions.toVectorDbValue(v))
-            for (k, v) in record_data.items()
-        ]
-        logger.debug(
-            "Putting record: namespace=%s, key=%s, record_data:%s, set_name:%s",
-            namespace,
-            key,
-            record_data,
-            set_name,
-        )
+        (transact_stub, put_request) = client_helpers.prepare_put(self, namespace, key, record_data, set_name, logger)
+
         try:
-            await transact_stub.Put(transact_pb2.PutRequest(key=key, bins=bin_list))
+            transact_stub.Put(put_request)
         except grpc.RpcError as e:
             logger.error("Failed with error: %s", e)
             raise e
 
-    async def get(
+    def get(
         self,
         *,
         namespace: str,
@@ -128,32 +101,16 @@ class VectorDbClient(object):
             grpc.RpcError: Raised if an error occurs during the RPC communication with the server while attempting to create the index.
             This error could occur due to various reasons such as network issues, server-side failures, or invalid request parameters.
         """
-        transact_stub = transact_pb2_grpc.TransactStub(
-            self._channelProvider.get_channel()
-        )
-        key = _get_key(namespace, set_name, key)
-        bin_selector = _get_bin_selector(bin_names=bin_names)
-        logger.debug(
-            "Getting record: namespace=%s, key=%s, bin_names:%s, set_name:%s",
-            namespace,
-            key,
-            bin_names,
-            set_name,
-        )
+        (transact_stub, key, get_request) = client_helpers.prepare_get(self, namespace, key, bin_names, set_name, logger)
         try:
-            result = await transact_stub.Get(
-                transact_pb2.GetRequest(key=key, binSelector=bin_selector)
-            )
+            response = transact_stub.Get(get_request)
         except grpc.RpcError as e:
             logger.error("Failed with error: %s", e)
             raise e
 
-        return types.RecordWithKey(
-            key=conversions.fromVectorDbKey(key),
-            bins=conversions.fromVectorDbRecord(result),
-        )
+        return client_helpers.respond_get(response, key)
 
-    async def exists(
+    def exists(
         self, *, namespace: str, key: Any, set_name: Optional[str] = None
     ) -> bool:
         """
@@ -171,25 +128,16 @@ class VectorDbClient(object):
             grpc.RpcError: Raised if an error occurs during the RPC communication with the server while attempting to create the index.
             This error could occur due to various reasons such as network issues, server-side failures, or invalid request parameters.
         """
-        transact_stub = transact_pb2_grpc.TransactStub(
-            self._channelProvider.get_channel()
-        )
-        key = _get_key(namespace, set_name, key)
-        logger.debug(
-            "Getting record existence: namespace=%s, key=%s, set_name:%s",
-            namespace,
-            key,
-            set_name,
-        )
+        (transact_stub, key) = client_helpers.prepare_exists(self, namespace, key, set_name, logger)
         try:
-            result = await transact_stub.Exists(key)
+            response = transact_stub.Exists(key)
         except grpc.RpcError as e:
             logger.error("Failed with error: %s", e)
             raise e
 
-        return result.value
+        return client_helpers.respond_exists(response)
 
-    async def is_indexed(
+    def is_indexed(
         self,
         *,
         namespace: str,
@@ -216,31 +164,15 @@ class VectorDbClient(object):
             grpc.RpcError: Raised if an error occurs during the RPC communication with the server while attempting to create the index.
             This error could occur due to various reasons such as network issues, server-side failures, or invalid request parameters.
         """
-        if not index_namespace:
-            index_namespace = namespace
-
-        index_id = types_pb2.IndexId(namespace=index_namespace, name=index_name)
-        key = _get_key(namespace, set_name, key)
-        request = transact_pb2.IsIndexedRequest(key=key, indexId=index_id)
-        transact_stub = transact_pb2_grpc.TransactStub(
-            self._channelProvider.get_channel()
-        )
-        logger.debug(
-            "Checking if index exists: namespace=%s, key=%s, index_name=%s, index_namespace=%s, set_name=%s",
-            namespace,
-            key,
-            index_name,
-            index_namespace,
-            set_name,
-        )
+        (transact_stub, is_indexed_request) = client_helpers.prepare_is_indexed(self, namespace, key, index_name, index_namespace, set_name, logger)
         try:
-            result = await transact_stub.IsIndexed(request)
+            response = transact_stub.IsIndexed(is_indexed_request)
         except grpc.RpcError as e:
             logger.error("Failed with error: %s", e)
             raise e
-        return result.value
+        return client_helpers.respond_is_indexed(response)
 
-    async def vector_search(
+    def vector_search(
         self,
         *,
         namespace: str,
@@ -270,40 +202,20 @@ class VectorDbClient(object):
             grpc.RpcError: Raised if an error occurs during the RPC communication with the server while attempting to create the index.
             This error could occur due to various reasons such as network issues, server-side failures, or invalid request parameters.
         """
-        transact_stub = transact_pb2_grpc.TransactStub(
-            self._channelProvider.get_channel()
-        )
-        logger.debug(
-            "Performing vector search: namespace=%s, index_name=%s, query=%s, limit=%s, search_params=%s, bin_names=%s",
-            namespace,
-            index_name,
-            query,
-            limit,
-            search_params,
-            bin_names,
-        )
-        if search_params != None:
-            search_params = search_params._to_pb2()
+        (transact_stub, vector_search_request) = client_helpers.prepare_vector_search(self, namespace, index_name, query, limit, search_params, bin_names, logger)
+
         try:
-            results_stream = transact_stub.VectorSearch(
-                transact_pb2.VectorSearchRequest(
-                    index=types_pb2.IndexId(namespace=namespace, name=index_name),
-                    queryVector=(conversions.toVectorDbValue(query).vectorValue),
-                    limit=limit,
-                    hnswSearchParams=search_params,
-                    binSelector=_get_bin_selector(bin_names=bin_names),
-                )
-            )
+            results_stream = transact_stub.VectorSearch(vector_search_request)
         except grpc.RpcError as e:
             logger.error("Failed with error: %s", e)
             raise e
-        async_results = []
-        async for result in results_stream:
-            async_results.append(conversions.fromVectorDbNeighbor(result))
+        results = []
+        for result in results_stream:
+            results.append(client_helpers.respond_neighbor(result))
 
-        return async_results
+        return results
 
-    async def wait_for_index_completion(
+    def wait_for_index_completion(
         self, *, namespace: str, name: str, timeout: Optional[int] = sys.maxsize
     ) -> None:
         """
@@ -325,25 +237,10 @@ class VectorDbClient(object):
             the timeout is reached or the index has no pending index update operations.
         """
         # Wait interval between polling
-        index_stub = index_pb2_grpc.IndexServiceStub(
-            self._channelProvider.get_channel()
-        )
-
-        wait_interval = 1
-
-        unmerged_record_count = sys.maxsize
-        start_time = time.monotonic()
-        unmerged_record_initialized = False
+        (index_stub, wait_interval, start_time, unmerged_record_initialized, double_check, index_completion_request) = client_helpers.prepare_wait_for_index_waiting(self, namespace, name)
         while True:
-            if start_time + timeout < time.monotonic():
-                raise "timed-out waiting for index completion"
-            # Wait for in-memory batches to be flushed to storage.
-            if start_time + 10 < time.monotonic():
-                unmerged_record_initialized = True
             try:
-                index_status = await index_stub.GetStatus(
-                    types_pb2.IndexId(namespace=namespace, name=name)
-                )
+                index_status = index_stub.GetStatus(index_completion_request)
 
             except grpc.RpcError as e:
                 if e.code() == grpc.StatusCode.UNAVAILABLE:
@@ -351,21 +248,15 @@ class VectorDbClient(object):
                 else:
                     logger.error("Failed with error: %s", e)
                     raise e
+            if client_helpers.check_completion_condition(start_time, timeout, index_status, unmerged_record_initialized):
+                if double_check:
+                    return
+                else:
+                    double_check = True
+            else:
+                time.sleep(wait_interval)
 
-            if index_status.unmergedRecordCount > 0:
-                unmerged_record_initialized = True
-
-            if (
-                unmerged_record_count == 0
-                and index_status.unmergedRecordCount == 0
-                and unmerged_record_initialized == True
-            ):
-                return
-            # Update.
-            unmerged_record_count = index_status.unmergedRecordCount
-            await asyncio.sleep(wait_interval)
-
-    async def close(self):
+    def close(self):
         """
         Close the Aerospike Vector Vector Client.
 
@@ -374,9 +265,9 @@ class VectorDbClient(object):
         Note:
             This method should be called when the VectorDbAdminClient is no longer needed to release resources.
         """
-        await self._channelProvider.close()
+        self._channelProvider.close()
 
-    async def __aenter__(self):
+    def __enter__(self):
         """
         Enter an asynchronous context manager for the vector client.
 
@@ -385,33 +276,8 @@ class VectorDbClient(object):
         """
         return self
 
-    async def __aexit__(self, exc_type, exc_val, exc_tb):
+    def __exit__(self, exc_type, exc_val, exc_tb):
         """
         Exit an asynchronous context manager for the vector client.
         """
-        await self.close()
-
-
-def _get_bin_selector(*, bin_names: Optional[list] = None):
-
-    if not bin_names:
-        bin_selector = transact_pb2.BinSelector(
-            type=transact_pb2.BinSelectorType.ALL, binNames=bin_names
-        )
-    else:
-        bin_selector = transact_pb2.BinSelector(
-            type=transact_pb2.BinSelectorType.SPECIFIED, binNames=bin_names
-        )
-    return bin_selector
-
-
-def _get_key(namespace: str, set: str, key: Union[int, str, bytes, bytearray]):
-    if isinstance(key, str):
-        key = types_pb2.Key(namespace=namespace, set=set, stringValue=key)
-    elif isinstance(key, int):
-        key = types_pb2.Key(namespace=namespace, set=set, longValue=key)
-    elif isinstance(key, (bytes, bytearray)):
-        key = types_pb2.Key(namespace=namespace, set=set, bytesValue=key)
-    else:
-        raise Exception("Invalid key type" + type(key))
-    return key
+        self.close()

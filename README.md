@@ -1,10 +1,10 @@
-# Aerospike Vector Client Python
-Python client for Aerospike VectorDB
+# Aerospike Vector Search Client Python
+Python client for Aerospike Vector Search Database
 
 ## Prerequisites
  - Python 3.8 or higher
  - pip version 9.0.1 or higher
- - Aerospike VectorDB and Aerospike clusters running.
+ - Aerospike Vector Search DB and Aerospike clusters running.
 
 
 ## Using the client from your application using pip
@@ -15,13 +15,13 @@ To resolve the client packages using pip, add the following to $HOME/.pip/pip.co
 extra-index-url=https://<jfrog-username>:<jfrog-access-token>@aerospike.jfrog.io/artifactory/api/pypi/ecosystem-python-dev-local/simple 
 ```
 
-### Install the aerospike_vector using pip
+### Install the aerospike_vector_search using pip
 ```shell
-python3 -m pip install aerospike-vector
+python3 -m pip install aerospike-vector-search
 ```
 Or 
 
-You can add the package name `aerospike-vector` to your application's `requirements.txt` and install all dependencies using
+You can add the package name `aerospike-vector-search` to your application's `requirements.txt` and install all dependencies using
 ```shell
 python3 -m pip install -r requirements.txt
 ```

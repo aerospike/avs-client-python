@@ -1,7 +1,7 @@
 import enum
 from typing import Any, Optional
 
-from . import types_pb2
+from .shared.proto_generated import types_pb2
 
 
 class HostPort(object):
@@ -12,13 +12,13 @@ class HostPort(object):
     Args:
         host (str): The host address.
         port (int): The port number.
-        isTls (Optional[bool], optional): Indicates if TLS is enabled. Defaults to False.
+        is_tls (Optional[bool], optional): Indicates if TLS is enabled. Defaults to False.
     """
 
-    def __init__(self, *, host: str, port: int, isTls: Optional[bool] = False) -> None:
+    def __init__(self, *, host: str, port: int, is_tls: Optional[bool] = False) -> None:
         self.host = host
         self.port = port
-        self.isTls = isTls
+        self.is_tls = is_tls
 
 
 class Key(object):

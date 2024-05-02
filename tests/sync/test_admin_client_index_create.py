@@ -1,5 +1,5 @@
 import pytest
-from aerospike_vector import types
+from aerospike_vector_search import types
 
 
 class index_create_test_case:
@@ -43,8 +43,8 @@ class index_create_test_case:
         )
     ],
 )
-async def test_index_create(session_admin_client, test_case):
-    await session_admin_client.index_create(
+def test_index_create(session_admin_client, test_case):
+    session_admin_client.index_create(
         namespace=test_case.namespace,
         name=test_case.name,
         vector_field=test_case.vector_field,
@@ -54,7 +54,7 @@ async def test_index_create(session_admin_client, test_case):
         index_params=test_case.index_params,
         index_meta_data=test_case.index_meta_data,
     )
-    results = await session_admin_client.index_list()
+    results = session_admin_client.index_list()
     found = False
     for result in results:
         if result['id']['name'] == test_case.name:
@@ -97,8 +97,8 @@ async def test_index_create(session_admin_client, test_case):
         ),
     ],
 )
-async def test_index_create_with_dimnesions(session_admin_client, test_case):
-    await session_admin_client.index_create(
+def test_index_create_with_dimnesions(session_admin_client, test_case):
+    session_admin_client.index_create(
         namespace=test_case.namespace,
         name=test_case.name,
         vector_field=test_case.vector_field,
@@ -108,7 +108,7 @@ async def test_index_create_with_dimnesions(session_admin_client, test_case):
         index_params=test_case.index_params,
         index_meta_data=test_case.index_meta_data,
     )
-    results = await session_admin_client.index_list()
+    results = session_admin_client.index_list()
     found = False
     for result in results:
         if result['id']['name'] == test_case.name:
@@ -171,10 +171,10 @@ async def test_index_create_with_dimnesions(session_admin_client, test_case):
         ),
     ],
 )
-async def test_index_create_with_vector_distance_metric(
+def test_index_create_with_vector_distance_metric(
     session_admin_client, test_case
 ):
-    await session_admin_client.index_create(
+    session_admin_client.index_create(
         namespace=test_case.namespace,
         name=test_case.name,
         vector_field=test_case.vector_field,
@@ -184,7 +184,7 @@ async def test_index_create_with_vector_distance_metric(
         index_params=test_case.index_params,
         index_meta_data=test_case.index_meta_data,
     )
-    results = await session_admin_client.index_list()
+    results = session_admin_client.index_list()
     found = False
     for result in results:
         if result['id']['name'] == test_case.name:
@@ -227,8 +227,8 @@ async def test_index_create_with_vector_distance_metric(
         ),
     ],
 )
-async def test_index_create_with_sets(session_admin_client, test_case):
-    await session_admin_client.index_create(
+def test_index_create_with_sets(session_admin_client, test_case):
+    session_admin_client.index_create(
         namespace=test_case.namespace,
         name=test_case.name,
         vector_field=test_case.vector_field,
@@ -238,7 +238,7 @@ async def test_index_create_with_sets(session_admin_client, test_case):
         index_params=test_case.index_params,
         index_meta_data=test_case.index_meta_data,
     )
-    results = await session_admin_client.index_list()
+    results = session_admin_client.index_list()
     found = False
     for result in results:
         if result['id']['name'] == test_case.name:
@@ -303,8 +303,8 @@ async def test_index_create_with_sets(session_admin_client, test_case):
         ),
     ],
 )
-async def test_index_create_with_index_params(session_admin_client, test_case):
-    await session_admin_client.index_create(
+def test_index_create_with_index_params(session_admin_client, test_case):
+    session_admin_client.index_create(
         namespace=test_case.namespace,
         name=test_case.name,
         vector_field=test_case.vector_field,
@@ -314,7 +314,7 @@ async def test_index_create_with_index_params(session_admin_client, test_case):
         index_params=test_case.index_params,
         index_meta_data=test_case.index_meta_data,
     )
-    results = await session_admin_client.index_list()
+    results = session_admin_client.index_list()
     found = False
     for result in results:
         if result['id']['name'] == test_case.name:
@@ -347,8 +347,8 @@ async def test_index_create_with_index_params(session_admin_client, test_case):
         ),
     ],
 )
-async def test_index_create_index_meta_data(session_admin_client, test_case):
-    await session_admin_client.index_create(
+def test_index_create_index_meta_data(session_admin_client, test_case):
+    session_admin_client.index_create(
         namespace=test_case.namespace,
         name=test_case.name,
         vector_field=test_case.vector_field,
@@ -358,7 +358,7 @@ async def test_index_create_index_meta_data(session_admin_client, test_case):
         index_params=test_case.index_params,
         index_meta_data=test_case.index_meta_data,
     )
-    results = await session_admin_client.index_list()
+    results = session_admin_client.index_list()
     found = False
     for result in results:
         if result['id']['name'] == test_case.name:
