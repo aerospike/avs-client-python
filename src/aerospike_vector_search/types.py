@@ -20,7 +20,6 @@ class HostPort(object):
         self.port = port
         self.is_tls = is_tls
 
-
 class Key(object):
     """
     Represents a record key.
