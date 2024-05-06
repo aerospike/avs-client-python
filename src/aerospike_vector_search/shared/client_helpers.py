@@ -10,10 +10,10 @@ from . import helpers
 
 class BaseClient(object):
 
-    def prepare_seeds(self, seeds) -> None:
-        return helpers.prepare_seeds(seeds)
+    def _prepare_seeds(self, seeds) -> None:
+        return helpers._prepare_seeds(seeds)
         
-    def prepare_put(self, namespace, key, record_data, set_name, logger) -> None:
+    def _prepare_put(self, namespace, key, record_data, set_name, logger) -> None:
 
         logger.debug(
             "Putting record: namespace=%s, key=%s, record_data:%s, set_name:%s",
@@ -29,12 +29,12 @@ class BaseClient(object):
             for (k, v) in record_data.items()
         ]
 
-        transact_stub = self.get_transact_stub()
+        transact_stub = self._get_transact_stub()
         put_request = transact_pb2.PutRequest(key=key, bins=bin_list)
 
         return (transact_stub, put_request)
 
-    def prepare_get(self, namespace, key, bin_names, set_name, logger) -> None:
+    def _prepare_get(self, namespace, key, bin_names, set_name, logger) -> None:
 
         logger.debug(
             "Getting record: namespace=%s, key=%s, bin_names:%s, set_name:%s",
@@ -48,12 +48,12 @@ class BaseClient(object):
         key = self._get_key(namespace, set_name, key)
         bin_selector = self._get_bin_selector(bin_names=bin_names)
 
-        transact_stub = self.get_transact_stub()
+        transact_stub = self._get_transact_stub()
         get_request = transact_pb2.GetRequest(key=key, binSelector=bin_selector)
 
         return (transact_stub, key, get_request)
 
-    def prepare_exists(self, namespace, key, set_name, logger) -> None:
+    def _prepare_exists(self, namespace, key, set_name, logger) -> None:
 
         logger.debug(
             "Getting record existence: namespace=%s, key=%s, set_name:%s",
@@ -64,11 +64,11 @@ class BaseClient(object):
 
         key = self._get_key(namespace, set_name, key)
 
-        transact_stub = self.get_transact_stub()
+        transact_stub = self._get_transact_stub()
 
         return (transact_stub, key)
 
-    def prepare_is_indexed(self, namespace, key, index_name, index_namespace, set_name, logger) -> None:
+    def _prepare_is_indexed(self, namespace, key, index_name, index_namespace, set_name, logger) -> None:
 
         logger.debug(
             "Checking if index exists: namespace=%s, key=%s, index_name=%s, index_namespace=%s, set_name=%s",
@@ -84,12 +84,12 @@ class BaseClient(object):
         index_id = types_pb2.IndexId(namespace=index_namespace, name=index_name)
         key = self._get_key(namespace, set_name, key)
 
-        transact_stub = self.get_transact_stub()
+        transact_stub = self._get_transact_stub()
         is_indexed_request = transact_pb2.IsIndexedRequest(key=key, indexId=index_id)
 
         return (transact_stub, is_indexed_request)
 
-    def prepare_vector_search(self, namespace, index_name, query, limit, search_params, bin_names, logger) -> None:
+    def _prepare_vector_search(self, namespace, index_name, query, limit, search_params, bin_names, logger) -> None:
 
         logger.debug(
             "Performing vector search: namespace=%s, index_name=%s, query=%s, limit=%s, search_params=%s, bin_names=%s",
@@ -108,7 +108,7 @@ class BaseClient(object):
         query_vector = conversions.toVectorDbValue(query).vectorValue
 
 
-        transact_stub = self.get_transact_stub()
+        transact_stub = self._get_transact_stub()
 
         vector_search_request = transact_pb2.VectorSearchRequest(
             index=index,
@@ -120,24 +120,24 @@ class BaseClient(object):
         
         return (transact_stub, vector_search_request)
 
-    def get_transact_stub(self):
+    def _get_transact_stub(self):
         return transact_pb2_grpc.TransactStub(
-            self._channelProvider.get_channel()
+            self._channel_provider.get_channel()
         )
 
-    def respond_get(self, response, key) -> None:
+    def _respond_get(self, response, key) -> None:
         return types.RecordWithKey(
             key=conversions.fromVectorDbKey(key),
             bins=conversions.fromVectorDbRecord(response),
         )
 
-    def respond_exists(self, response) -> None:
+    def _respond_exists(self, response) -> None:
         return response.value
 
-    def respond_is_indexed(self, response) -> None:
+    def _respond_is_indexed(self, response) -> None:
         return response.value
 
-    def respond_neighbor(self, response) -> None:
+    def _respond_neighbor(self, response) -> None:
         return conversions.fromVectorDbNeighbor(response)
 
     def _get_bin_selector(self, *, bin_names: Optional[list] = None):
@@ -163,10 +163,10 @@ class BaseClient(object):
             raise Exception("Invalid key type" + type(key))
         return key
 
-    def prepare_wait_for_index_waiting(self, namespace, name):
-        return helpers.prepare_wait_for_index_waiting(self, namespace, name)
+    def _prepare_wait_for_index_waiting(self, namespace, name, wait_interval):
+        return helpers._prepare_wait_for_index_waiting(self, namespace, name, wait_interval)
 
-    def check_completion_condition(self, start_time, timeout, index_status, unmerged_record_initialized):
+    def _check_completion_condition(self, start_time, timeout, index_status, unmerged_record_initialized):
 
         if start_time + 10 < time.monotonic():
             unmerged_record_initialized = True

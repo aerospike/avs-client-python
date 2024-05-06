@@ -19,10 +19,10 @@ empty = google.protobuf.empty_pb2.Empty()
 
 class BaseClient(object):
 
-    def prepare_seeds(self, seeds) -> None:
-        return helpers.prepare_seeds(seeds)
+    def _prepare_seeds(self, seeds) -> None:
+        return helpers._prepare_seeds(seeds)
 
-    def prepare_index_create(self, namespace, name, vector_field, dimensions, vector_distance_metric, sets, index_params, index_meta_data, logger) -> None:
+    def _prepare_index_create(self, namespace, name, vector_field, dimensions, vector_distance_metric, sets, index_params, index_meta_data, logger) -> None:
 
         logger.debug(
             "Creating index: namespace=%s, name=%s, vector_field=%s, dimensions=%d, vector_distance_metric=%s, "
@@ -41,10 +41,10 @@ class BaseClient(object):
             sets = None
         if index_params != None:
             index_params = index_params._to_pb2()
-        id = self.get_index_id(namespace, name)
+        id = self._get_index_id(namespace, name)
         vector_distance_metric = vector_distance_metric.value
 
-        index_stub = self.get_index_stub()
+        index_stub = self._get_index_stub()
 
         index_create_request = types_pb2.IndexDefinition(
             id=id,
@@ -57,46 +57,46 @@ class BaseClient(object):
         )
         return (index_stub, index_create_request)
 
-    def prepare_index_drop(self, namespace, name, logger) -> None:
+    def _prepare_index_drop(self, namespace, name, logger) -> None:
         
         logger.debug("Dropping index: namespace=%s, name=%s", namespace, name)
 
-        index_stub = self.get_index_stub()
-        index_drop_request = self.get_index_id(namespace, name)
+        index_stub = self._get_index_stub()
+        index_drop_request = self._get_index_id(namespace, name)
 
         return (index_stub, index_drop_request)
 
-    def prepare_index_list(self, logger) -> None:
+    def _prepare_index_list(self, logger) -> None:
 
         logger.debug("Getting index list")
 
-        index_stub = self.get_index_stub()
+        index_stub = self._get_index_stub()
         index_list_request = empty
 
         return (index_stub, index_list_request)
 
-    def prepare_index_get(self, namespace, name, logger) -> None:
+    def _prepare_index_get(self, namespace, name, logger) -> None:
 
         logger.debug(
             "Getting index information: namespace=%s, name=%s", namespace, name
         )
 
-        index_stub = self.get_index_stub()
-        index_get_request = self.get_index_id(namespace, name)
+        index_stub = self._get_index_stub()
+        index_get_request = self._get_index_id(namespace, name)
 
         return (index_stub, index_get_request)
 
-    def prepare_index_get_status(self, namespace, name, logger) -> None:
+    def _prepare_index_get_status(self, namespace, name, logger) -> None:
 
         logger.debug("Getting index status: namespace=%s, name=%s", namespace, name)
 
-        index_stub = self.get_index_stub()
-        index_get_status_request = self.get_index_id(namespace, name)
+        index_stub = self._get_index_stub()
+        index_get_status_request = self._get_index_id(namespace, name)
 
 
         return (index_stub, index_get_status_request)
 
-    def respond_index_list(self, response) -> None:
+    def _respond_index_list(self, response) -> None:
         response_list = []
         for index in response.indices:
             response_dict = MessageToDict(index)
@@ -118,7 +118,7 @@ class BaseClient(object):
             response_list.append(response_dict)
         return response_list
 
-    def respond_index_get(self, response) -> None:
+    def _respond_index_get(self, response) -> None:
         response_dict = MessageToDict(response)
 
         # Modifying dict to adhere to PEP-8 naming
@@ -137,25 +137,21 @@ class BaseClient(object):
         response_dict["hnsw_params"] = hnsw_params_dict
         return response_dict
 
-    def respond_index_get_status(self, response) -> None:
+    def _respond_index_get_status(self, response) -> None:
         return response.unmergedRecordCount
 
-    def get_index_stub(self):
+    def _get_index_stub(self):
         return index_pb2_grpc.IndexServiceStub(
-            self._channelProvider.get_channel()
+            self._channel_provider.get_channel()
         )
 
-    def get_index_id(self, namespace, name):
+    def _get_index_id(self, namespace, name):
         return types_pb2.IndexId(namespace=namespace, name=name)
 
-    def prepare_wait_for_index_waiting(self, namespace, name):
-        return helpers.prepare_wait_for_index_waiting(self, namespace, name)
+    def _prepare_wait_for_index_waiting(self, namespace, name, wait_interval):
+        return helpers._prepare_wait_for_index_waiting(self, namespace, name, wait_interval)
 
 
-    def check_timeout(self, start_time, timeout):
+    def _check_timeout(self, start_time, timeout):
         if start_time + timeout < time.monotonic():
             raise "timed-out waiting for index creation"
-
-
-
-

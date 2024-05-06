@@ -1,4 +1,5 @@
 import re
+import time
 import logging
 import threading
 from typing import Optional, Union
@@ -22,10 +23,15 @@ class ChannelProvider(base_channel_provider.BaseChannelProvider):
         self, seeds: tuple[types.HostPort, ...], listener_name: Optional[str] = None, is_loadbalancer: Optional[bool] = False
     ) -> None:
         super().__init__(seeds, listener_name, is_loadbalancer)
+        self._tend_ended = False
+        self._timer = None
         self._tend()
 
     def close(self):
         self._closed = True
+        while not self._tend_ended:
+            time.sleep(0.01)
+
         for channel in self._seedChannels:
             channel.close()
 
@@ -33,20 +39,25 @@ class ChannelProvider(base_channel_provider.BaseChannelProvider):
             if channelEndpoints.channel:
                 channelEndpoints.channel.close()
 
+        if self._timer != None:
+            self._timer.join()
+ 
     def _tend(self):
-        (temp_endpoints, update_endpoints, channels, end_tend) = self.init_tend()
+        (temp_endpoints, update_endpoints_stub, channels, end_tend) = self.init_tend()
 
         if end_tend:
+            self._tend_ended = True
+
             return
+        for channel in channels:
 
-        for seedChannel in channels:
-
-            stub = vector_db_pb2_grpc.ClusterInfoStub(seedChannel)
+            stub = vector_db_pb2_grpc.ClusterInfoStub(channel)
             
             try:
                 new_cluster_id = stub.GetClusterId(empty).id
                 if self.check_cluster_id(new_cluster_id):
-                    update_endpoints = True
+                    update_endpoints_stub = stub
+                    break
                 else:
                     continue
 
@@ -54,6 +65,7 @@ class ChannelProvider(base_channel_provider.BaseChannelProvider):
                 logger.debug("While tending, failed to get cluster id with error:" + str(e))
 
 
+        if update_endpoints_stub:
             try:
                 response = stub.GetClusterEndpoints(
                     vector_db_pb2.ClusterNodeEndpointsRequest(
@@ -64,8 +76,6 @@ class ChannelProvider(base_channel_provider.BaseChannelProvider):
             except Exception as e:
                 logger.debug("While tending, failed to get cluster endpoints with error:" + str(e))
 
-
-        if update_endpoints:
             for node, newEndpoints in temp_endpoints.items():
                 (channel_endpoints, add_new_channel) = self.check_for_new_endpoints(node, newEndpoints)
 
@@ -78,7 +88,8 @@ class ChannelProvider(base_channel_provider.BaseChannelProvider):
 
                     self.add_new_channel_to_node_channels(node, newEndpoints)
 
-            for node, channel_endpoints in self._node_channels.items():
+            temp_node_channels = self._node_channels.items()
+            for node, channel_endpoints in temp_node_channels:
                 if not temp_endpoints.get(node):
                     # TODO: Wait for all calls to drain
                     try:
@@ -87,9 +98,8 @@ class ChannelProvider(base_channel_provider.BaseChannelProvider):
                         
                     except Exception as e:
                         logger.debug("While tending, failed to close GRPC channel:" + str(e))
-
         # TODO: check tend interval.
-        threading.Timer(1, self._tend).start()
+        self._timer = threading.Timer(1, self._tend).start()
 
     def _create_channel(self, host: str, port: int, is_tls: bool) -> grpc.Channel:
         # TODO: Take care of TLS
