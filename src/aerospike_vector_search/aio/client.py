@@ -69,7 +69,7 @@ class Client(BaseClient):
 
         """
 
-        await self._channel_provider._check_tend()
+        await self._channel_provider._is_ready()
 
         (transact_stub, put_request) = self._prepare_put(namespace, key, record_data, set_name, logger)
 
@@ -105,7 +105,7 @@ class Client(BaseClient):
             This error could occur due to various reasons such as network issues, server-side failures, or invalid request parameters.
         """
 
-        await self._channel_provider._check_tend()
+        await self._channel_provider._is_ready()
 
         (transact_stub, key, get_request) = self._prepare_get(namespace, key, bin_names, set_name, logger)
         try:
@@ -135,7 +135,7 @@ class Client(BaseClient):
             This error could occur due to various reasons such as network issues, server-side failures, or invalid request parameters.
         """
 
-        await self._channel_provider._check_tend()
+        await self._channel_provider._is_ready()
 
         (transact_stub, key) = self._prepare_exists(namespace, key, set_name, logger)
         try:
@@ -174,7 +174,7 @@ class Client(BaseClient):
             This error could occur due to various reasons such as network issues, server-side failures, or invalid request parameters.
         """
 
-        await self._channel_provider._check_tend()
+        await self._channel_provider._is_ready()
 
         (transact_stub, is_indexed_request) = self._prepare_is_indexed(namespace, key, index_name, index_namespace, set_name, logger)
         try:
@@ -214,7 +214,7 @@ class Client(BaseClient):
             grpc.RpcError: Raised if an error occurs during the RPC communication with the server while attempting to create the index.
             This error could occur due to various reasons such as network issues, server-side failures, or invalid request parameters.
         """
-        await self._channel_provider._check_tend()
+        await self._channel_provider._is_ready()
 
         (transact_stub, vector_search_request) = self._prepare_vector_search(namespace, index_name, query, limit, search_params, bin_names, logger)
 
@@ -252,7 +252,7 @@ class Client(BaseClient):
             The function polls the index status with a wait interval of 10 seconds until either
             the timeout is reached or the index has no pending index update operations.
         """
-        await self._channel_provider._check_tend()
+        await self._channel_provider._is_ready()
 
         # Wait interval between polling
         (index_stub, wait_interval, start_time, unmerged_record_initialized, double_check, index_completion_request) = self._prepare_wait_for_index_waiting(namespace, name, wait_interval)

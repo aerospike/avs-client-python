@@ -23,14 +23,13 @@ class ChannelProvider(base_channel_provider.BaseChannelProvider):
         self, seeds: tuple[types.HostPort, ...], listener_name: Optional[str] = None, is_loadbalancer: Optional[bool] = False
     ) -> None:
         super().__init__(seeds, listener_name, is_loadbalancer)
-        self._tend_ended = False
+        self._tend_ended = threading.Event()
         self._timer = None
         self._tend()
 
     def close(self):
         self._closed = True
-        while not self._tend_ended:
-            time.sleep(0.01)
+        self._tend_ended.wait()
 
         for channel in self._seedChannels:
             channel.close()
@@ -46,7 +45,7 @@ class ChannelProvider(base_channel_provider.BaseChannelProvider):
         (temp_endpoints, update_endpoints_stub, channels, end_tend) = self.init_tend()
 
         if end_tend:
-            self._tend_ended = True
+            self._tend_ended.set()
 
             return
         for channel in channels:

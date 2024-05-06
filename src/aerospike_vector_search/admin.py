@@ -24,12 +24,6 @@ class Client(BaseClient):
         listener_name: Optional[str] = None,
         is_loadbalancer: Optional[bool] = False,
     ) -> None:
-
-        seeds = self._prepare_seeds(seeds)
-
-        self._channel_provider = channel_provider.ChannelProvider(
-            seeds, listener_name, is_loadbalancer
-        )
         """
         Initialize the Aerospike Vector Search Admin Client.
 
@@ -42,6 +36,12 @@ class Client(BaseClient):
             Exception: Raised when no seed host is provided.
 
         """
+        seeds = self._prepare_seeds(seeds)
+
+        self._channel_provider = channel_provider.ChannelProvider(
+            seeds, listener_name, is_loadbalancer
+        )
+
 
     def index_create(
         self,

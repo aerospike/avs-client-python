@@ -20,7 +20,7 @@ class HostPort(object):
         self.port = port
         self.is_tls = is_tls
 
-
+HostPort, Key, RecordWithKey, Neighbor, VectorDistanceMetric, HnswBatchingParams, HnswParams, HnswSearchParams
 class Key(object):
     """
     Represents a record key.

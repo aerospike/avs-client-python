@@ -24,12 +24,6 @@ class Client(BaseClient):
         listener_name: Optional[str] = None,
         is_loadbalancer: Optional[bool] = False,
     ) -> None:
-
-        seeds = self._prepare_seeds(seeds)
-
-        self._channel_provider = channel_provider.ChannelProvider(
-            seeds, listener_name, is_loadbalancer
-        )
         """
         Initialize the Aerospike Vector Search Admin Client.
 
@@ -42,6 +36,12 @@ class Client(BaseClient):
             Exception: Raised when no seed host is provided.
 
         """
+        seeds = self._prepare_seeds(seeds)
+
+        self._channel_provider = channel_provider.ChannelProvider(
+            seeds, listener_name, is_loadbalancer
+        )
+
 
     async def index_create(
         self,
@@ -83,7 +83,7 @@ class Client(BaseClient):
             It waits for up to 100,000 seconds for the index creation to complete.
         """
 
-        await self._channel_provider._check_tend()
+        await self._channel_provider._is_ready()
 
         (index_stub, index_create_request) = self._prepare_index_create(namespace, name, vector_field, dimensions, vector_distance_metric, sets, index_params, index_meta_data, logger)
         
@@ -116,7 +116,7 @@ class Client(BaseClient):
             This method drops an index with the specified parameters and waits for the index deletion to complete.
             It waits for up to 100,000 seconds for the index deletion to complete.
         """
-        await self._channel_provider._check_tend()
+        await self._channel_provider._is_ready()
 
         (index_stub, index_drop_request) = self._prepare_index_drop(namespace, name, logger)
         try:
@@ -143,7 +143,7 @@ class Client(BaseClient):
             grpc.RpcError: Raised if an error occurs during the RPC communication with the server while attempting to create the index.
             This error could occur due to various reasons such as network issues, server-side failures, or invalid request parameters.
         """
-        await self._channel_provider._check_tend()
+        await self._channel_provider._is_ready()
         
         (index_stub, index_list_request) = self._prepare_index_list(logger)
         try:
@@ -171,7 +171,7 @@ class Client(BaseClient):
             This error could occur due to various reasons such as network issues, server-side failures, or invalid request parameters.
 
         """
-        await self._channel_provider._check_tend()
+        await self._channel_provider._is_ready()
 
         (index_stub, index_get_request) = self._prepare_index_get(namespace, name, logger)
         try:
@@ -203,7 +203,7 @@ class Client(BaseClient):
 
             Warning: This API is subject to change.
         """
-        await self._channel_provider._check_tend()
+        await self._channel_provider._is_ready()
 
         (index_stub, index_get_status_request) = self._prepare_index_get_status(namespace, name, logger)
         try:
@@ -220,7 +220,7 @@ class Client(BaseClient):
         """
         Wait for the index to be created.
         """
-        await self._channel_provider._check_tend()
+        await self._channel_provider._is_ready()
 
         (index_stub, wait_interval, start_time, _, _, index_creation_request) = self._prepare_wait_for_index_waiting(namespace, name, wait_interval)
         while True:
@@ -245,7 +245,7 @@ class Client(BaseClient):
         """
         Wait for the index to be deleted.
         """
-        await self._channel_provider._check_tend()
+        await self._channel_provider._is_ready()
 
         # Wait interval between polling
         (index_stub, wait_interval, start_time, _, _, index_deletion_request) = self._prepare_wait_for_index_waiting(namespace, name, wait_interval)

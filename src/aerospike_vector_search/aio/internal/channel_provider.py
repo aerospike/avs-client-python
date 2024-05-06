@@ -25,21 +25,16 @@ class ChannelProvider(base_channel_provider.BaseChannelProvider):
     ) -> None:
         super().__init__(seeds, listener_name, is_loadbalancer)
         asyncio.create_task(self._tend())
-        """
-        If tending is in progress and completed one tend iteration. _tend_lock will locked.  
-        If tending is stopped, _tend_lock will be unlocked
-        threading.Lock is used over asyncio.Lock since asyncio.Lock does not support the blocking parameter
-        """
-        self._tend_initalized: bool = False
-        self._tend_ended: bool = False
+        self._tend_initalized: asyncio.Event =  asyncio.Event()
+
+        self._tend_ended: asyncio.Event =  asyncio.Event()
         self._task: Optional[asyncio.Task] = None
 
 
 
     async def close(self):
         self._closed = True
-        while not self._tend_ended:
-            await asyncio.sleep(0.01)
+        await self._tend_ended.wait()
 
         for channel in self._seedChannels:
             await channel.close()
@@ -51,15 +46,14 @@ class ChannelProvider(base_channel_provider.BaseChannelProvider):
         if self._task != None:
             await self._task
 
-    async def _check_tend(self):
-        while not self._tend_initalized:
-            await asyncio.sleep(0.01)
+    async def _is_ready(self):
+        await self._tend_initalized.wait()
 
     async def _tend(self):
         (temp_endpoints, update_endpoints_stub, channels, end_tend) = self.init_tend()
 
         if end_tend:
-            self._tend_ended = True
+            self._tend_ended.set()
             return
 
         stubs = []
@@ -125,7 +119,7 @@ class ChannelProvider(base_channel_provider.BaseChannelProvider):
 
             await asyncio.gather(*tasks)
 
-        self._tend_initalized = True
+        self._tend_initalized.set()
 
         # TODO: check tend interval.
         await asyncio.sleep(1)
