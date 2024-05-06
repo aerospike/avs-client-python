@@ -24,12 +24,6 @@ class Client(BaseClient):
         listener_name: Optional[str] = None,
         is_loadbalancer: Optional[bool] = False,
     ) -> None:
-
-        seeds = self.prepare_seeds(seeds)
-
-        self._channelProvider = channel_provider.ChannelProvider(
-            seeds, listener_name, is_loadbalancer
-        )
         """
         Initialize the Aerospike Vector Search Admin Client.
 
@@ -42,6 +36,12 @@ class Client(BaseClient):
             Exception: Raised when no seed host is provided.
 
         """
+        seeds = self._prepare_seeds(seeds)
+
+        self._channel_provider = channel_provider.ChannelProvider(
+            seeds, listener_name, is_loadbalancer
+        )
+
 
     def index_create(
         self,
@@ -82,7 +82,7 @@ class Client(BaseClient):
             This method creates an index with the specified parameters and waits for the index creation to complete.
             It waits for up to 100,000 seconds for the index creation to complete.
         """
-        (index_stub, index_create_request) = self.prepare_index_create(namespace, name, vector_field, dimensions, vector_distance_metric, sets, index_params, index_meta_data, logger)
+        (index_stub, index_create_request) = self._prepare_index_create(namespace, name, vector_field, dimensions, vector_distance_metric, sets, index_params, index_meta_data, logger)
         try:
             index_stub.Create(index_create_request)
         except grpc.RpcError as e:
@@ -112,7 +112,7 @@ class Client(BaseClient):
             This method drops an index with the specified parameters and waits for the index deletion to complete.
             It waits for up to 100,000 seconds for the index deletion to complete.
         """
-        (index_stub, index_drop_request) = self.prepare_index_drop(namespace, name, logger)
+        (index_stub, index_drop_request) = self._prepare_index_drop(namespace, name, logger)
         try:
             index_stub.Drop(index_drop_request)
         except grpc.RpcError as e:
@@ -137,13 +137,13 @@ class Client(BaseClient):
             grpc.RpcError: Raised if an error occurs during the RPC communication with the server while attempting to create the index.
             This error could occur due to various reasons such as network issues, server-side failures, or invalid request parameters.
         """
-        (index_stub, index_list_request) = self.prepare_index_list(logger)
+        (index_stub, index_list_request) = self._prepare_index_list(logger)
         try:
             response = index_stub.List(index_list_request)
         except grpc.RpcError as e:
             logger.error("Failed with error: %s", e)
             raise e
-        return self.respond_index_list(response)
+        return self._respond_index_list(response)
 
     def index_get(
         self, *, namespace: str, name: str
@@ -163,13 +163,13 @@ class Client(BaseClient):
             This error could occur due to various reasons such as network issues, server-side failures, or invalid request parameters.
 
         """
-        (index_stub, index_get_request) = self.prepare_index_get(namespace, name, logger)
+        (index_stub, index_get_request) = self._prepare_index_get(namespace, name, logger)
         try:
             response = index_stub.Get(index_get_request)
         except grpc.RpcError as e:
             logger.error("Failed with error: %s", e)
             raise e
-        return self.respond_index_get(response)
+        return self._respond_index_get(response)
 
 
     def index_get_status(self, *, namespace: str, name: str) -> int:
@@ -193,24 +193,24 @@ class Client(BaseClient):
 
             Warning: This API is subject to change.
         """
-        (index_stub, index_get_status_request) = self.prepare_index_get_status(namespace, name, logger)
+        (index_stub, index_get_status_request) = self._prepare_index_get_status(namespace, name, logger)
         try:
             response = index_stub.GetStatus(index_get_status_request)
         except grpc.RpcError as e:
             logger.error("Failed with error: %s", e)
             raise e
 
-        return self.respond_index_get_status(response)
+        return self._respond_index_get_status(response)
 
     def _wait_for_index_creation(
-        self, *, namespace: str, name: str, timeout: int = sys.maxsize
+        self, *, namespace: str, name: str, timeout: Optional[int] = sys.maxsize, wait_interval: Optional[int] = 0.1
     ) -> None:
         """
         Wait for the index to be created.
         """
-        (index_stub, wait_interval, start_time, _, _, index_creation_request) = self.prepare_wait_for_index_waiting(namespace, name)
+        (index_stub, wait_interval, start_time, _, _, index_creation_request) = self._prepare_wait_for_index_waiting(namespace, name, wait_interval)
         while True:
-            self.check_timeout(start_time, timeout)
+            self._check_timeout(start_time, timeout)
             try:
                 index_stub.GetStatus(index_creation_request)
                 logger.debug("Index created succesfully")
@@ -226,17 +226,17 @@ class Client(BaseClient):
                     raise e
 
     def _wait_for_index_deletion(
-        self, *, namespace: str, name: str, timeout: int = sys.maxsize
+        self, *, namespace: str, name: str, timeout: Optional[int] = sys.maxsize, wait_interval: Optional[int] = 0.1
     ) -> None:
         """
         Wait for the index to be deleted.
         """
 
         # Wait interval between polling
-        (index_stub, wait_interval, start_time, _, _, index_deletion_request) = self.prepare_wait_for_index_waiting(namespace, name)
+        (index_stub, wait_interval, start_time, _, _, index_deletion_request) = self._prepare_wait_for_index_waiting(namespace, name, wait_interval)
 
         while True:
-            self.check_timeout(start_time, timeout)
+            self._check_timeout(start_time, timeout)
 
             try:
                 index_stub.GetStatus(index_deletion_request)
@@ -259,7 +259,7 @@ class Client(BaseClient):
         Note:
             This method should be called when the VectorDbAdminClient is no longer needed to release resources.
         """
-        self._channelProvider.close()
+        self._channel_provider.close()
 
     def __enter__(self):
         """

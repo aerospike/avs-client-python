@@ -23,18 +23,17 @@ class BaseChannelProvider(object):
     def __init__(
         self, seeds: tuple[types.HostPort, ...], listener_name: Optional[str] = None, is_loadbalancer: Optional[bool] = False
     ) -> None:
-        if not seeds:
-            raise Exception("at least one seed host needed")
+        self.seeds: tuple[types.HostPort, ...] = seeds
+        self.listener_name: Optional[str] = listener_name
+        self._is_loadbalancer: Optional[bool] = is_loadbalancer
+        # dict of Node Number and ChannelAndEndponts object
         self._node_channels: dict[int, ChannelAndEndpoints] = {}
-        self._seedChannels: Union[dict[grpc.Channel], dict[grpc.Channel.aio]] = {}
-        self._closed = False
-        self._cluster_id = 0
-        self.seeds = seeds
-        self.listener_name = listener_name
-        self._is_loadbalancer = is_loadbalancer
-        self._seedChannels = [
+        self._seedChannels: Union[list[grpc.Channel], list[grpc.Channel.aio]] = [
             self._create_channel_from_host_port(seed) for seed in self.seeds
         ]
+        self._closed: bool = False
+        self._cluster_id: int = 0
+
 
     def get_channel(self) -> Union[grpc.aio.Channel, grpc.Channel]:
         if not self._is_loadbalancer:
@@ -50,6 +49,7 @@ class BaseChannelProvider(object):
                 return channel
 
         return self._seedChannels[0]
+
     def _create_channel_from_host_port(self, host: types.HostPort) -> Union[grpc.aio.Channel, grpc.Channel]:
         return self._create_channel(host.host, host.port, host.is_tls)
 
@@ -90,11 +90,11 @@ class BaseChannelProvider(object):
         # TODO: Worry about thread safety
         temp_endpoints: dict[int, vector_db_pb2.ServerEndpointList] = {}
 
-        update_endpoints = False
+        update_endpoints_stub = None
         channels = self._seedChannels + [
             x.channel for x in self._node_channels.values()
         ]
-        return (temp_endpoints, update_endpoints, channels, end_tend)
+        return (temp_endpoints, update_endpoints_stub, channels, end_tend)
 
 
     def check_cluster_id(self, new_cluster_id) -> None:
