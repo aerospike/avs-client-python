@@ -184,7 +184,7 @@ class BaseClient(object):
                 type=transact_pb2.ProjectionType.NONE, fields=None
             )
             exclude = transact_pb2.ProjectionFilter(
-                type=transact_pb2.ProjectionType.SPECIFIED, fields=field_names
+                type=transact_pb2.ProjectionType.SPECIFIED, fields=exclude_field_names
             )
         else:
             include = transact_pb2.ProjectionFilter(
