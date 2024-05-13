@@ -1,3 +1,4 @@
+
 syntax = "proto3";
 
 package aerospike.vector;
@@ -8,35 +9,35 @@ option java_multiple_files = true;
 
 // A record key.
 message Key {
-  // The Aerospike namespace.
+  // The storage namespace.
   string namespace = 1;
 
-  // Optional Aerospike set.
+  // Optional storage set.
   optional string set = 2;
-
-  // The aerospike digest
-  bytes digest = 3;
 
   // The key value.
   oneof value {
-    string stringValue = 4;
+    string stringValue = 3;
 
-    bytes bytesValue = 5;
+    bytes bytesValue = 4;
 
-    int32 intValue = 6;
+    int32 intValue = 5;
 
-    int64 longValue = 7;
+    int64 longValue = 6;
   }
 }
 
+// A list of boolean data values.
 message BoolData {
   repeated bool value = 1;
 }
 
+// A list of floating point data values.
 message FloatData {
   repeated float value = 1;
 }
 
+// A key in a map type value.
 message MapKey {
   oneof value {
     string stringValue = 1;
@@ -53,15 +54,18 @@ message MapKey {
   }
 }
 
+// A map entry.
 message MapEntry {
   MapKey key = 1;
   Value value = 2;
 }
 
+// A map/dictionary type.
 message Map {
   repeated MapEntry entries = 1;
 }
 
+// A list type.
 message List {
   repeated Value entries = 1;
 }
@@ -95,28 +99,38 @@ message Value {
     List listValue = 8;
 
     Vector vectorValue = 9;
+
+    bool booleanValue = 10;
   }
 }
 
-// A bin/field in Aerospike record.
-message Bin {
+// A field in the record.
+message Field {
   string name = 1;
   Value value = 2;
 }
 
-// A single database record.
-message Record {
+// Metadata associated with records stored in Aerospike DB.
+message AerospikeRecordMetadata {
   // Record modification count.
   uint32 generation = 1;
 
   // Date record will expire, in seconds from Jan 01 2010 00:00:00 GMT.
   uint32 expiration = 2;
-
-  // Record bins.
-  repeated Bin bins = 3;
 }
 
-// TODO: For simplicity , include key in Record?
+// A single database record.
+message Record {
+  // Record fields.
+  repeated Field fields = 1;
+
+  // Record metadata.
+  oneof metadata {
+    AerospikeRecordMetadata aerospikeMetadata = 2;
+  }
+}
+
+// A neighbor result returned by vector search.
 message Neighbor {
   // The result record key.
   Key key = 1;
@@ -131,13 +145,14 @@ message Neighbor {
 
 // Unique identifier for an index.
 message IndexId {
-  // The name of the index.
-  string name = 1;
+  // The index namespace.
+  string namespace = 1;
 
-  // The Aerospike namespace.
-  string namespace = 2;
+  // The name of the index. This should be unique within the namespace.
+  string name = 2;
 }
 
+// Available vector distance metrics.
 enum VectorDistanceMetric {
   SQUARED_EUCLIDEAN = 0;
   COSINE = 1;
@@ -146,6 +161,7 @@ enum VectorDistanceMetric {
   HAMMING = 4;
 }
 
+// Available index types.
 enum IndexType {
   HNSW = 0;
 }
@@ -196,13 +212,13 @@ message HnswBatchingParams {
   optional bool disabled = 3;
 }
 
-// Index in Aerospike storage configuration
-message AerospikeIndexStorage {
-  // Optional Aerospike namespace where the index is stored.
+// Index storage configuration
+message IndexStorage {
+  // Optional storage namespace where the index is stored.
   // Defaults to the index namespace.
   optional string namespace = 1;
 
-  // Optional Aerospike set where the index is stored.
+  // Optional storage set where the index is stored.
   // Defaults to the index name.
   optional string set = 2;
 }
@@ -222,8 +238,8 @@ message IndexDefinition {
   // Optional The distance metric to use. Defaults to SQUARED_EUCLIDEAN
   VectorDistanceMetric vectorDistanceMetric = 4;
 
-  // Indexed vector bin.
-  string bin = 5;
+  // Name of the record vector field to index.
+  string field = 5;
 
   // Optional filter on Aerospike set name from which records will be indexed.
   // If not specified all sets in the index namespace will be indexed.
@@ -234,13 +250,11 @@ message IndexDefinition {
     HnswParams hnswParams = 7;
   }
 
-  // Index storage.
-  oneof storage {
-    AerospikeIndexStorage aerospikeStorage = 8;
-  }
-
   // Optional labels associated with the index.
-  map<string, string> labels = 9;
+  map<string, string> labels = 8;
+
+  // Index storage.
+  optional IndexStorage storage = 9;
 }
 
 // List of index definitions.

@@ -1,6 +1,6 @@
 import pytest
 
-class exists_test_case:
+class delete_test_case:
     def __init__(
         self,
         *,
@@ -18,15 +18,15 @@ class exists_test_case:
 @pytest.mark.parametrize(
     "test_case",
     [
-        exists_test_case(
+        delete_test_case(
             namespace="test",
-            key="exists/1",
+            key="delete/1",
             set_name=None,
             record_data={"skills": [i for i in range(1024)]},
         ),
-        exists_test_case(
+        delete_test_case(
             namespace="test",
-            key="exists/2",
+            key="delete/2",
             set_name=None,
             record_data={"english": [float(i) for i in range(1024)]},
         )
@@ -38,10 +38,12 @@ def test_vector_exists(session_vector_client, test_case):
         key=test_case.key,
         record_data=test_case.record_data,
         set_name=test_case.set_name
-
     )
-    result = session_vector_client.exists(
+    session_vector_client.delete(
         namespace=test_case.namespace,
         key=test_case.key,
     )
-    assert result is True
+    with pytest.raises(Exception) as e_info:
+        result = session_vector_client.get(
+            namespace=test_case.namespace, key=test_case.key
+        )    

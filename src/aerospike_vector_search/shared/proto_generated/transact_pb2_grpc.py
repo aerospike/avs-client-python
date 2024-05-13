@@ -27,9 +27,14 @@ class TransactStub(object):
                 request_serializer=transact__pb2.GetRequest.SerializeToString,
                 response_deserializer=types__pb2.Record.FromString,
                 )
+        self.Delete = channel.unary_unary(
+                '/aerospike.vector.Transact/Delete',
+                request_serializer=transact__pb2.DeleteRequest.SerializeToString,
+                response_deserializer=google_dot_protobuf_dot_empty__pb2.Empty.FromString,
+                )
         self.Exists = channel.unary_unary(
                 '/aerospike.vector.Transact/Exists',
-                request_serializer=types__pb2.Key.SerializeToString,
+                request_serializer=transact__pb2.ExistsRequest.SerializeToString,
                 response_deserializer=types__pb2.Boolean.FromString,
                 )
         self.IsIndexed = channel.unary_unary(
@@ -49,31 +54,43 @@ class TransactServicer(object):
     """
 
     def Put(self, request, context):
-        """Missing associated documentation comment in .proto file."""
+        """Update/insert records.
+        """
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
     def Get(self, request, context):
-        """Missing associated documentation comment in .proto file."""
+        """Get a record.
+        """
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def Delete(self, request, context):
+        """Delete a record.
+        """
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
     def Exists(self, request, context):
-        """Missing associated documentation comment in .proto file."""
+        """Check if a record exists.
+        """
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
     def IsIndexed(self, request, context):
-        """Missing associated documentation comment in .proto file."""
+        """Check is a record is indexed.
+        """
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
     def VectorSearch(self, request, context):
-        """Missing associated documentation comment in .proto file."""
+        """Perform a vector nearest neighbor search.
+        """
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
@@ -91,9 +108,14 @@ def add_TransactServicer_to_server(servicer, server):
                     request_deserializer=transact__pb2.GetRequest.FromString,
                     response_serializer=types__pb2.Record.SerializeToString,
             ),
+            'Delete': grpc.unary_unary_rpc_method_handler(
+                    servicer.Delete,
+                    request_deserializer=transact__pb2.DeleteRequest.FromString,
+                    response_serializer=google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
+            ),
             'Exists': grpc.unary_unary_rpc_method_handler(
                     servicer.Exists,
-                    request_deserializer=types__pb2.Key.FromString,
+                    request_deserializer=transact__pb2.ExistsRequest.FromString,
                     response_serializer=types__pb2.Boolean.SerializeToString,
             ),
             'IsIndexed': grpc.unary_unary_rpc_method_handler(
@@ -152,6 +174,23 @@ class Transact(object):
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
 
     @staticmethod
+    def Delete(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/aerospike.vector.Transact/Delete',
+            transact__pb2.DeleteRequest.SerializeToString,
+            google_dot_protobuf_dot_empty__pb2.Empty.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
     def Exists(request,
             target,
             options=(),
@@ -163,7 +202,7 @@ class Transact(object):
             timeout=None,
             metadata=None):
         return grpc.experimental.unary_unary(request, target, '/aerospike.vector.Transact/Exists',
-            types__pb2.Key.SerializeToString,
+            transact__pb2.ExistsRequest.SerializeToString,
             types__pb2.Boolean.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)

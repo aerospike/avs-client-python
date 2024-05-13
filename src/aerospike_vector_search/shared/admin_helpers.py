@@ -51,7 +51,7 @@ class BaseClient(object):
             vectorDistanceMetric=vector_distance_metric,
             setFilter=sets,
             hnswParams=index_params,
-            bin=vector_field,
+            field=vector_field,
             dimensions=dimensions,
             labels=index_meta_data,
         )
