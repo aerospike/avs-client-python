@@ -11,6 +11,7 @@ from ..shared.client_helpers import BaseClient
 
 logger = logging.getLogger(__name__)
 
+
 class Client(BaseClient):
     """
     Aerospike Vector Search Asyncio Admin Client
@@ -74,7 +75,9 @@ class Client(BaseClient):
 
         await self._channel_provider._is_ready()
 
-        (transact_stub, insert_request) = self._prepare_insert(namespace, key, record_data, set_name, logger)
+        (transact_stub, insert_request) = self._prepare_insert(
+            namespace, key, record_data, set_name, logger
+        )
 
         try:
             await transact_stub.Put(insert_request)
@@ -110,14 +113,15 @@ class Client(BaseClient):
 
         await self._channel_provider._is_ready()
 
-        (transact_stub, update_request) = self._prepare_update(namespace, key, record_data, set_name, logger)
+        (transact_stub, update_request) = self._prepare_update(
+            namespace, key, record_data, set_name, logger
+        )
 
         try:
             await transact_stub.Put(update_request)
         except grpc.RpcError as e:
             logger.error("Failed with error: %s", e)
             raise types.AVSServerError(rpc_error=e)
-
 
     async def upsert(
         self,
@@ -147,7 +151,9 @@ class Client(BaseClient):
 
         await self._channel_provider._is_ready()
 
-        (transact_stub, upsert_request) = self._prepare_upsert(namespace, key, record_data, set_name, logger)
+        (transact_stub, upsert_request) = self._prepare_upsert(
+            namespace, key, record_data, set_name, logger
+        )
 
         try:
             await transact_stub.Put(upsert_request)
@@ -183,7 +189,9 @@ class Client(BaseClient):
 
         await self._channel_provider._is_ready()
 
-        (transact_stub, key, get_request) = self._prepare_get(namespace, key, field_names, set_name, logger)
+        (transact_stub, key, get_request) = self._prepare_get(
+            namespace, key, field_names, set_name, logger
+        )
         try:
             response = await transact_stub.Get(get_request)
         except grpc.RpcError as e:
@@ -213,7 +221,9 @@ class Client(BaseClient):
 
         await self._channel_provider._is_ready()
 
-        (transact_stub, exists_request) = self._prepare_exists(namespace, key, set_name, logger)
+        (transact_stub, exists_request) = self._prepare_exists(
+            namespace, key, set_name, logger
+        )
 
         try:
             response = await transact_stub.Exists(exists_request)
@@ -241,14 +251,15 @@ class Client(BaseClient):
 
         await self._channel_provider._is_ready()
 
-        (transact_stub, delete_request) = self._prepare_delete(namespace, key, set_name, logger)
+        (transact_stub, delete_request) = self._prepare_delete(
+            namespace, key, set_name, logger
+        )
 
         try:
             await transact_stub.Delete(delete_request)
         except grpc.RpcError as e:
             logger.error("Failed with error: %s", e)
             raise types.AVSServerError(rpc_error=e)
-
 
     async def is_indexed(
         self,
@@ -280,7 +291,9 @@ class Client(BaseClient):
 
         await self._channel_provider._is_ready()
 
-        (transact_stub, is_indexed_request) = self._prepare_is_indexed(namespace, key, index_name, index_namespace, set_name, logger)
+        (transact_stub, is_indexed_request) = self._prepare_is_indexed(
+            namespace, key, index_name, index_namespace, set_name, logger
+        )
         try:
             response = await transact_stub.IsIndexed(is_indexed_request)
         except grpc.RpcError as e:
@@ -320,7 +333,9 @@ class Client(BaseClient):
         """
         await self._channel_provider._is_ready()
 
-        (transact_stub, vector_search_request) = self._prepare_vector_search(namespace, index_name, query, limit, search_params, field_names, logger)
+        (transact_stub, vector_search_request) = self._prepare_vector_search(
+            namespace, index_name, query, limit, search_params, field_names, logger
+        )
 
         try:
             results_stream = transact_stub.VectorSearch(vector_search_request)
@@ -334,7 +349,13 @@ class Client(BaseClient):
         return async_results
 
     async def wait_for_index_completion(
-        self, *, namespace: str, name: str, timeout: Optional[int] = sys.maxsize, wait_interval: Optional[int] = 12, validation_threshold: Optional[int] = 2
+        self,
+        *,
+        namespace: str,
+        name: str,
+        timeout: Optional[int] = sys.maxsize,
+        wait_interval: Optional[int] = 12,
+        validation_threshold: Optional[int] = 2,
     ) -> None:
         """
         Wait for the index to have no pending index update operations.
@@ -346,7 +367,7 @@ class Client(BaseClient):
             Defaults to sys.maxsize.
             wait_interval (int, optional): The time (in seconds) to wait between index completion status request to the server.
             Lowering this value increases the chance that the index completion status is incorrect, which can result in poor search accuracy.
-            
+
         Raises:
             Exception: Raised when the timeout occurs while waiting for index completion.
             grpc.RpcError: Raised if an error occurs during the RPC communication with the server while attempting to create the index.
@@ -359,7 +380,14 @@ class Client(BaseClient):
         await self._channel_provider._is_ready()
 
         # Wait interval between polling
-        (index_stub, wait_interval, start_time, unmerged_record_initialized, validation_count, index_completion_request) = self._prepare_wait_for_index_waiting(namespace, name, wait_interval)
+        (
+            index_stub,
+            wait_interval,
+            start_time,
+            unmerged_record_initialized,
+            validation_count,
+            index_completion_request,
+        ) = self._prepare_wait_for_index_waiting(namespace, name, wait_interval)
         while True:
             try:
                 index_status = await index_stub.GetStatus(index_completion_request)
@@ -370,7 +398,9 @@ class Client(BaseClient):
                 else:
                     logger.error("Failed with error: %s", e)
                     raise types.AVSServerError(rpc_error=e)
-            if self._check_completion_condition(start_time, timeout, index_status, unmerged_record_initialized):
+            if self._check_completion_condition(
+                start_time, timeout, index_status, unmerged_record_initialized
+            ):
                 if validation_count == validation_threshold:
                     return
                 else:

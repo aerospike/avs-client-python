@@ -10,6 +10,7 @@ from .shared.admin_helpers import BaseClient
 
 logger = logging.getLogger(__name__)
 
+
 class Client(BaseClient):
     """
     Aerospike Vector Search Admin Client
@@ -41,7 +42,6 @@ class Client(BaseClient):
         self._channel_provider = channel_provider.ChannelProvider(
             seeds, listener_name, is_loadbalancer
         )
-
 
     def index_create(
         self,
@@ -82,7 +82,17 @@ class Client(BaseClient):
             This method creates an index with the specified parameters and waits for the index creation to complete.
             It waits for up to 100,000 seconds for the index creation to complete.
         """
-        (index_stub, index_create_request) = self._prepare_index_create(namespace, name, vector_field, dimensions, vector_distance_metric, sets, index_params, index_meta_data, logger)
+        (index_stub, index_create_request) = self._prepare_index_create(
+            namespace,
+            name,
+            vector_field,
+            dimensions,
+            vector_distance_metric,
+            sets,
+            index_params,
+            index_meta_data,
+            logger,
+        )
         try:
             index_stub.Create(index_create_request)
         except grpc.RpcError as e:
@@ -112,7 +122,9 @@ class Client(BaseClient):
             This method drops an index with the specified parameters and waits for the index deletion to complete.
             It waits for up to 100,000 seconds for the index deletion to complete.
         """
-        (index_stub, index_drop_request) = self._prepare_index_drop(namespace, name, logger)
+        (index_stub, index_drop_request) = self._prepare_index_drop(
+            namespace, name, logger
+        )
         try:
             index_stub.Drop(index_drop_request)
         except grpc.RpcError as e:
@@ -145,9 +157,7 @@ class Client(BaseClient):
             raise types.AVSServerError(rpc_error=e)
         return self._respond_index_list(response)
 
-    def index_get(
-        self, *, namespace: str, name: str
-    ) -> dict[str, Union[int, str]]:
+    def index_get(self, *, namespace: str, name: str) -> dict[str, Union[int, str]]:
         """
         Retrieve the information related with an index.
 
@@ -163,14 +173,15 @@ class Client(BaseClient):
             This error could occur due to various reasons such as network issues, server-side failures, or invalid request parameters.
 
         """
-        (index_stub, index_get_request) = self._prepare_index_get(namespace, name, logger)
+        (index_stub, index_get_request) = self._prepare_index_get(
+            namespace, name, logger
+        )
         try:
             response = index_stub.Get(index_get_request)
         except grpc.RpcError as e:
             logger.error("Failed with error: %s", e)
             raise types.AVSServerError(rpc_error=e)
         return self._respond_index_get(response)
-
 
     def index_get_status(self, *, namespace: str, name: str) -> int:
         """
@@ -193,7 +204,9 @@ class Client(BaseClient):
 
             Warning: This API is subject to change.
         """
-        (index_stub, index_get_status_request) = self._prepare_index_get_status(namespace, name, logger)
+        (index_stub, index_get_status_request) = self._prepare_index_get_status(
+            namespace, name, logger
+        )
         try:
             response = index_stub.GetStatus(index_get_status_request)
         except grpc.RpcError as e:
@@ -203,12 +216,19 @@ class Client(BaseClient):
         return self._respond_index_get_status(response)
 
     def _wait_for_index_creation(
-        self, *, namespace: str, name: str, timeout: Optional[int] = sys.maxsize, wait_interval: Optional[int] = 0.1
+        self,
+        *,
+        namespace: str,
+        name: str,
+        timeout: Optional[int] = sys.maxsize,
+        wait_interval: Optional[int] = 0.1,
     ) -> None:
         """
         Wait for the index to be created.
         """
-        (index_stub, wait_interval, start_time, _, _, index_creation_request) = self._prepare_wait_for_index_waiting(namespace, name, wait_interval)
+        (index_stub, wait_interval, start_time, _, _, index_creation_request) = (
+            self._prepare_wait_for_index_waiting(namespace, name, wait_interval)
+        )
         while True:
             self._check_timeout(start_time, timeout)
             try:
@@ -226,14 +246,21 @@ class Client(BaseClient):
                     raise types.AVSServerError(rpc_error=e)
 
     def _wait_for_index_deletion(
-        self, *, namespace: str, name: str, timeout: Optional[int] = sys.maxsize, wait_interval: Optional[int] = 0.1
+        self,
+        *,
+        namespace: str,
+        name: str,
+        timeout: Optional[int] = sys.maxsize,
+        wait_interval: Optional[int] = 0.1,
     ) -> None:
         """
         Wait for the index to be deleted.
         """
 
         # Wait interval between polling
-        (index_stub, wait_interval, start_time, _, _, index_deletion_request) = self._prepare_wait_for_index_waiting(namespace, name, wait_interval)
+        (index_stub, wait_interval, start_time, _, _, index_deletion_request) = (
+            self._prepare_wait_for_index_waiting(namespace, name, wait_interval)
+        )
 
         while True:
             self._check_timeout(start_time, timeout)

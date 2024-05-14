@@ -20,6 +20,7 @@ class HostPort(object):
         self.port = port
         self.is_tls = is_tls
 
+
 class Key(object):
     """
     Represents a record key.
@@ -31,9 +32,7 @@ class Key(object):
         key (Any): The key itself.
     """
 
-    def __init__(
-        self, *, namespace: str, set: str, key: Any
-    ) -> None:
+    def __init__(self, *, namespace: str, set: str, key: Any) -> None:
         self.namespace = namespace
         self.set = set
         self.key = key
@@ -232,6 +231,7 @@ class AVSError(Exception):
     """
     Custom exception raised for errors related to AVS.
     """
+
     pass
 
 
@@ -248,12 +248,6 @@ class AVSServerError(AVSError):
         rpc_error (Exception): The original gRPC error object from which AVSError is derived.
             This error object is used to extract status, details, and debug information.
     """
-    def __init__(
-        self,
-        *,
-        rpc_error
-    ) -> None:
+
+    def __init__(self, *, rpc_error) -> None:
         self.rpc_error = rpc_error
-        
-
-

@@ -11,6 +11,7 @@ from .shared.client_helpers import BaseClient
 
 logger = logging.getLogger(__name__)
 
+
 class Client(BaseClient):
     """
     Aerospike Vector Search Admin Client
@@ -71,7 +72,9 @@ class Client(BaseClient):
             This error could occur due to various reasons such as network issues, server-side failures, or invalid request parameters.
 
         """
-        (transact_stub, insert_request) = self._prepare_insert(namespace, key, record_data, set_name, logger)
+        (transact_stub, insert_request) = self._prepare_insert(
+            namespace, key, record_data, set_name, logger
+        )
 
         try:
             transact_stub.Put(insert_request)
@@ -104,14 +107,15 @@ class Client(BaseClient):
             This error could occur due to various reasons such as network issues, server-side failures, or invalid request parameters.
 
         """
-        (transact_stub, update_request) = self._prepare_update(namespace, key, record_data, set_name, logger)
+        (transact_stub, update_request) = self._prepare_update(
+            namespace, key, record_data, set_name, logger
+        )
 
         try:
             transact_stub.Put(update_request)
         except grpc.RpcError as e:
             logger.error("Failed with error: %s", e)
             raise types.AVSServerError(rpc_error=e)
-
 
     def upsert(
         self,
@@ -138,7 +142,9 @@ class Client(BaseClient):
             This error could occur due to various reasons such as network issues, server-side failures, or invalid request parameters.
 
         """
-        (transact_stub, upsert_request) = self._prepare_upsert(namespace, key, record_data, set_name, logger)
+        (transact_stub, upsert_request) = self._prepare_upsert(
+            namespace, key, record_data, set_name, logger
+        )
 
         try:
             transact_stub.Put(upsert_request)
@@ -171,7 +177,9 @@ class Client(BaseClient):
             grpc.RpcError: Raised if an error occurs during the RPC communication with the server while attempting to create the index.
             This error could occur due to various reasons such as network issues, server-side failures, or invalid request parameters.
         """
-        (transact_stub, key, get_request) = self._prepare_get(namespace, key, field_names, set_name, logger)
+        (transact_stub, key, get_request) = self._prepare_get(
+            namespace, key, field_names, set_name, logger
+        )
         try:
             response = transact_stub.Get(get_request)
         except grpc.RpcError as e:
@@ -198,7 +206,9 @@ class Client(BaseClient):
             grpc.RpcError: Raised if an error occurs during the RPC communication with the server while attempting to create the index.
             This error could occur due to various reasons such as network issues, server-side failures, or invalid request parameters.
         """
-        (transact_stub, exists_request) = self._prepare_exists(namespace, key, set_name, logger)
+        (transact_stub, exists_request) = self._prepare_exists(
+            namespace, key, set_name, logger
+        )
         try:
             response = transact_stub.Exists(exists_request)
         except grpc.RpcError as e:
@@ -222,7 +232,9 @@ class Client(BaseClient):
             grpc.RpcError: Raised if an error occurs during the RPC communication with the server while attempting to create the index.
             This error could occur due to various reasons such as network issues, server-side failures, or invalid request parameters.
         """
-        (transact_stub, delete_request) = self._prepare_delete(namespace, key, set_name, logger)
+        (transact_stub, delete_request) = self._prepare_delete(
+            namespace, key, set_name, logger
+        )
         try:
             transact_stub.Delete(delete_request)
         except grpc.RpcError as e:
@@ -256,7 +268,9 @@ class Client(BaseClient):
             grpc.RpcError: Raised if an error occurs during the RPC communication with the server while attempting to create the index.
             This error could occur due to various reasons such as network issues, server-side failures, or invalid request parameters.
         """
-        (transact_stub, is_indexed_request) = self._prepare_is_indexed(namespace, key, index_name, index_namespace, set_name, logger)
+        (transact_stub, is_indexed_request) = self._prepare_is_indexed(
+            namespace, key, index_name, index_namespace, set_name, logger
+        )
         try:
             response = transact_stub.IsIndexed(is_indexed_request)
         except grpc.RpcError as e:
@@ -275,7 +289,7 @@ class Client(BaseClient):
         field_names: Optional[list[str]] = None,
     ) -> list[types.Neighbor]:
         """
-        Perform a Hierarchical Navigable Small World (HNSW) vector search in Aerospike Vector Search. 
+        Perform a Hierarchical Navigable Small World (HNSW) vector search in Aerospike Vector Search.
 
         Args:
             namespace (str): The namespace for the records.
@@ -294,7 +308,9 @@ class Client(BaseClient):
             grpc.RpcError: Raised if an error occurs during the RPC communication with the server while attempting to create the index.
             This error could occur due to various reasons such as network issues, server-side failures, or invalid request parameters.
         """
-        (transact_stub, vector_search_request) = self._prepare_vector_search(namespace, index_name, query, limit, search_params, field_names, logger)
+        (transact_stub, vector_search_request) = self._prepare_vector_search(
+            namespace, index_name, query, limit, search_params, field_names, logger
+        )
 
         try:
             results_stream = transact_stub.VectorSearch(vector_search_request)
@@ -308,7 +324,13 @@ class Client(BaseClient):
         return results
 
     def wait_for_index_completion(
-        self, *, namespace: str, name: str, timeout: Optional[int] = sys.maxsize, wait_interval: Optional[int] = 12, validation_checks: Optional[int] = 2
+        self,
+        *,
+        namespace: str,
+        name: str,
+        timeout: Optional[int] = sys.maxsize,
+        wait_interval: Optional[int] = 12,
+        validation_checks: Optional[int] = 2,
     ) -> None:
         """
         Wait for the index to have no pending index update operations.
@@ -331,7 +353,14 @@ class Client(BaseClient):
             the timeout is reached or the index has no pending index update operations.
         """
         # Wait interval between polling
-        (index_stub, wait_interval, start_time, unmerged_record_initialized, consecutive_index_validations, index_completion_request) = self._prepare_wait_for_index_waiting(namespace, name, wait_interval)
+        (
+            index_stub,
+            wait_interval,
+            start_time,
+            unmerged_record_initialized,
+            consecutive_index_validations,
+            index_completion_request,
+        ) = self._prepare_wait_for_index_waiting(namespace, name, wait_interval)
         while True:
             try:
                 index_status = index_stub.GetStatus(index_completion_request)
@@ -342,7 +371,9 @@ class Client(BaseClient):
                 else:
                     logger.error("Failed with error: %s", e)
                     raise types.AVSServerError(rpc_error=e)
-            if self._check_completion_condition(start_time, timeout, index_status, unmerged_record_initialized):
+            if self._check_completion_condition(
+                start_time, timeout, index_status, unmerged_record_initialized
+            ):
                 if consecutive_index_validations == validation_checks:
                     return
                 else:
