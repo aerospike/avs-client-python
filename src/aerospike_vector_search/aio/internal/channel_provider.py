@@ -106,9 +106,8 @@ class ChannelProvider(base_channel_provider.BaseChannelProvider):
                 self.add_new_channel_to_node_channels(node, newEndpoints)
 
 
-            temp_node_channels = self._node_channels.items()
-            for node, channel_endpoints in temp_node_channels:
-                if not temp_endpoints.get(node):
+            for node, channel_endpoints in list(self._node_channels.items()):
+                if not self._node_channels.get(node):
                     try:
                         # TODO: Wait for all calls to drain
                         tasks.append(channel_endpoints.channel.close())

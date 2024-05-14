@@ -13,7 +13,7 @@ class BaseClient(object):
     def _prepare_seeds(self, seeds) -> None:
         return helpers._prepare_seeds(seeds)
         
-    def _prepare_put(self, namespace, key, record_data, set_name, logger) -> None:
+    def _prepare_put(self, namespace, key, record_data, set_name, write_type, logger) -> None:
 
         logger.debug(
             "Putting record: namespace=%s, key=%s, record_data:%s, set_name:%s",
@@ -24,32 +24,42 @@ class BaseClient(object):
         )
 
         key = self._get_key(namespace, set_name, key)
-        bin_list = [
-            types_pb2.Bin(name=k, value=conversions.toVectorDbValue(v))
+        field_list = [
+            types_pb2.Field(name=k, value=conversions.toVectorDbValue(v))
             for (k, v) in record_data.items()
         ]
 
         transact_stub = self._get_transact_stub()
-        put_request = transact_pb2.PutRequest(key=key, bins=bin_list)
+        put_request = transact_pb2.PutRequest(key=key, writeType=write_type, fields=field_list)
 
         return (transact_stub, put_request)
 
-    def _prepare_get(self, namespace, key, bin_names, set_name, logger) -> None:
+    def _prepare_insert(self, namespace, key, record_data, set_name, logger) -> None:
+        return self._prepare_put(namespace, key, record_data, set_name, transact_pb2.WriteType.INSERT_ONLY, logger)
+
+    def _prepare_update(self, namespace, key, record_data, set_name, logger) -> None:
+        return self._prepare_put(namespace, key, record_data, set_name, transact_pb2.WriteType.UPDATE_ONLY, logger)
+        
+    def _prepare_upsert(self, namespace, key, record_data, set_name, logger) -> None:
+        return self._prepare_put(namespace, key, record_data, set_name, transact_pb2.WriteType.UPSERT, logger)
+        
+    def _prepare_get(self, namespace, key, field_names, set_name, logger) -> None:
 
         logger.debug(
-            "Getting record: namespace=%s, key=%s, bin_names:%s, set_name:%s",
+            "Getting record: namespace=%s, key=%s, field_names:%s, set_name:%s",
             namespace,
             key,
-            bin_names,
+            field_names,
             set_name,
         )
 
 
         key = self._get_key(namespace, set_name, key)
-        bin_selector = self._get_bin_selector(bin_names=bin_names)
+        projection_spec = self._get_projection_spec(field_names=field_names)
 
         transact_stub = self._get_transact_stub()
-        get_request = transact_pb2.GetRequest(key=key, binSelector=bin_selector)
+        get_request = transact_pb2.GetRequest(key=key, projectionSpec=projection_spec)
+
 
         return (transact_stub, key, get_request)
 
@@ -65,8 +75,26 @@ class BaseClient(object):
         key = self._get_key(namespace, set_name, key)
 
         transact_stub = self._get_transact_stub()
+        exists_request = transact_pb2.ExistsRequest(key=key)
 
-        return (transact_stub, key)
+        return (transact_stub, exists_request)
+
+
+    def _prepare_delete(self, namespace, key, set_name, logger) -> None:
+
+        logger.debug(
+            "Deleting record: key=%s",
+            namespace,
+            key,
+            set_name,
+        )
+
+        key = self._get_key(namespace, set_name, key)
+
+        transact_stub = self._get_transact_stub()
+        delete_request = transact_pb2.DeleteRequest(key=key)
+
+        return (transact_stub, delete_request)
 
     def _prepare_is_indexed(self, namespace, key, index_name, index_namespace, set_name, logger) -> None:
 
@@ -89,21 +117,23 @@ class BaseClient(object):
 
         return (transact_stub, is_indexed_request)
 
-    def _prepare_vector_search(self, namespace, index_name, query, limit, search_params, bin_names, logger) -> None:
+    def _prepare_vector_search(self, namespace, index_name, query, limit, search_params, field_names, logger) -> None:
 
         logger.debug(
-            "Performing vector search: namespace=%s, index_name=%s, query=%s, limit=%s, search_params=%s, bin_names=%s",
+            "Performing vector search: namespace=%s, index_name=%s, query=%s, limit=%s, search_params=%s, field_names=%s",
             namespace,
             index_name,
             query,
             limit,
             search_params,
-            bin_names,
+            field_names,
         )
 
         if search_params != None:
             search_params = search_params._to_pb2()
-        bin_selector = self._get_bin_selector(bin_names=bin_names)
+
+        projection_spec = self._get_projection_spec(field_names=field_names)
+
         index = types_pb2.IndexId(namespace=namespace, name=index_name)
         query_vector = conversions.toVectorDbValue(query).vectorValue
 
@@ -115,7 +145,7 @@ class BaseClient(object):
             queryVector=query_vector,
             limit=limit,
             hnswSearchParams=search_params,
-            binSelector=bin_selector,
+            projection=projection_spec,
         )
         
         return (transact_stub, vector_search_request)
@@ -128,7 +158,7 @@ class BaseClient(object):
     def _respond_get(self, response, key) -> None:
         return types.RecordWithKey(
             key=conversions.fromVectorDbKey(key),
-            bins=conversions.fromVectorDbRecord(response),
+            fields=conversions.fromVectorDbRecord(response),
         )
 
     def _respond_exists(self, response) -> None:
@@ -140,17 +170,35 @@ class BaseClient(object):
     def _respond_neighbor(self, response) -> None:
         return conversions.fromVectorDbNeighbor(response)
 
-    def _get_bin_selector(self, *, bin_names: Optional[list] = None):
+    def _get_projection_spec(self, *, field_names: Optional[list] = None, exclude_field_names: Optional[list] = None):
 
-        if not bin_names:
-            bin_selector = transact_pb2.BinSelector(
-                type=transact_pb2.BinSelectorType.ALL, binNames=bin_names
+        if field_names:
+            include = transact_pb2.ProjectionFilter(
+                type=transact_pb2.ProjectionType.SPECIFIED, fields=field_names
+            )
+            exclude = transact_pb2.ProjectionFilter(
+                type=transact_pb2.ProjectionType.NONE, fields=None
+            )
+        elif exclude_field_names:
+            include = transact_pb2.ProjectionFilter(
+                type=transact_pb2.ProjectionType.NONE, fields=None
+            )
+            exclude = transact_pb2.ProjectionFilter(
+                type=transact_pb2.ProjectionType.SPECIFIED, fields=exclude_field_names
             )
         else:
-            bin_selector = transact_pb2.BinSelector(
-                type=transact_pb2.BinSelectorType.SPECIFIED, binNames=bin_names
+            include = transact_pb2.ProjectionFilter(
+                type=transact_pb2.ProjectionType.ALL, fields=None
             )
-        return bin_selector
+            exclude = transact_pb2.ProjectionFilter(
+                type=transact_pb2.ProjectionType.NONE, fields=None
+            )
+
+        projection_spec = transact_pb2.ProjectionSpec(
+            include=include, exclude=exclude
+        )
+
+        return projection_spec
 
     def _get_key(self, namespace: str, set: str, key: Union[int, str, bytes, bytearray]):
         if isinstance(key, str):

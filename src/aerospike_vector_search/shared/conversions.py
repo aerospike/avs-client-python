@@ -13,6 +13,8 @@ def toVectorDbValue(value: Any) -> types_pb2.Value:
         return types_pb2.Value(doubleValue=value)
     elif isinstance(value, (bytes, bytearray)):
         return types_pb2.Value(bytesValue=value)
+    elif isinstance(value, bool):
+        return types_pb2.Value(booleanValue=value)
     elif isinstance(value, list) and value:
         # TODO: Convert every element correctly to destination type.
         if isinstance(value[0], float):
@@ -70,22 +72,22 @@ def fromVectorDbKey(key: types_pb2.Key) -> types.Key:
         keyValue = key.bytesValue
 
     return types.Key(
-        namespace=key.namespace, set=key.set, digest=key.digest, key=keyValue
+        namespace=key.namespace, set=key.set, key=keyValue
     )
 
 
 def fromVectorDbRecord(record: types_pb2.Record) -> dict[str, Any]:
-    bins = {}
-    for bin in record.bins:
-        bins[bin.name] = fromVectorDbValue(bin.value)
+    fields = {}
+    for field in record.fields:
+        fields[field.name] = fromVectorDbValue(field.value)
 
-    return bins
+    return fields
 
 
 def fromVectorDbNeighbor(input: types_pb2.Neighbor) -> types.Neighbor:
     return types.Neighbor(
         key=fromVectorDbKey(input.key),
-        bins=fromVectorDbRecord(input.record),
+        fields=fromVectorDbRecord(input.record),
         distance=input.distance,
     )
 

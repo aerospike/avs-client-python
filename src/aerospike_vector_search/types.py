@@ -28,45 +28,43 @@ class Key(object):
     Args:
         namespace (str): The namespace for the key.
         set (str): The set for the key.
-        digest (bytearray): The digest of the key.
         key (Any): The key itself.
     """
 
     def __init__(
-        self, *, namespace: str, set: str, digest: bytearray, key: Any
+        self, *, namespace: str, set: str, key: Any
     ) -> None:
         self.namespace = namespace
         self.set = set
-        self.digest = digest
         self.key = key
 
     def __str__(self):
         """
         Returns a string representation of the key.
         """
-        return f"Key: namespace='{self.namespace}', set='{self.set}', digest={self.digest}, key={self.key}"
+        return f"Key: namespace='{self.namespace}', set='{self.set}', key={self.key}"
 
 
 class RecordWithKey(object):
     """
-    Represents a record, including a key and bins.
+    Represents a record, including a key and fields.
     Return value for VectorDbClient.get.
 
     Args:
         key (Key): The key of the record.
-        bins (dict[str, Any]): The bins associated with the record.
+        fields (dict[str, Any]): The fields associated with the record.
     """
 
-    def __init__(self, *, key: Key, bins: dict[str, Any]) -> None:
+    def __init__(self, *, key: Key, fields: dict[str, Any]) -> None:
         self.key = key
-        self.bins = bins
+        self.fields = fields
 
     def __str__(self):
         """
-        Returns a string representation of the record, including a key and bins.
+        Returns a string representation of the record, including a key and fields.
         """
-        bins_info = ""
-        for key, value in self.bins.items():
+        fields_info = ""
+        for key, value in self.fields.items():
             if isinstance(value, list):
                 if len(value) > 4:
                     value_str = (
@@ -78,19 +76,19 @@ class RecordWithKey(object):
                     value_str = str(value)
             else:
                 value_str = str(value)
-            bins_info += "\n\t\t{}: {}".format(key, value_str)
-        return "{{\n\t{},\n\tbins: {{\n{}\n\t}}\n}}".format(self.key, bins_info)
+            fields_info += "\n\t\t{}: {}".format(key, value_str)
+        return "{{\n\t{},\n\tfields: {{\n{}\n\t}}\n}}".format(self.key, fields_info)
 
 
 class Neighbor(object):
     """
     Represents a neighboring record in the context of approximate nearest neighbor search.
 
-    This class represents a neighboring record in relation to a query record. It includes information such as the key, bins, and distance from the query record.
+    This class represents a neighboring record in relation to a query record. It includes information such as the key, fields, and distance from the query record.
 
     Args:
         key (Key): The Key instance identifying the neighboring record.
-        bins (dict[str, Any]): A dictionary representing bins associated with the neighboring record.
+        fields (dict[str, Any]): A dictionary representing fields associated with the neighboring record.
         distance (float): The distance between the neighboring record and the query record, calculated based on the chosen VectorDistanceMetric.
 
     Notes:
@@ -100,17 +98,17 @@ class Neighbor(object):
 
     """
 
-    def __init__(self, *, key: Key, bins: dict[str, Any], distance: float) -> None:
+    def __init__(self, *, key: Key, fields: dict[str, Any], distance: float) -> None:
         self.key = key
-        self.bins = bins
+        self.fields = fields
         self.distance = distance
 
     def __str__(self):
         """
         Returns a string representation of the neighboring record.
         """
-        bins_info = ""
-        for key, value in self.bins.items():
+        fields_info = ""
+        for key, value in self.fields.items():
             if isinstance(value, list):
                 if len(value) > 4:
                     value_str = (
@@ -122,9 +120,9 @@ class Neighbor(object):
                     value_str = str(value)
             else:
                 value_str = str(value)
-            bins_info += "\n\t\t{}: {}".format(key, value_str)
-        return "{{\n\t{},\n\tdistance: {},\n\tbins: {{\n{}\n\t}}\n}}".format(
-            self.key, self.distance, bins_info
+            fields_info += "\n\t\t{}: {}".format(key, value_str)
+        return "{{\n\t{},\n\tdistance: {},\n\tfields: {{\n{}\n\t}}\n}}".format(
+            self.key, self.distance, fields_info
         )
 
 
