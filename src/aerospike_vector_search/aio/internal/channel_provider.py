@@ -18,7 +18,7 @@ logger = logging.getLogger(__name__)
 
 
 class ChannelProvider(base_channel_provider.BaseChannelProvider):
-    """Proximus Channel Provider"""
+    """AVS Channel Provider"""
 
     def __init__(
         self,

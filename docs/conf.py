@@ -9,7 +9,7 @@
 project = 'aerospike-vector-search'
 copyright = '2024, Dominic Pelini'
 author = 'Dominic Pelini'
-release = '0.5.0'
+release = '0.6.0'
 
 # -- General configuration ---------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
@@ -26,4 +26,4 @@ exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#options-for-html-output
 
 html_theme = 'sphinx_rtd_theme'
-html_static_path = ['_static']
+html_static_path = ['']

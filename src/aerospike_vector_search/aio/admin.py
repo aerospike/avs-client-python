@@ -66,12 +66,12 @@ class Client(BaseClient):
             vector_field (str): The name of the field containing vector data.
             dimensions (int): The number of dimensions in the vector data.
             vector_distance_metric (Optional[types.VectorDistanceMetric], optional):
-                The distance metric used to compare when performing a vector search.
-                Defaults to VectorDistanceMetric.SQUARED_EUCLIDEAN.
+            The distance metric used to compare when performing a vector search.
+            Defaults to VectorDistanceMetric.SQUARED_EUCLIDEAN.
             sets (Optional[str], optional): The set used for the index. Defaults to None.
             index_params (Optional[types.HnswParams], optional):
-                Parameters used for tuning vector search. Defaults to None. If index_params is None, then the default values specified for
-                types.HnswParams will be used.
+            Parameters used for tuning vector search. Defaults to None. If index_params is None, then the default values specified for
+            types.HnswParams will be used.
             index_meta_data (Optional[dict[str, str]], optional): Meta data associated with the index. Defaults to None.
 
         Raises:

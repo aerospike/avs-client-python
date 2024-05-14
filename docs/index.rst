@@ -7,11 +7,11 @@ Welcome to Aerospike Vector Search Client for Python.
 
 This package splits the client functionality into two separate clients.
 
-This vector client (VectorDbClient) specializes in performing database operations with vector data.
-Moreover, the client supports Hierarchical Navigable Small World (HNSW) vector searches,
+This standard client (Client) specializes in performing database operations with vector data.
+Moreover, the standard client supports Hierarchical Navigable Small World (HNSW) vector searches,
 allowing users to find vectors similar to a given query vector within an index.
 
-This admin client (VectorDbAdminClient) is designed to conduct Proximus administrative operation such
+This admin client (AdminClient) is designed to conduct Proximus administrative operation such
 as creating indexes, querying index information, and dropping indexes.
 
 Please explore the modules below for more information on API usage and details.
@@ -22,9 +22,11 @@ Please explore the modules below for more information on API usage and details.
    :maxdepth: 2
    :caption: Contents:
 
-   vectordb_client
-   vectordb_admin
+   aio
+   admin
+   client
    types
+
 
 Indices and tables
 ==================
