@@ -308,7 +308,7 @@ class Client(BaseClient):
         return results
 
     def wait_for_index_completion(
-        self, *, namespace: str, name: str, timeout: Optional[int] = sys.maxsize, wait_interval: Optional[int] = 12, validation_threshold: Optional[int] = 2
+        self, *, namespace: str, name: str, timeout: Optional[int] = sys.maxsize, wait_interval: Optional[int] = 12, validation_checks: Optional[int] = 2
     ) -> None:
         """
         Wait for the index to have no pending index update operations.
@@ -331,7 +331,7 @@ class Client(BaseClient):
             the timeout is reached or the index has no pending index update operations.
         """
         # Wait interval between polling
-        (index_stub, wait_interval, start_time, unmerged_record_initialized, validation_count, index_completion_request) = self._prepare_wait_for_index_waiting(namespace, name, wait_interval)
+        (index_stub, wait_interval, start_time, unmerged_record_initialized, consecutive_index_validations, index_completion_request) = self._prepare_wait_for_index_waiting(namespace, name, wait_interval)
         while True:
             try:
                 index_status = index_stub.GetStatus(index_completion_request)
@@ -343,12 +343,12 @@ class Client(BaseClient):
                     logger.error("Failed with error: %s", e)
                     raise types.AVSServerError(rpc_error=e)
             if self._check_completion_condition(start_time, timeout, index_status, unmerged_record_initialized):
-                if validation_count == validation_threshold:
+                if consecutive_index_validations == validation_checks:
                     return
                 else:
-                    validation_count += 1
+                    consecutive_index_validations += 1
             else:
-                validation_count = 0
+                consecutive_index_validations = 0
             time.sleep(wait_interval)
 
     def close(self):
