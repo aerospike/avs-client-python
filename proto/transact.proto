@@ -1,3 +1,4 @@
+
 syntax = "proto3";
 
 package aerospike.vector;
@@ -9,13 +10,31 @@ option java_multiple_files = true;
 import "google/protobuf/empty.proto";
 import "types.proto";
 
+// The type of write operation.
+enum WriteType {
+  // Insert the record if it does not exist.
+  // Update the record by replacing specified fields.
+  UPSERT = 0;
+
+  // If the record exists update the record by replacing specified fields.
+  // Fails if the record does not exist.
+  UPDATE_ONLY = 1;
+
+  // Insert / create the record if it does not exists.
+  // Fails if the record already exist.
+  INSERT_ONLY = 2;
+}
+
 // Put request to insert/update a record.
 message PutRequest {
   // The key for the record to insert/update
   Key key = 1;
 
-  // The record bins.
-  repeated Bin bins = 3;
+  // The type of the put/write request.
+  WriteType writeType = 2;
+
+  // The record fields.
+  repeated Field fields = 3;
 }
 
 // Get request to insert/update a record.
@@ -23,8 +42,20 @@ message GetRequest {
   // The key for the record to insert/update
   Key key = 1;
 
-  // The bin selector.
-  BinSelector binSelector = 2;
+  // The field selector.
+  ProjectionSpec projectionSpec = 2;
+}
+
+// Check if a record exists.
+message ExistsRequest {
+  // The key for the record check
+  Key key = 1;
+}
+
+// Delete request to delete a record.
+message DeleteRequest {
+  // The key for the record to delete
+  Key key = 1;
 }
 
 // Request to check whether the given record is indexed for the specified
@@ -37,18 +68,31 @@ message IsIndexedRequest {
   IndexId indexId = 2;
 }
 
-enum BinSelectorType {
+// The type of projection.
+enum ProjectionType {
   ALL = 0;
   NONE = 1;
   SPECIFIED = 2;
 }
 
-message BinSelector {
+// A projection filter.
+message ProjectionFilter {
   // The type of the selector.
-  BinSelectorType type = 1;
+  ProjectionType type = 1;
 
-  // Bin names of specific bins are desired.
-  repeated string binNames = 2;
+  // Names of desired fields / selectors.
+  repeated string fields = 2;
+}
+
+// Projection to select which fields are returned.
+// A field is returned if it passes the include filter
+// and does not pass the exclude filter.
+message ProjectionSpec {
+  // The fields to include.
+  ProjectionFilter include = 1;
+
+  // The fields to exclude.
+  ProjectionFilter exclude = 2;
 }
 
 message VectorSearchRequest {
@@ -61,8 +105,8 @@ message VectorSearchRequest {
   // Maximum number of results to return.
   uint32 limit = 3;
 
-  // The bin selector.
-  BinSelector binSelector = 4;
+  // Projection to select fields.
+  ProjectionSpec projection = 4;
 
   // Optional parameters to tune the search.
   oneof searchParams {
@@ -72,13 +116,21 @@ message VectorSearchRequest {
 
 // Record transaction services.
 service Transact {
+  // Update/insert records.
   rpc Put(PutRequest) returns (google.protobuf.Empty) {}
 
+  // Get a record.
   rpc Get(GetRequest) returns (Record) {}
 
-  rpc Exists(Key) returns (Boolean) {}
+  // Delete a record.
+  rpc Delete(DeleteRequest) returns (google.protobuf.Empty) {}
 
+  // Check if a record exists.
+  rpc Exists(ExistsRequest) returns (Boolean) {}
+
+  // Check is a record is indexed.
   rpc IsIndexed(IsIndexedRequest) returns (Boolean) {}
 
+  // Perform a vector nearest neighbor search.
   rpc VectorSearch(VectorSearchRequest) returns (stream Neighbor) {}
 }

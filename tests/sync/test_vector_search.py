@@ -66,7 +66,7 @@ def query_numpy():
 
 
 def put_vector(client, vector, j):
-    client.put(
+    client.upsert(
         namespace="test", key=str(j), record_data={"unit_test": vector}, set_name="demo"
     )
 
@@ -81,7 +81,7 @@ def vector_search(client, vector):
         index_name="demo",
         query=vector,
         limit=100,
-        bin_names=["unit_test"],
+        field_names=["unit_test"],
     )
     return result
 
@@ -92,7 +92,7 @@ def vector_search_ef_80(client, vector):
         index_name="demo",
         query=vector,
         limit=100,
-        bin_names=["unit_test"],
+        field_names=["unit_test"],
         search_params=types.HnswSearchParams(ef=80)
     )
     return result
@@ -115,7 +115,7 @@ def test_vector_search(
 
     # Put base vectors for search
     for j, vector in enumerate(base_numpy):
-        put_vector(session_vector_client, vector.tolist(), j)
+        put_vector(session_vector_client, vector, j)
 
     session_vector_client.wait_for_index_completion(namespace='test', name='demo')
 
@@ -125,23 +125,23 @@ def test_vector_search(
     count = 0
     for i in query_numpy:
         if count % 2:
-            results.append(vector_search(session_vector_client, i.tolist()))
+            results.append(vector_search(session_vector_client, i))
         else:
-            results.append(vector_search_ef_80(session_vector_client, i.tolist()))
+            results.append(vector_search_ef_80(session_vector_client, i))
         count += 1
     # Get recall numbers for each query
     recall_for_each_query = []
     for i, outside in enumerate(truth_numpy):
         true_positive = 0
         false_negative = 0
-        # Parse all bins for each neighbor into an array
-        binList = []
+        # Parse all fields for each neighbor into an array
+        field_list = []
 
         for j, result in enumerate(results[i]):
-            binList.append(result.bins["unit_test"])
+            field_list.append(result.fields["unit_test"])
         for j, index in enumerate(outside):
             vector = base_numpy[index].tolist()
-            if vector in binList:
+            if vector in field_list:
                 true_positive = true_positive + 1
             else:
                 false_negative = false_negative + 1

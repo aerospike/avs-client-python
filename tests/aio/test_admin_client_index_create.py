@@ -61,15 +61,15 @@ async def test_index_create(session_admin_client, test_case):
             found = True
             assert result['id']['namespace'] == test_case.namespace
             assert result['dimensions'] == test_case.dimensions
-            assert result['bin'] == test_case.vector_field
+            assert result['field'] == test_case.vector_field
             assert result['hnsw_params']['m'] == 16
             assert result['hnsw_params']['ef_construction'] == 100
             assert result['hnsw_params']['ef'] == 100
             assert result['hnsw_params']['batching_params']['max_records'] == 100000
             assert result['hnsw_params']['batching_params']['interval'] == 30000
             assert result['hnsw_params']['batching_params']['disabled'] == False
-            assert result['aerospikeStorage']['namespace'] == test_case.namespace
-            assert result['aerospikeStorage']['set'] == test_case.name
+            assert result['storage']['namespace'] == test_case.namespace
+            assert result['storage']['set'] == test_case.name
     assert found == True
 
 @pytest.mark.parametrize(
@@ -115,15 +115,15 @@ async def test_index_create_with_dimnesions(session_admin_client, test_case):
             found = True
             assert result['id']['namespace'] == test_case.namespace
             assert result['dimensions'] == test_case.dimensions
-            assert result['bin'] == test_case.vector_field
+            assert result['field'] == test_case.vector_field
             assert result['hnsw_params']['m'] == 16
             assert result['hnsw_params']['ef_construction'] == 100
             assert result['hnsw_params']['ef'] == 100
             assert result['hnsw_params']['batching_params']['max_records'] == 100000
             assert result['hnsw_params']['batching_params']['interval'] == 30000
             assert result['hnsw_params']['batching_params']['disabled'] == False
-            assert result['aerospikeStorage']['namespace'] == test_case.namespace
-            assert result['aerospikeStorage']['set'] == test_case.name
+            assert result['storage']['namespace'] == test_case.namespace
+            assert result['storage']['set'] == test_case.name
     assert found == True
 
 @pytest.mark.parametrize(
@@ -191,15 +191,15 @@ async def test_index_create_with_vector_distance_metric(
             found = True
             assert result['id']['namespace'] == test_case.namespace
             assert result['dimensions'] == test_case.dimensions
-            assert result['bin'] == test_case.vector_field
+            assert result['field'] == test_case.vector_field
             assert result['hnsw_params']['m'] == 16
             assert result['hnsw_params']['ef_construction'] == 100
             assert result['hnsw_params']['ef'] == 100
             assert result['hnsw_params']['batching_params']['max_records'] == 100000
             assert result['hnsw_params']['batching_params']['interval'] == 30000
             assert result['hnsw_params']['batching_params']['disabled'] == False
-            assert result['aerospikeStorage']['namespace'] == test_case.namespace
-            assert result['aerospikeStorage']['set'] == test_case.name
+            assert result['storage']['namespace'] == test_case.namespace
+            assert result['storage']['set'] == test_case.name
     assert found == True
 
 @pytest.mark.parametrize(
@@ -245,15 +245,15 @@ async def test_index_create_with_sets(session_admin_client, test_case):
             found = True
             assert result['id']['namespace'] == test_case.namespace
             assert result['dimensions'] == test_case.dimensions
-            assert result['bin'] == test_case.vector_field
+            assert result['field'] == test_case.vector_field
             assert result['hnsw_params']['m'] == 16
             assert result['hnsw_params']['ef_construction'] == 100
             assert result['hnsw_params']['ef'] == 100
             assert result['hnsw_params']['batching_params']['max_records'] == 100000
             assert result['hnsw_params']['batching_params']['interval'] == 30000
             assert result['hnsw_params']['batching_params']['disabled'] == False
-            assert result['aerospikeStorage']['namespace'] == test_case.namespace
-            assert result['aerospikeStorage']['set'] == test_case.name
+            assert result['storage']['namespace'] == test_case.namespace
+            assert result['storage']['set'] == test_case.name
     assert found == True
 
 @pytest.mark.parametrize(
@@ -321,15 +321,15 @@ async def test_index_create_with_index_params(session_admin_client, test_case):
             found = True
             assert result['id']['namespace'] == test_case.namespace
             assert result['dimensions'] == test_case.dimensions
-            assert result['bin'] == test_case.vector_field
+            assert result['field'] == test_case.vector_field
             assert result['hnsw_params']['m'] == test_case.index_params.m
             assert result['hnsw_params']['ef_construction'] == test_case.index_params.ef_construction
             assert result['hnsw_params']['ef'] == test_case.index_params.ef
             assert result['hnsw_params']['batching_params']['max_records'] == test_case.index_params.batching_params.max_records
             assert result['hnsw_params']['batching_params']['interval'] == test_case.index_params.batching_params.interval
             assert result['hnsw_params']['batching_params']['disabled'] == test_case.index_params.batching_params.disabled
-            assert result['aerospikeStorage']['namespace'] == test_case.namespace
-            assert result['aerospikeStorage']['set'] == test_case.name
+            assert result['storage']['namespace'] == test_case.namespace
+            assert result['storage']['set'] == test_case.name
     assert found == True
 
 @pytest.mark.parametrize(
@@ -365,13 +365,13 @@ async def test_index_create_index_meta_data(session_admin_client, test_case):
             found = True
             assert result['id']['namespace'] == test_case.namespace
             assert result['dimensions'] == test_case.dimensions
-            assert result['bin'] == test_case.vector_field
+            assert result['field'] == test_case.vector_field
             assert result['hnsw_params']['m'] == 16
             assert result['hnsw_params']['ef_construction'] == 100
             assert result['hnsw_params']['ef'] == 100
             assert result['hnsw_params']['batching_params']['max_records'] == 100000
             assert result['hnsw_params']['batching_params']['interval'] == 30000
             assert result['hnsw_params']['batching_params']['disabled'] == False
-            assert result['aerospikeStorage']['namespace'] == test_case.namespace
-            assert result['aerospikeStorage']['set'] == test_case.name
+            assert result['storage']['namespace'] == test_case.namespace
+            assert result['storage']['set'] == test_case.name
     assert found == True

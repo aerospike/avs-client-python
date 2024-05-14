@@ -19,8 +19,12 @@ logger = logging.getLogger(__name__)
 
 class ChannelProvider(base_channel_provider.BaseChannelProvider):
     """Proximus Channel Provider"""
+
     def __init__(
-        self, seeds: tuple[types.HostPort, ...], listener_name: Optional[str] = None, is_loadbalancer: Optional[bool] = False
+        self,
+        seeds: tuple[types.HostPort, ...],
+        listener_name: Optional[str] = None,
+        is_loadbalancer: Optional[bool] = False,
     ) -> None:
         super().__init__(seeds, listener_name, is_loadbalancer)
         self._tend_ended = threading.Event()
@@ -40,7 +44,7 @@ class ChannelProvider(base_channel_provider.BaseChannelProvider):
 
         if self._timer != None:
             self._timer.join()
- 
+
     def _tend(self):
         (temp_endpoints, update_endpoints_stub, channels, end_tend) = self.init_tend()
 
@@ -51,7 +55,7 @@ class ChannelProvider(base_channel_provider.BaseChannelProvider):
         for channel in channels:
 
             stub = vector_db_pb2_grpc.ClusterInfoStub(channel)
-            
+
             try:
                 new_cluster_id = stub.GetClusterId(empty).id
                 if self.check_cluster_id(new_cluster_id):
@@ -61,8 +65,9 @@ class ChannelProvider(base_channel_provider.BaseChannelProvider):
                     continue
 
             except Exception as e:
-                logger.debug("While tending, failed to get cluster id with error:" + str(e))
-
+                logger.debug(
+                    "While tending, failed to get cluster id with error:" + str(e)
+                )
 
         if update_endpoints_stub:
             try:
@@ -73,30 +78,38 @@ class ChannelProvider(base_channel_provider.BaseChannelProvider):
                 )
                 temp_endpoints = self.update_temp_endpoints(response, temp_endpoints)
             except Exception as e:
-                logger.debug("While tending, failed to get cluster endpoints with error:" + str(e))
+                logger.debug(
+                    "While tending, failed to get cluster endpoints with error:"
+                    + str(e)
+                )
 
             for node, newEndpoints in temp_endpoints.items():
-                (channel_endpoints, add_new_channel) = self.check_for_new_endpoints(node, newEndpoints)
+                (channel_endpoints, add_new_channel) = self.check_for_new_endpoints(
+                    node, newEndpoints
+                )
 
                 if add_new_channel:
                     try:
                         # TODO: Wait for all calls to drain
                         channel_endpoints.channel.close()
                     except Exception as e:
-                        logger.debug("While tending, failed to close GRPC channel:" + str(e))
+                        logger.debug(
+                            "While tending, failed to close GRPC channel:" + str(e)
+                        )
 
                     self.add_new_channel_to_node_channels(node, newEndpoints)
 
-            temp_node_channels = self._node_channels.items()
-            for node, channel_endpoints in temp_node_channels:
-                if not temp_endpoints.get(node):
-                    # TODO: Wait for all calls to drain
+            for node, channel_endpoints in list(self._node_channels.items()):
+                if not self._node_channels.get(node):
                     try:
+                        # TODO: Wait for all calls to drain
                         channel_endpoints.channel.close()
                         del self._node_channels[node]
-                        
+
                     except Exception as e:
-                        logger.debug("While tending, failed to close GRPC channel:" + str(e))
+                        logger.debug(
+                            "While tending, failed to close GRPC channel:" + str(e)
+                        )
         # TODO: check tend interval.
         self._timer = threading.Timer(1, self._tend).start()
 

@@ -22,7 +22,18 @@ class BaseClient(object):
     def _prepare_seeds(self, seeds) -> None:
         return helpers._prepare_seeds(seeds)
 
-    def _prepare_index_create(self, namespace, name, vector_field, dimensions, vector_distance_metric, sets, index_params, index_meta_data, logger) -> None:
+    def _prepare_index_create(
+        self,
+        namespace,
+        name,
+        vector_field,
+        dimensions,
+        vector_distance_metric,
+        sets,
+        index_params,
+        index_meta_data,
+        logger,
+    ) -> None:
 
         logger.debug(
             "Creating index: namespace=%s, name=%s, vector_field=%s, dimensions=%d, vector_distance_metric=%s, "
@@ -51,14 +62,14 @@ class BaseClient(object):
             vectorDistanceMetric=vector_distance_metric,
             setFilter=sets,
             hnswParams=index_params,
-            bin=vector_field,
+            field=vector_field,
             dimensions=dimensions,
             labels=index_meta_data,
         )
         return (index_stub, index_create_request)
 
     def _prepare_index_drop(self, namespace, name, logger) -> None:
-        
+
         logger.debug("Dropping index: namespace=%s, name=%s", namespace, name)
 
         index_stub = self._get_index_stub()
@@ -92,7 +103,6 @@ class BaseClient(object):
 
         index_stub = self._get_index_stub()
         index_get_status_request = self._get_index_id(namespace, name)
-
 
         return (index_stub, index_get_status_request)
 
@@ -141,16 +151,15 @@ class BaseClient(object):
         return response.unmergedRecordCount
 
     def _get_index_stub(self):
-        return index_pb2_grpc.IndexServiceStub(
-            self._channel_provider.get_channel()
-        )
+        return index_pb2_grpc.IndexServiceStub(self._channel_provider.get_channel())
 
     def _get_index_id(self, namespace, name):
         return types_pb2.IndexId(namespace=namespace, name=name)
 
     def _prepare_wait_for_index_waiting(self, namespace, name, wait_interval):
-        return helpers._prepare_wait_for_index_waiting(self, namespace, name, wait_interval)
-
+        return helpers._prepare_wait_for_index_waiting(
+            self, namespace, name, wait_interval
+        )
 
     def _check_timeout(self, start_time, timeout):
         if start_time + timeout < time.monotonic():

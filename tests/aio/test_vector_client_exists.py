@@ -20,20 +20,20 @@ class exists_test_case:
     [
         exists_test_case(
             namespace="test",
-            key="get/1",
+            key="aio/exists/1",
             set_name=None,
             record_data={"skills": [i for i in range(1024)]},
         ),
         exists_test_case(
             namespace="test",
-            key="get/1",
+            key="aio/exists/2",
             set_name=None,
             record_data={"english": [float(i) for i in range(1024)]},
         )
     ],
 )
 async def test_vector_exists(session_vector_client, test_case):
-    await session_vector_client.put(
+    await session_vector_client.upsert(
         namespace=test_case.namespace,
         key=test_case.key,
         record_data=test_case.record_data,
