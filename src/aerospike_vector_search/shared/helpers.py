@@ -18,10 +18,10 @@ def _prepare_wait_for_index_waiting(self, namespace, name, wait_interval):
 
     unmerged_record_initialized = False
     start_time = time.monotonic()
-    double_check = False
+    validation_count = 0
 
     index_stub = index_pb2_grpc.IndexServiceStub(
         self._channel_provider.get_channel()
     )
     index_wait_request = types_pb2.IndexId(namespace=namespace, name=name)
-    return (index_stub, wait_interval, start_time, unmerged_record_initialized, False, index_wait_request)
+    return (index_stub, wait_interval, start_time, unmerged_record_initialized, validation_count, index_wait_request)

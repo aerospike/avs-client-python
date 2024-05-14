@@ -334,7 +334,7 @@ class Client(BaseClient):
         return async_results
 
     async def wait_for_index_completion(
-        self, *, namespace: str, name: str, timeout: Optional[int] = sys.maxsize, wait_interval: Optional[int] = 12
+        self, *, namespace: str, name: str, timeout: Optional[int] = sys.maxsize, wait_interval: Optional[int] = 12, validation_threshold: Optional[int] = 2
     ) -> None:
         """
         Wait for the index to have no pending index update operations.
@@ -359,7 +359,7 @@ class Client(BaseClient):
         await self._channel_provider._is_ready()
 
         # Wait interval between polling
-        (index_stub, wait_interval, start_time, unmerged_record_initialized, double_check, index_completion_request) = self._prepare_wait_for_index_waiting(namespace, name, wait_interval)
+        (index_stub, wait_interval, start_time, unmerged_record_initialized, validation_count, index_completion_request) = self._prepare_wait_for_index_waiting(namespace, name, wait_interval)
         while True:
             try:
                 index_status = await index_stub.GetStatus(index_completion_request)
@@ -371,12 +371,12 @@ class Client(BaseClient):
                     logger.error("Failed with error: %s", e)
                     raise types.AVSServerError(rpc_error=e)
             if self._check_completion_condition(start_time, timeout, index_status, unmerged_record_initialized):
-                if double_check:
+                if validation_count == validation_threshold:
                     return
                 else:
-                    double_check = True
+                    validation_count += 1
             else:
-                double_check = False
+                validation_count = 0
             await asyncio.sleep(wait_interval)
 
     async def close(self):
