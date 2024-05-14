@@ -48,6 +48,7 @@ def test_vector_delete(session_vector_client, test_case):
         result = session_vector_client.get(
             namespace=test_case.namespace, key=test_case.key
         )
+    print(e_info.value.rpc_error.code())
 
 @pytest.mark.parametrize(
     "test_case",

@@ -231,38 +231,8 @@ class HnswSearchParams(object):
 class AVSError(Exception):
     """
     Custom exception raised for errors related to AVS.
-
-    Attributes:
-        status (int): The status code associated with the error.
-        details (str): Details about the error.
-        debug_error_string (str): Debug error string providing additional error information.
-
-    Args:
-        rpc_error (Exception): The original gRPC error object from which AVSError is derived.
-            This error object is used to extract status, details, and debug information.
     """
-    def __init__(
-        self,
-        *,
-        rpc_error
-    ) -> None:
-        self.status = getattr(rpc_error, 'status', None)
-        self.debug_error_string = getattr(rpc_error, 'debug_error_string', '')
-        self.details = getattr(rpc_error, 'details', '')
-        self.code = getattr(rpc_error, 'code', '')
-        self.initial_metadata = getattr(rpc_error, 'initial_metadata', '')
-        self.trailing_metadata = getattr(rpc_error, 'trailing_metadata', '')
-
-    def __str__(self):
-        class_name = type(self).__name__  # Get the name of the calling class
-        return (
-            f"{class_name}: code={self.code}, "
-            f"status='{self.status}', "
-            f"details='{self.details}', "
-            f"debug_error_string='{self.debug_error_string}', "
-            f"initial_metadata={self.initial_metadata}, "
-            f"trailing_metadata={self.trailing_metadata}"
-        )
+    pass
 
 
 class AVSServerError(AVSError):
@@ -283,4 +253,7 @@ class AVSServerError(AVSError):
         *,
         rpc_error
     ) -> None:
-        super().__init__(rpc_error=rpc_error)
+        self.rpc_error = rpc_error
+        
+
+
