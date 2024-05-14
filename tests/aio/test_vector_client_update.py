@@ -1,4 +1,6 @@
 import pytest
+from aerospike_vector_search import AVSServerError
+
 class update_test_case:
     def __init__(
         self,
@@ -63,7 +65,7 @@ async def test_vector_update_with_existing_record(session_vector_client, test_ca
     ],
 )
 async def test_vector_update_without_existing_record(session_vector_client, test_case):
-    with pytest.raises(Exception) as e_info:
+    with pytest.raises(AVSServerError) as e_info:
         await session_vector_client.update(
             namespace=test_case.namespace,
             key=test_case.key,

@@ -20,6 +20,7 @@ class HostPort(object):
         self.port = port
         self.is_tls = is_tls
 
+
 class Key(object):
     """
     Represents a record key.
@@ -31,9 +32,7 @@ class Key(object):
         key (Any): The key itself.
     """
 
-    def __init__(
-        self, *, namespace: str, set: str, key: Any
-    ) -> None:
+    def __init__(self, *, namespace: str, set: str, key: Any) -> None:
         self.namespace = namespace
         self.set = set
         self.key = key
@@ -226,3 +225,29 @@ class HnswSearchParams(object):
         params = types_pb2.HnswSearchParams()
         params.ef = self.ef
         return params
+
+
+class AVSError(Exception):
+    """
+    Custom exception raised for errors related to AVS.
+    """
+
+    pass
+
+
+class AVSServerError(AVSError):
+    """
+    Custom exception raised for errors related to the AVS server.
+
+    Attributes:
+        status (int): The status code associated with the error.
+        details (str): Details about the error.
+        debug_error_string (str): Debug error string providing additional error information.
+
+    Args:
+        rpc_error (Exception): The original gRPC error object from which AVSError is derived.
+            This error object is used to extract status, details, and debug information.
+    """
+
+    def __init__(self, *, rpc_error) -> None:
+        self.rpc_error = rpc_error

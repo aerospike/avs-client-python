@@ -22,7 +22,7 @@ classifiers = [
     "Programming Language :: Python :: Implementation :: CPython",
     "Topic :: Database"
 ]
-version = "0.6.0.dev2"
+version = "0.6.0"
 requires-python = ">3.8"
 dependencies = [
     "grpcio",
@@ -37,3 +37,18 @@ zip-safe = false
 include-package-data = true
 packages = ["aerospike_vector_search", "aerospike_vector_search.aio", "aerospike_vector_search.shared", "aerospike_vector_search.shared.proto_generated", "aerospike_vector_search.internal", "aerospike_vector_search.aio.internal"]
 package-dir={"" = "src"}
+
+[tool.black]
+include = 'src'
+exclude = '''
+/(
+    src/aerospike_vector_search/shared/proto_generated/*
+  | src/aerospike_vector_search/aio/internal/__pycache__/*
+  | src/aerospike_vector_search/aio/__pycache__/*
+  | src/aerospike_vector_search/internal/__pycache__/*
+  | src/aerospike_vector_search/shared/__pycache__/*
+  | src/aerospike_vector_search/shared/proto_generated/__pycache__/*
+  | src/aerospike_vector_search/__pycache__/*
+  | src/aerospike_vector_search.egg-info/*
+)/
+'''

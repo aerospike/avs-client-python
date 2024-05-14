@@ -10,9 +10,12 @@ from .proto_generated import vector_db_pb2
 
 logger = logging.getLogger(__name__)
 
+
 class ChannelAndEndpoints(object):
     def __init__(
-        self, channel: Union[grpc.Channel, grpc.aio.Channel], endpoints: vector_db_pb2.ServerEndpointList
+        self,
+        channel: Union[grpc.Channel, grpc.aio.Channel],
+        endpoints: vector_db_pb2.ServerEndpointList,
     ) -> None:
         self.channel = channel
         self.endpoints = endpoints
@@ -20,8 +23,12 @@ class ChannelAndEndpoints(object):
 
 class BaseChannelProvider(object):
     """Proximus Channel Provider"""
+
     def __init__(
-        self, seeds: tuple[types.HostPort, ...], listener_name: Optional[str] = None, is_loadbalancer: Optional[bool] = False
+        self,
+        seeds: tuple[types.HostPort, ...],
+        listener_name: Optional[str] = None,
+        is_loadbalancer: Optional[bool] = False,
     ) -> None:
         self.seeds: tuple[types.HostPort, ...] = seeds
         self.listener_name: Optional[str] = listener_name
@@ -34,14 +41,13 @@ class BaseChannelProvider(object):
         self._closed: bool = False
         self._cluster_id: int = 0
 
-
     def get_channel(self) -> Union[grpc.aio.Channel, grpc.Channel]:
         if not self._is_loadbalancer:
             discovered_channels: list[ChannelAndEndpoints] = list(
-                self._node_channels.values())
+                self._node_channels.values()
+            )
             if len(discovered_channels) <= 0:
                 return self._seedChannels[0]
-
 
             # Return a random channel.
             channel = random.choice(discovered_channels).channel
@@ -50,7 +56,9 @@ class BaseChannelProvider(object):
 
         return self._seedChannels[0]
 
-    def _create_channel_from_host_port(self, host: types.HostPort) -> Union[grpc.aio.Channel, grpc.Channel]:
+    def _create_channel_from_host_port(
+        self, host: types.HostPort
+    ) -> Union[grpc.aio.Channel, grpc.Channel]:
         return self._create_channel(host.host, host.port, host.is_tls)
 
     def _create_channel_from_server_endpoint_list(
@@ -71,12 +79,8 @@ class BaseChannelProvider(object):
     def add_new_channel_to_node_channels(self, node, newEndpoints):
 
         # We have discovered a new node
-        new_channel = self._create_channel_from_server_endpoint_list(
-            newEndpoints
-        )
-        self._node_channels[node] = ChannelAndEndpoints(
-            new_channel, newEndpoints
-        )
+        new_channel = self._create_channel_from_server_endpoint_list(newEndpoints)
+        self._node_channels[node] = ChannelAndEndpoints(new_channel, newEndpoints)
 
     def init_tend(self) -> None:
         end_tend = False
@@ -96,7 +100,6 @@ class BaseChannelProvider(object):
         ]
         return (temp_endpoints, update_endpoints_stub, channels, end_tend)
 
-
     def check_cluster_id(self, new_cluster_id) -> None:
         if new_cluster_id == self._cluster_id:
             return False
@@ -112,7 +115,6 @@ class BaseChannelProvider(object):
         else:
             return temp_endpoints
 
-
     def check_for_new_endpoints(self, node, newEndpoints):
 
         channel_endpoints = self._node_channels.get(node)
@@ -127,4 +129,3 @@ class BaseChannelProvider(object):
                 add_new_channel = True
 
         return (channel_endpoints, add_new_channel)
-

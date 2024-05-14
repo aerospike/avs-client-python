@@ -117,7 +117,7 @@ async def test_vector_search(
     tasks = []
 
     for j, vector in enumerate(base_numpy):
-        tasks.append(put_vector(session_vector_client, vector.tolist(), j))
+        tasks.append(put_vector(session_vector_client, vector, j))
 
     tasks.append(session_vector_client.wait_for_index_completion(namespace='test', name='demo'))
     await asyncio.gather(*tasks)
@@ -128,9 +128,9 @@ async def test_vector_search(
     count = 0
     for i in query_numpy:
         if count % 2:
-            tasks.append(vector_search(session_vector_client, i.tolist()))
+            tasks.append(vector_search(session_vector_client, i))
         else:
-            tasks.append(vector_search_ef_80(session_vector_client, i.tolist()))
+            tasks.append(vector_search_ef_80(session_vector_client, i))
         count += 1
 
     results = await asyncio.gather(*tasks)

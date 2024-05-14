@@ -71,9 +71,7 @@ def fromVectorDbKey(key: types_pb2.Key) -> types.Key:
     elif key.HasField("bytesValue"):
         keyValue = key.bytesValue
 
-    return types.Key(
-        namespace=key.namespace, set=key.set, key=keyValue
-    )
+    return types.Key(namespace=key.namespace, set=key.set, key=keyValue)
 
 
 def fromVectorDbRecord(record: types_pb2.Record) -> dict[str, Any]:

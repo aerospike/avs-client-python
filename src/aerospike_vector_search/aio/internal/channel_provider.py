@@ -17,20 +17,21 @@ empty = google.protobuf.empty_pb2.Empty()
 logger = logging.getLogger(__name__)
 
 
-
 class ChannelProvider(base_channel_provider.BaseChannelProvider):
-    """Proximus Channel Provider"""
+    """AVS Channel Provider"""
+
     def __init__(
-        self, seeds: tuple[types.HostPort, ...], listener_name: Optional[str] = None, is_loadbalancer: Optional[bool] = False
+        self,
+        seeds: tuple[types.HostPort, ...],
+        listener_name: Optional[str] = None,
+        is_loadbalancer: Optional[bool] = False,
     ) -> None:
         super().__init__(seeds, listener_name, is_loadbalancer)
         asyncio.create_task(self._tend())
-        self._tend_initalized: asyncio.Event =  asyncio.Event()
+        self._tend_initalized: asyncio.Event = asyncio.Event()
 
-        self._tend_ended: asyncio.Event =  asyncio.Event()
+        self._tend_ended: asyncio.Event = asyncio.Event()
         self._task: Optional[asyncio.Task] = None
-
-
 
     async def close(self):
         self._closed = True
@@ -67,7 +68,9 @@ class ChannelProvider(base_channel_provider.BaseChannelProvider):
                 tasks.append(stub.GetClusterId(empty))
 
             except Exception as e:
-                logger.debug("While tending, failed to get cluster id with error:" + str(e))
+                logger.debug(
+                    "While tending, failed to get cluster id with error:" + str(e)
+                )
 
         new_cluster_ids = await asyncio.gather(*tasks)
 
@@ -85,26 +88,31 @@ class ChannelProvider(base_channel_provider.BaseChannelProvider):
                 )
                 temp_endpoints = self.update_temp_endpoints(response, temp_endpoints)
             except Exception as e:
-                logger.debug("While tending, failed to get cluster endpoints with error:" + str(e))
+                logger.debug(
+                    "While tending, failed to get cluster endpoints with error:"
+                    + str(e)
+                )
 
             tasks = []
             add_new_channel_info = []
 
             for node, newEndpoints in temp_endpoints.items():
-                (channel_endpoints, add_new_channel) = self.check_for_new_endpoints(node, newEndpoints)
-                
+                (channel_endpoints, add_new_channel) = self.check_for_new_endpoints(
+                    node, newEndpoints
+                )
+
                 if add_new_channel:
                     try:
                         # TODO: Wait for all calls to drain
                         tasks.append(channel_endpoints.channel.close())
                     except Exception as e:
-                        logger.debug("While tending, failed to close GRPC channel:" + str(e))
+                        logger.debug(
+                            "While tending, failed to close GRPC channel:" + str(e)
+                        )
                     add_new_channel_info.append((node, newEndpoints))
-
 
             for node, newEndpoints in add_new_channel_info:
                 self.add_new_channel_to_node_channels(node, newEndpoints)
-
 
             for node, channel_endpoints in list(self._node_channels.items()):
                 if not self._node_channels.get(node):
@@ -112,9 +120,11 @@ class ChannelProvider(base_channel_provider.BaseChannelProvider):
                         # TODO: Wait for all calls to drain
                         tasks.append(channel_endpoints.channel.close())
                         del self._node_channels[node]
-                        
+
                     except Exception as e:
-                        logger.debug("While tending, failed to close GRPC channel:" + str(e))
+                        logger.debug(
+                            "While tending, failed to close GRPC channel:" + str(e)
+                        )
 
             await asyncio.gather(*tasks)
 
