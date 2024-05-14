@@ -115,7 +115,7 @@ def test_vector_search(
 
     # Put base vectors for search
     for j, vector in enumerate(base_numpy):
-        put_vector(session_vector_client, vector.tolist(), j)
+        put_vector(session_vector_client, vector, j)
 
     session_vector_client.wait_for_index_completion(namespace='test', name='demo')
 
@@ -125,9 +125,9 @@ def test_vector_search(
     count = 0
     for i in query_numpy:
         if count % 2:
-            results.append(vector_search(session_vector_client, i.tolist()))
+            results.append(vector_search(session_vector_client, i))
         else:
-            results.append(vector_search_ef_80(session_vector_client, i.tolist()))
+            results.append(vector_search_ef_80(session_vector_client, i))
         count += 1
     # Get recall numbers for each query
     recall_for_each_query = []

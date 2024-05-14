@@ -1,5 +1,6 @@
 from typing import Any, Optional, Union
 import time
+import numpy
 from . import conversions
 
 from .proto_generated import transact_pb2
@@ -24,10 +25,14 @@ class BaseClient(object):
         )
 
         key = self._get_key(namespace, set_name, key)
-        field_list = [
-            types_pb2.Field(name=k, value=conversions.toVectorDbValue(v))
-            for (k, v) in record_data.items()
-        ]
+        field_list = []
+
+        for (k, v) in record_data.items():
+            if isinstance(v, numpy.ndarray):
+                field_list.append(types_pb2.Field(name=k, value=conversions.toVectorDbValue(v.tolist())))
+
+            else:
+                field_list.append(types_pb2.Field(name=k, value=conversions.toVectorDbValue(v)))
 
         transact_stub = self._get_transact_stub()
         put_request = transact_pb2.PutRequest(key=key, writeType=write_type, fields=field_list)
@@ -135,7 +140,11 @@ class BaseClient(object):
         projection_spec = self._get_projection_spec(field_names=field_names)
 
         index = types_pb2.IndexId(namespace=namespace, name=index_name)
-        query_vector = conversions.toVectorDbValue(query).vectorValue
+
+        if isinstance(query, numpy.ndarray):
+            query_vector = conversions.toVectorDbValue(query.tolist()).vectorValue
+        else:
+            query_vector = conversions.toVectorDbValue(query).vectorValue
 
 
         transact_stub = self._get_transact_stub()

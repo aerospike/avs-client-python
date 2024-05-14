@@ -77,7 +77,7 @@ class Client(BaseClient):
             transact_stub.Put(insert_request)
         except grpc.RpcError as e:
             logger.error("Failed with error: %s", e)
-            raise e
+            raise types.AVSServerError(rpc_error=e)
 
     def update(
         self,
@@ -110,7 +110,8 @@ class Client(BaseClient):
             transact_stub.Put(update_request)
         except grpc.RpcError as e:
             logger.error("Failed with error: %s", e)
-            raise e
+            raise types.AVSServerError(rpc_error=e)
+
 
     def upsert(
         self,
@@ -143,7 +144,7 @@ class Client(BaseClient):
             transact_stub.Put(upsert_request)
         except grpc.RpcError as e:
             logger.error("Failed with error: %s", e)
-            raise e
+            raise types.AVSServerError(rpc_error=e)
 
     def get(
         self,
@@ -175,7 +176,7 @@ class Client(BaseClient):
             response = transact_stub.Get(get_request)
         except grpc.RpcError as e:
             logger.error("Failed with error: %s", e)
-            raise e
+            raise types.AVSServerError(rpc_error=e)
 
         return self._respond_get(response, key)
 
@@ -202,13 +203,13 @@ class Client(BaseClient):
             response = transact_stub.Exists(exists_request)
         except grpc.RpcError as e:
             logger.error("Failed with error: %s", e)
-            raise e
+            raise types.AVSServerError(rpc_error=e)
 
         return self._respond_exists(response)
 
     def delete(
         self, *, namespace: str, key: Any, set_name: Optional[str] = None
-    ) -> bool:
+    ) -> None:
         """
         Delete a record from Aerospike Vector Search.
 
@@ -226,7 +227,7 @@ class Client(BaseClient):
             transact_stub.Delete(delete_request)
         except grpc.RpcError as e:
             logger.error("Failed with error: %s", e)
-            raise e
+            raise types.AVSServerError(rpc_error=e)
 
     def is_indexed(
         self,
@@ -260,7 +261,7 @@ class Client(BaseClient):
             response = transact_stub.IsIndexed(is_indexed_request)
         except grpc.RpcError as e:
             logger.error("Failed with error: %s", e)
-            raise e
+            raise types.AVSServerError(rpc_error=e)
         return self._respond_is_indexed(response)
 
     def vector_search(
@@ -299,7 +300,7 @@ class Client(BaseClient):
             results_stream = transact_stub.VectorSearch(vector_search_request)
         except grpc.RpcError as e:
             logger.error("Failed with error: %s", e)
-            raise e
+            raise types.AVSServerError(rpc_error=e)
         results = []
         for result in results_stream:
             results.append(self._respond_neighbor(result))
@@ -340,7 +341,7 @@ class Client(BaseClient):
                     continue
                 else:
                     logger.error("Failed with error: %s", e)
-                    raise e
+                    raise types.AVSServerError(rpc_error=e)
             if self._check_completion_condition(start_time, timeout, index_status, unmerged_record_initialized):
                 if double_check:
                     return

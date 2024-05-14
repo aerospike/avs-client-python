@@ -1,4 +1,5 @@
 import pytest
+from aerospike_vector_search import AVSServerError
 
 class delete_test_case:
     def __init__(
@@ -32,7 +33,7 @@ class delete_test_case:
         )
     ],
 )
-def test_vector_exists(session_vector_client, test_case):
+def test_vector_delete(session_vector_client, test_case):
     session_vector_client.upsert(
         namespace=test_case.namespace,
         key=test_case.key,
@@ -43,7 +44,24 @@ def test_vector_exists(session_vector_client, test_case):
         namespace=test_case.namespace,
         key=test_case.key,
     )
-    with pytest.raises(Exception) as e_info:
+    with pytest.raises(AVSServerError) as e_info:
         result = session_vector_client.get(
             namespace=test_case.namespace, key=test_case.key
-        )    
+        )
+
+@pytest.mark.parametrize(
+    "test_case",
+    [
+        delete_test_case(
+            namespace="test",
+            key="aio/delete/3",
+            set_name=None,
+            record_data={"skills": [i for i in range(1024)]},
+        ),
+    ],
+)
+async def test_vector_delete_without_record(session_vector_client, test_case):
+    session_vector_client.delete(
+        namespace=test_case.namespace,
+        key=test_case.key,
+    )

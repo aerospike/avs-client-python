@@ -91,14 +91,14 @@ class Client(BaseClient):
             await index_stub.Create(index_create_request)
         except grpc.RpcError as e:
             logger.error("Failed with error: %s", e)
-            raise e
+            raise types.AVSServerError(rpc_error=e)
         try:
             await self._wait_for_index_creation(
                 namespace=namespace, name=name, timeout=100_000
             )
         except grpc.RpcError as e:
             logger.error("Failed waiting for creation with error: %s", e)
-            raise e
+            raise types.AVSServerError(rpc_error=e)
 
     async def index_drop(self, *, namespace: str, name: str) -> None:
         """
@@ -123,14 +123,14 @@ class Client(BaseClient):
             await index_stub.Drop(index_drop_request)
         except grpc.RpcError as e:
             logger.error("Failed with error: %s", e)
-            raise e
+            raise types.AVSServerError(rpc_error=e)
         try:
             await self._wait_for_index_deletion(
                 namespace=namespace, name=name, timeout=100_000
             )
         except grpc.RpcError as e:
             logger.error("Failed waiting for deletion with error: %s", e)
-            raise e
+            raise types.AVSServerError(rpc_error=e)
 
     async def index_list(self) -> list[dict]:
         """
@@ -150,7 +150,7 @@ class Client(BaseClient):
             response = await index_stub.List(index_list_request)
         except grpc.RpcError as e:
             logger.error("Failed with error: %s", e)
-            raise e
+            raise types.AVSServerError(rpc_error=e)
         return self._respond_index_list(response)
 
     async def index_get(
@@ -178,7 +178,7 @@ class Client(BaseClient):
             response = await index_stub.Get(index_get_request)
         except grpc.RpcError as e:
             logger.error("Failed with error: %s", e)
-            raise e
+            raise types.AVSServerError(rpc_error=e)
         return self._respond_index_get(response)
 
 
@@ -210,7 +210,7 @@ class Client(BaseClient):
             response = await index_stub.GetStatus(index_get_status_request)
         except grpc.RpcError as e:
             logger.error("Failed with error: %s", e)
-            raise e
+            raise types.AVSServerError(rpc_error=e)
 
         return self._respond_index_get_status(response)
 
@@ -237,7 +237,7 @@ class Client(BaseClient):
                     await asyncio.sleep(wait_interval)
                 else:
                     logger.error("Failed with error: %s", e)
-                    raise e
+                    raise types.AVSServerError(rpc_error=e)
 
     async def _wait_for_index_deletion(
         self, *, namespace: str, name: str, timeout: Optional[int] = sys.maxsize, wait_interval: Optional[int] = 0.1
@@ -263,7 +263,7 @@ class Client(BaseClient):
                     # Index has been created
                     return
                 else:
-                    raise e
+                    raise types.AVSServerError(rpc_error=e)
 
     async def close(self):
         """
