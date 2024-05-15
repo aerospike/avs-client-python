@@ -313,15 +313,10 @@ class Client(BaseClient):
         )
 
         try:
-            results_stream = transact_stub.VectorSearch(vector_search_request)
+            return [self._respond_neighbor(result) for result in transact_stub.VectorSearch(vector_search_request)]
         except grpc.RpcError as e:
             logger.error("Failed with error: %s", e)
             raise types.AVSServerError(rpc_error=e)
-        results = []
-        for result in results_stream:
-            results.append(self._respond_neighbor(result))
-
-        return results
 
     def wait_for_index_completion(
         self,
