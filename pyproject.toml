@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "aerospike-vector-search"
-description = "Aerospike Proximus Client Library for Python"
+description = "Aerospike Vector Search Client Library for Python"
 authors = [
     { name = "Aerospike, Inc.", email = "info@aerospike.com" }
 ]

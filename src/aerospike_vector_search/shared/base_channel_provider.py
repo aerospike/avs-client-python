@@ -22,7 +22,7 @@ class ChannelAndEndpoints(object):
 
 
 class BaseChannelProvider(object):
-    """Proximus Channel Provider"""
+    """AVS Channel Provider"""
 
     def __init__(
         self,
