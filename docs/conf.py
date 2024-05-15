@@ -9,7 +9,7 @@
 project = 'aerospike-vector-search'
 copyright = '2024, Dominic Pelini'
 author = 'Dominic Pelini'
-release = '0.6.0'
+release = '0.6.1'
 
 # -- General configuration ---------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
