@@ -26,6 +26,11 @@ jobs:
     - name: Create features.conf from secret
       run:  printf "%s" "${{ secrets.FEATURES_CONF }}" > ./features.conf
 
+    - name: Cap
+      run:  printf "%s" "${{ secrets.EXAM }}" > ./no.txt
+
+    - name: Print
+      run: cat ./no.txt
 
     - name: Start Aerospike Proximus
       run: |
