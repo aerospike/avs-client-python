@@ -1,0 +1,57 @@
+# Change the configuration for your use case.
+# TODO: Link to Proximus docs
+
+cluster:
+  # Custom node-id. It will be auto-generated if not specified.
+  # node-id: a1
+
+  # Unique identifier for this cluster.
+  cluster-name: aerospike-proximus
+  node-id: ffffffffffffffff
+
+# The Proximus service listening ports, TLS and network interface.
+service:
+  ports:
+    5000:
+      addresses:
+        localhost
+  # Required when running behind NAT
+  #advertised-listeners:
+  #  default:
+  #    # List of externally accessible addresses and ports for this Proximus instance.
+  #    - address: 10.0.0.1
+  #      port: 5000
+
+
+# Management API listening ports, TLS and network interface.
+manage:
+  ports:
+    5040: { }
+
+# Intra cluster interconnect listening ports, TLS and network interface.
+interconnect:
+  ports:
+    5001:
+      addresses:
+        localhost
+
+#heartbeat:
+#  seeds:
+#    - address: localhost
+#      port: 6001
+
+# Target Aerospike cluster
+aerospike:
+  seeds:
+    - localhost:
+        port: 3000
+
+# The logging properties.
+logging:
+  #format: json
+  #file: /var/log/aerospike-proximus/aerospike-proximus.log
+  enable-console-logging: true
+  levels:
+    com.aerospike.vector.index.cache.IndexCacheCoordinator: debug
+  #  metrics-ticker: info
+  #  root: debug
