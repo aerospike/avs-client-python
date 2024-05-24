@@ -24,9 +24,6 @@ jobs:
       with:
         python-version: ${{ matrix.python-version }}
 
-    - name: Print
-      run: cat ./tests/features.conf
-      
     - name: Start Aerospike Server
       run: |
         docker run -d --network=host --name aerospike -p 3000:3000 -v .:/etc/aerospike aerospike/aerospike-server-enterprise:latest
