@@ -24,6 +24,9 @@ class Client(BaseClient):
         seeds: Union[types.HostPort, tuple[types.HostPort, ...]],
         listener_name: Optional[str] = None,
         is_loadbalancer: Optional[bool] = False,
+        username: Optional[str] = None,
+        password: Optional[str] = None,
+        root_certificate: Optional[str] = None,
     ) -> None:
         """
         Initialize the Aerospike Vector Search Admin Client.
@@ -40,7 +43,7 @@ class Client(BaseClient):
         seeds = self._prepare_seeds(seeds)
 
         self._channel_provider = channel_provider.ChannelProvider(
-            seeds, listener_name, is_loadbalancer
+            seeds, listener_name, is_loadbalancer, username, password, root_certificate
         )
 
     async def index_create(
@@ -98,7 +101,7 @@ class Client(BaseClient):
         )
 
         try:
-            await index_stub.Create(index_create_request)
+            await index_stub.Create(index_create_request, credentials=self._channel_provider._token)
         except grpc.RpcError as e:
             logger.error("Failed with error: %s", e)
             raise types.AVSServerError(rpc_error=e)
@@ -132,7 +135,7 @@ class Client(BaseClient):
             namespace, name, logger
         )
         try:
-            await index_stub.Drop(index_drop_request)
+            await index_stub.Drop(index_drop_request, credentials=self._channel_provider._token)
         except grpc.RpcError as e:
             logger.error("Failed with error: %s", e)
             raise types.AVSServerError(rpc_error=e)
@@ -159,7 +162,7 @@ class Client(BaseClient):
 
         (index_stub, index_list_request) = self._prepare_index_list(logger)
         try:
-            response = await index_stub.List(index_list_request)
+            response = await index_stub.List(index_list_request, credentials=self._channel_provider._token)
         except grpc.RpcError as e:
             logger.error("Failed with error: %s", e)
             raise types.AVSServerError(rpc_error=e)
@@ -189,7 +192,7 @@ class Client(BaseClient):
             namespace, name, logger
         )
         try:
-            response = await index_stub.Get(index_get_request)
+            response = await index_stub.Get(index_get_request, credentials=self._channel_provider._token)
         except grpc.RpcError as e:
             logger.error("Failed with error: %s", e)
             raise types.AVSServerError(rpc_error=e)
@@ -228,6 +231,109 @@ class Client(BaseClient):
             raise types.AVSServerError(rpc_error=e)
 
         return self._respond_index_get_status(response)
+
+    async def add_user(self, *, username: str, password: str, roles: list[str]) -> int:
+        await self._channel_provider._is_ready()
+
+        (user_admin_stub, add_user_request) = self._prepare_add_user(
+            username, password, roles, logger
+        )
+
+
+        try:
+            await user_admin_stub.AddUser(add_user_request, credentials=self._channel_provider._token)
+        except grpc.RpcError as e:
+            logger.error("Failed with error: %s", e)
+            raise types.AVSServerError(rpc_error=e)
+
+    async def update_credentials(self, *, username: str, password: str) -> int:
+        await self._channel_provider._is_ready()
+
+        (user_admin_stub, update_credentials_request) = self._prepare_update_credentials(
+            username, password, logger
+        )
+        try:
+            await user_admin_stub.UpdateCredentials(update_credentials_request, credentials=self._channel_provider._token)
+        except grpc.RpcError as e:
+            logger.error("Failed with error: %s", e)
+            raise types.AVSServerError(rpc_error=e)
+
+    async def drop_user(self, *, username: str) -> int:
+        await self._channel_provider._is_ready()
+
+        (user_admin_stub, drop_user_request) = self._prepare_drop_user(
+            username, logger
+        )
+        try:
+            await user_admin_stub.DropUser(drop_user_request, credentials=self._channel_provider._token)
+        except grpc.RpcError as e:
+            logger.error("Failed with error: %s", e)
+            raise types.AVSServerError(rpc_error=e)
+
+    async def get_user(self, *, username: str) -> int:
+        await self._channel_provider._is_ready()
+
+        (user_admin_stub, get_user_request) = self._prepare_get_user(
+            username, logger
+        )
+        try:
+            response = await user_admin_stub.GetUser(get_user_request, credentials=self._channel_provider._token)
+        except grpc.RpcError as e:
+            logger.error("Failed with error: %s", e)
+            raise types.AVSServerError(rpc_error=e)
+
+        return self._respond_get_user(response)
+
+    async def list_users(self) -> int:
+        await self._channel_provider._is_ready()
+
+        (user_admin_stub, list_users_request) = self._prepare_list_users(
+            logger
+        )
+        
+        try:
+            response = await user_admin_stub.ListUsers(list_users_request, credentials=self._channel_provider._token)
+        except grpc.RpcError as e:
+            logger.error("Failed with error: %s", e)
+            raise types.AVSServerError(rpc_error=e)
+        return self._respond_list_users(response)
+
+    async def grant_roles(self, *, username: str, roles: list[str]) -> int:
+        await self._channel_provider._is_ready()
+
+        (user_admin_stub, grant_roles_request) = self._prepare_grant_roles(
+            username, roles, logger
+        )
+        try:
+            await user_admin_stub.GrantRoles(grant_roles_request, credentials=self._channel_provider._token)
+        except grpc.RpcError as e:
+            logger.error("Failed with error: %s", e)
+            raise types.AVSServerError(rpc_error=e)
+
+    async def revoke_roles(self, *, username: str, roles: list[str]) -> int:
+        await self._channel_provider._is_ready()
+
+        (user_admin_stub, revoke_roles_request) = self._prepare_revoke_roles(
+            username, roles, logger
+        )
+        try:
+            await user_admin_stub.RevokeRoles(revoke_roles_request, credentials=self._channel_provider._token)
+        except grpc.RpcError as e:
+            logger.error("Failed with error: %s", e)
+            raise types.AVSServerError(rpc_error=e)
+
+    async def list_roles(self) -> int:
+        await self._channel_provider._is_ready()
+
+        (user_admin_stub, list_roles_request) = self._prepare_list_roles(
+            logger
+        )
+        try:
+            response = await user_admin_stub.ListRoles(list_roles_request, credentials=self._channel_provider._token)
+        except grpc.RpcError as e:
+            logger.error("Failed with error: %s", e)
+            raise types.AVSServerError(rpc_error=e)
+        return self._respond_list_roles(response)
 
     async def _wait_for_index_creation(
         self,

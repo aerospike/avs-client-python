@@ -90,15 +90,15 @@ class ClusterInfoStub(object):
                 request_serializer=google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
                 response_deserializer=vector__db__pb2.ClusterId.FromString,
                 )
+        self.GetClusteringState = channel.unary_unary(
+                '/aerospike.vector.ClusterInfo/GetClusteringState',
+                request_serializer=google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
+                response_deserializer=vector__db__pb2.ClusteringState.FromString,
+                )
         self.GetClusterEndpoints = channel.unary_unary(
                 '/aerospike.vector.ClusterInfo/GetClusterEndpoints',
                 request_serializer=vector__db__pb2.ClusterNodeEndpointsRequest.SerializeToString,
                 response_deserializer=vector__db__pb2.ClusterNodeEndpoints.FromString,
-                )
-        self.GetOwnedPartitions = channel.unary_unary(
-                '/aerospike.vector.ClusterInfo/GetOwnedPartitions',
-                request_serializer=google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
-                response_deserializer=vector__db__pb2.ClusterPartitions.FromString,
                 )
 
 
@@ -120,15 +120,15 @@ class ClusterInfoServicer(object):
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
-    def GetClusterEndpoints(self, request, context):
-        """Get the advertised/listening endpoints for all nodes in the cluster, given a listener name.
+    def GetClusteringState(self, request, context):
+        """Get current cluster-Id for the current cluster.
         """
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
-    def GetOwnedPartitions(self, request, context):
-        """Get per-node owned partition list for all nodes in the cluster.
+    def GetClusterEndpoints(self, request, context):
+        """Get the advertised/listening endpoints for all nodes in the cluster, given a listener name.
         """
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
@@ -147,15 +147,15 @@ def add_ClusterInfoServicer_to_server(servicer, server):
                     request_deserializer=google_dot_protobuf_dot_empty__pb2.Empty.FromString,
                     response_serializer=vector__db__pb2.ClusterId.SerializeToString,
             ),
+            'GetClusteringState': grpc.unary_unary_rpc_method_handler(
+                    servicer.GetClusteringState,
+                    request_deserializer=google_dot_protobuf_dot_empty__pb2.Empty.FromString,
+                    response_serializer=vector__db__pb2.ClusteringState.SerializeToString,
+            ),
             'GetClusterEndpoints': grpc.unary_unary_rpc_method_handler(
                     servicer.GetClusterEndpoints,
                     request_deserializer=vector__db__pb2.ClusterNodeEndpointsRequest.FromString,
                     response_serializer=vector__db__pb2.ClusterNodeEndpoints.SerializeToString,
-            ),
-            'GetOwnedPartitions': grpc.unary_unary_rpc_method_handler(
-                    servicer.GetOwnedPartitions,
-                    request_deserializer=google_dot_protobuf_dot_empty__pb2.Empty.FromString,
-                    response_serializer=vector__db__pb2.ClusterPartitions.SerializeToString,
             ),
     }
     generic_handler = grpc.method_handlers_generic_handler(
@@ -203,6 +203,23 @@ class ClusterInfo(object):
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
 
     @staticmethod
+    def GetClusteringState(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/aerospike.vector.ClusterInfo/GetClusteringState',
+            google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
+            vector__db__pb2.ClusteringState.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
     def GetClusterEndpoints(request,
             target,
             options=(),
@@ -216,22 +233,5 @@ class ClusterInfo(object):
         return grpc.experimental.unary_unary(request, target, '/aerospike.vector.ClusterInfo/GetClusterEndpoints',
             vector__db__pb2.ClusterNodeEndpointsRequest.SerializeToString,
             vector__db__pb2.ClusterNodeEndpoints.FromString,
-            options, channel_credentials,
-            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
-
-    @staticmethod
-    def GetOwnedPartitions(request,
-            target,
-            options=(),
-            channel_credentials=None,
-            call_credentials=None,
-            insecure=False,
-            compression=None,
-            wait_for_ready=None,
-            timeout=None,
-            metadata=None):
-        return grpc.experimental.unary_unary(request, target, '/aerospike.vector.ClusterInfo/GetOwnedPartitions',
-            google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
-            vector__db__pb2.ClusterPartitions.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)

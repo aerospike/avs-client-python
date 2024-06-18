@@ -3,10 +3,14 @@ import random
 
 from typing import Optional, Union
 
+import re
 import grpc
 
 from .. import types
-from .proto_generated import vector_db_pb2
+from . import helpers
+
+from .proto_generated import vector_db_pb2, auth_pb2
+from .proto_generated import auth_pb2_grpc
 
 logger = logging.getLogger(__name__)
 
@@ -29,10 +33,21 @@ class BaseChannelProvider(object):
         seeds: tuple[types.HostPort, ...],
         listener_name: Optional[str] = None,
         is_loadbalancer: Optional[bool] = False,
+        username: str = None,
+        password: str = None,
+        root_certificates: str = None,
+        private_key: str = None,
+        public_key: str = None
     ) -> None:
         self.seeds: tuple[types.HostPort, ...] = seeds
         self.listener_name: Optional[str] = listener_name
         self._is_loadbalancer: Optional[bool] = is_loadbalancer
+        self._credentials = helpers._get_credentials(username, password)
+        self._root_certificates = root_certificates
+        self._private_key = private_key
+        self._public_key = public_key
+
+        self._token = ""
         # dict of Node Number and ChannelAndEndponts object
         self._node_channels: dict[int, ChannelAndEndpoints] = {}
         self._seedChannels: Union[list[grpc.Channel], list[grpc.Channel.aio]] = [
@@ -129,3 +144,19 @@ class BaseChannelProvider(object):
                 add_new_channel = True
 
         return (channel_endpoints, add_new_channel)
+
+    def _prepare_authenticate(self, credentials, logger):
+        logger.debug(
+            "Refreshing auth token"
+        )
+        auth_stub = self._get_auth_stub()
+
+        auth_request = self._get_authenticate_request(self._credentials)
+
+        return (auth_stub, auth_request)
+
+    def _get_auth_stub(self):
+        return auth_pb2_grpc.AuthServiceStub(self.get_channel())
+
+    def _get_authenticate_request(self, credentials):
+        return auth_pb2.AuthRequest(credentials=credentials)

@@ -27,6 +27,9 @@ class Client(BaseClient):
         seeds: Union[types.HostPort, tuple[types.HostPort, ...]],
         listener_name: Optional[str] = None,
         is_loadbalancer: Optional[bool] = False,
+        username: Optional[str] = None,
+        password: Optional[str] = None,
+        root_certificate: Optional[str] = None,
     ) -> None:
         """
         Initialize the Aerospike Vector Search Vector Client.
@@ -44,7 +47,7 @@ class Client(BaseClient):
         """
         seeds = self._prepare_seeds(seeds)
         self._channel_provider = channel_provider.ChannelProvider(
-            seeds, listener_name, is_loadbalancer
+            seeds, listener_name, is_loadbalancer, username, password, root_certificate
         )
 
     async def insert(

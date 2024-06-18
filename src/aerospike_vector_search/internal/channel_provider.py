@@ -25,8 +25,11 @@ class ChannelProvider(base_channel_provider.BaseChannelProvider):
         seeds: tuple[types.HostPort, ...],
         listener_name: Optional[str] = None,
         is_loadbalancer: Optional[bool] = False,
+        username: str = None,
+        password: str = None,
+        tls_path: str = None
     ) -> None:
-        super().__init__(seeds, listener_name, is_loadbalancer)
+        super().__init__(seeds, listener_name, is_loadbalancer, username, password)
         self._tend_ended = threading.Event()
         self._timer = None
         self._tend()
@@ -47,6 +50,7 @@ class ChannelProvider(base_channel_provider.BaseChannelProvider):
 
     def _tend(self):
         (temp_endpoints, update_endpoints_stub, channels, end_tend) = self.init_tend()
+        self._token = self._authenticate(self._credentials)
 
         if end_tend:
             self._tend_ended.set()
@@ -57,7 +61,7 @@ class ChannelProvider(base_channel_provider.BaseChannelProvider):
             stub = vector_db_pb2_grpc.ClusterInfoStub(channel)
 
             try:
-                new_cluster_id = stub.GetClusterId(empty).id
+                new_cluster_id = stub.GetClusterId(empty, credentials=self._credentials).id
                 if self.check_cluster_id(new_cluster_id):
                     update_endpoints_stub = stub
                     break
@@ -73,7 +77,7 @@ class ChannelProvider(base_channel_provider.BaseChannelProvider):
             try:
                 response = stub.GetClusterEndpoints(
                     vector_db_pb2.ClusterNodeEndpointsRequest(
-                        listenerName=self.listener_name
+                        listenerName=self.listener_name, credentials=self._credentials
                     )
                 )
                 temp_endpoints = self.update_temp_endpoints(response, temp_endpoints)
@@ -110,10 +114,29 @@ class ChannelProvider(base_channel_provider.BaseChannelProvider):
                         logger.debug(
                             "While tending, failed to close GRPC channel:" + str(e)
                         )
-        # TODO: check tend interval.
+
+
         self._timer = threading.Timer(1, self._tend).start()
 
     def _create_channel(self, host: str, port: int, is_tls: bool) -> grpc.Channel:
         # TODO: Take care of TLS
         host = re.sub(r"%.*", "", host)
         return grpc.insecure_channel(f"{host}:{port}")
+
+
+    def _authenticate(
+        self,
+        *,
+        credentials
+    ) -> None:
+
+        (auth_stub, auth_request) = self._prepare_authenticate(
+            credentials, logger
+        )
+
+        try:
+            response = auth_stub.Authenticate(auth_request)
+        except grpc.RpcError as e:
+            logger.error("Failed with error: %s", e)
+            raise types.AVSServerError(rpc_error=e)
+        return response

@@ -1,10 +1,9 @@
-
 syntax = "proto3";
 
 package aerospike.vector;
 
 option go_package = "aerospike.com/vector/protos/";
-option java_package = "com.aerospike.vector.client";
+option java_package = "com.aerospike.vector.client.proto";
 option java_multiple_files = true;
 
 // A record key.
@@ -260,6 +259,34 @@ message IndexDefinition {
 // List of index definitions.
 message IndexDefinitionList {
   repeated IndexDefinition indices = 1;
+}
+
+// A role.
+message Role {
+  // Role's unique name/id
+  string id = 1;
+}
+
+// A user.
+message User {
+  // User's username
+  string username = 1;
+
+  // Granted roles
+  repeated string roles = 2;
+}
+
+// Authentication credentials.
+message Credentials {
+  string username = 1;
+  oneof credentials {
+    PasswordCredentials passwordCredentials = 2;
+  }
+}
+
+// Password credentials.
+message PasswordCredentials {
+  string password = 1;
 }
 
 // A boolean type

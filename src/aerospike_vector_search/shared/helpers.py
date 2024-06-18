@@ -15,7 +15,7 @@ def _prepare_seeds(seeds) -> None:
     return seeds
 
 
-def _prepare_wait_for_index_waiting(self, namespace, name, wait_interval):
+def _prepare_wait_for_index_waiting(namespace, name, wait_interval):
 
     unmerged_record_initialized = False
     start_time = time.monotonic()
@@ -31,3 +31,6 @@ def _prepare_wait_for_index_waiting(self, namespace, name, wait_interval):
         consecutive_index_validations,
         index_wait_request,
     )
+
+def _get_credentials(username, password):
+    return types_pb2.Credentials(username=username, passwordCredentials=types_pb2.PasswordCredentials(password=password))
