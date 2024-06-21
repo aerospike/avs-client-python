@@ -1,5 +1,5 @@
 import pytest
-from utils import random_int
+from ...utils import random_int
 
 
 class update_credentials_test_case:

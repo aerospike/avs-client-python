@@ -1,5 +1,5 @@
 import pytest
-from utils import random_int
+from ...utils import random_int
 
 
 class list_users_test_case:
@@ -33,7 +33,7 @@ async def test_list_users(session_rbac_admin_client, test_case):
     user_found = False
     for user in result:
         if user.username == test_case.username:
-            assert results.roles = []
+            assert user.roles == []
             user_found = True
 
     assert user_found

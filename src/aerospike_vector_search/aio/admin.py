@@ -354,7 +354,7 @@ class Client(BaseClient):
         while True:
             self._check_timeout(start_time, timeout)
             try:
-                await index_stub.GetStatus(index_creation_request)
+                await index_stub.GetStatus(index_creation_request, credentials=self._channel_provider._token)
                 logger.debug("Index created succesfully")
                 # Index has been created
                 return
@@ -389,7 +389,7 @@ class Client(BaseClient):
             self._check_timeout(start_time, timeout)
 
             try:
-                await index_stub.GetStatus(index_deletion_request)
+                await index_stub.GetStatus(index_deletion_request, credentials=self._channel_provider._token)
                 # Wait for some more time.
                 await asyncio.sleep(wait_interval)
             except grpc.RpcError as e:

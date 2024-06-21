@@ -10,7 +10,6 @@ from .shared.admin_helpers import BaseClient
 
 logger = logging.getLogger(__name__)
 
-
 class Client(BaseClient):
     """
     Aerospike Vector Search Admin Client
@@ -24,8 +23,9 @@ class Client(BaseClient):
         seeds: Union[types.HostPort, tuple[types.HostPort, ...]],
         listener_name: Optional[str] = None,
         is_loadbalancer: Optional[bool] = False,
-        username: str = None,
-        password: str = None
+        username: Optional[str] = None,
+        password: Optional[str] = None,
+        root_certificate: Optional[str] = None,
     ) -> None:
         """
         Initialize the Aerospike Vector Search Admin Client.
@@ -42,7 +42,7 @@ class Client(BaseClient):
         seeds = self._prepare_seeds(seeds)
 
         self._channel_provider = channel_provider.ChannelProvider(
-            seeds, listener_name, is_loadbalancer, username, password
+            seeds, listener_name, is_loadbalancer, username, password, root_certificate
         )
 
     def index_create(
@@ -84,6 +84,9 @@ class Client(BaseClient):
             This method creates an index with the specified parameters and waits for the index creation to complete.
             It waits for up to 100,000 seconds for the index creation to complete.
         """
+
+        
+
         (index_stub, index_create_request) = self._prepare_index_create(
             namespace,
             name,
@@ -95,8 +98,9 @@ class Client(BaseClient):
             index_meta_data,
             logger,
         )
+
         try:
-            index_stub.Create(index_create_request)
+            index_stub.Create(index_create_request, credentials=self._channel_provider._token)
         except grpc.RpcError as e:
             logger.error("Failed with error: %s", e)
             raise types.AVSServerError(rpc_error=e)
@@ -124,11 +128,13 @@ class Client(BaseClient):
             This method drops an index with the specified parameters and waits for the index deletion to complete.
             It waits for up to 100,000 seconds for the index deletion to complete.
         """
+        
+
         (index_stub, index_drop_request) = self._prepare_index_drop(
             namespace, name, logger
         )
         try:
-            index_stub.Drop(index_drop_request)
+            index_stub.Drop(index_drop_request, credentials=self._channel_provider._token)
         except grpc.RpcError as e:
             logger.error("Failed with error: %s", e)
             raise types.AVSServerError(rpc_error=e)
@@ -151,15 +157,19 @@ class Client(BaseClient):
             grpc.RpcError: Raised if an error occurs during the RPC communication with the server while attempting to create the index.
             This error could occur due to various reasons such as network issues, server-side failures, or invalid request parameters.
         """
+        
+
         (index_stub, index_list_request) = self._prepare_index_list(logger)
         try:
-            response = index_stub.List(index_list_request)
+            response = index_stub.List(index_list_request, credentials=self._channel_provider._token)
         except grpc.RpcError as e:
             logger.error("Failed with error: %s", e)
             raise types.AVSServerError(rpc_error=e)
         return self._respond_index_list(response)
 
-    def index_get(self, *, namespace: str, name: str) -> dict[str, Union[int, str]]:
+    def index_get(
+        self, *, namespace: str, name: str
+    ) -> dict[str, Union[int, str]]:
         """
         Retrieve the information related with an index.
 
@@ -175,11 +185,13 @@ class Client(BaseClient):
             This error could occur due to various reasons such as network issues, server-side failures, or invalid request parameters.
 
         """
+        
+
         (index_stub, index_get_request) = self._prepare_index_get(
             namespace, name, logger
         )
         try:
-            response = index_stub.Get(index_get_request)
+            response = index_stub.Get(index_get_request, credentials=self._channel_provider._token)
         except grpc.RpcError as e:
             logger.error("Failed with error: %s", e)
             raise types.AVSServerError(rpc_error=e)
@@ -206,6 +218,8 @@ class Client(BaseClient):
 
             Warning: This API is subject to change.
         """
+        
+
         (index_stub, index_get_status_request) = self._prepare_index_get_status(
             namespace, name, logger
         )
@@ -216,6 +230,109 @@ class Client(BaseClient):
             raise types.AVSServerError(rpc_error=e)
 
         return self._respond_index_get_status(response)
+
+    def add_user(self, *, username: str, password: str, roles: list[str]) -> int:
+        
+
+        (user_admin_stub, add_user_request) = self._prepare_add_user(
+            username, password, roles, logger
+        )
+
+
+        try:
+            user_admin_stub.AddUser(add_user_request, credentials=self._channel_provider._token)
+        except grpc.RpcError as e:
+            logger.error("Failed with error: %s", e)
+            raise types.AVSServerError(rpc_error=e)
+
+    def update_credentials(self, *, username: str, password: str) -> int:
+        
+
+        (user_admin_stub, update_credentials_request) = self._prepare_update_credentials(
+            username, password, logger
+        )
+        try:
+            user_admin_stub.UpdateCredentials(update_credentials_request, credentials=self._channel_provider._token)
+        except grpc.RpcError as e:
+            logger.error("Failed with error: %s", e)
+            raise types.AVSServerError(rpc_error=e)
+
+    def drop_user(self, *, username: str) -> int:
+        
+
+        (user_admin_stub, drop_user_request) = self._prepare_drop_user(
+            username, logger
+        )
+        try:
+            user_admin_stub.DropUser(drop_user_request, credentials=self._channel_provider._token)
+        except grpc.RpcError as e:
+            logger.error("Failed with error: %s", e)
+            raise types.AVSServerError(rpc_error=e)
+
+    def get_user(self, *, username: str) -> int:
+        
+
+        (user_admin_stub, get_user_request) = self._prepare_get_user(
+            username, logger
+        )
+        try:
+            response = user_admin_stub.GetUser(get_user_request, credentials=self._channel_provider._token)
+        except grpc.RpcError as e:
+            logger.error("Failed with error: %s", e)
+            raise types.AVSServerError(rpc_error=e)
+
+        return self._respond_get_user(response)
+
+    def list_users(self) -> int:
+        
+
+        (user_admin_stub, list_users_request) = self._prepare_list_users(
+            logger
+        )
+        
+        try:
+            response = user_admin_stub.ListUsers(list_users_request, credentials=self._channel_provider._token)
+        except grpc.RpcError as e:
+            logger.error("Failed with error: %s", e)
+            raise types.AVSServerError(rpc_error=e)
+        return self._respond_list_users(response)
+
+    def grant_roles(self, *, username: str, roles: list[str]) -> int:
+        
+
+        (user_admin_stub, grant_roles_request) = self._prepare_grant_roles(
+            username, roles, logger
+        )
+        try:
+            user_admin_stub.GrantRoles(grant_roles_request, credentials=self._channel_provider._token)
+        except grpc.RpcError as e:
+            logger.error("Failed with error: %s", e)
+            raise types.AVSServerError(rpc_error=e)
+
+    def revoke_roles(self, *, username: str, roles: list[str]) -> int:
+        
+
+        (user_admin_stub, revoke_roles_request) = self._prepare_revoke_roles(
+            username, roles, logger
+        )
+        try:
+            user_admin_stub.RevokeRoles(revoke_roles_request, credentials=self._channel_provider._token)
+        except grpc.RpcError as e:
+            logger.error("Failed with error: %s", e)
+            raise types.AVSServerError(rpc_error=e)
+
+    def list_roles(self) -> int:
+        
+
+        (user_admin_stub, list_roles_request) = self._prepare_list_roles(
+            logger
+        )
+        try:
+            response = user_admin_stub.ListRoles(list_roles_request, credentials=self._channel_provider._token)
+        except grpc.RpcError as e:
+            logger.error("Failed with error: %s", e)
+            raise types.AVSServerError(rpc_error=e)
+        return self._respond_list_roles(response)
 
     def _wait_for_index_creation(
         self,
@@ -228,13 +345,15 @@ class Client(BaseClient):
         """
         Wait for the index to be created.
         """
+        
+
         (index_stub, wait_interval, start_time, _, _, index_creation_request) = (
             self._prepare_wait_for_index_waiting(namespace, name, wait_interval)
         )
         while True:
             self._check_timeout(start_time, timeout)
             try:
-                index_stub.GetStatus(index_creation_request)
+                index_stub.GetStatus(index_creation_request, credentials=self._channel_provider._token)
                 logger.debug("Index created succesfully")
                 # Index has been created
                 return
@@ -258,6 +377,7 @@ class Client(BaseClient):
         """
         Wait for the index to be deleted.
         """
+        
 
         # Wait interval between polling
         (index_stub, wait_interval, start_time, _, _, index_deletion_request) = (
@@ -268,7 +388,7 @@ class Client(BaseClient):
             self._check_timeout(start_time, timeout)
 
             try:
-                index_stub.GetStatus(index_deletion_request)
+                index_stub.GetStatus(index_deletion_request, credentials=self._channel_provider._token)
                 # Wait for some more time.
                 time.sleep(wait_interval)
             except grpc.RpcError as e:
@@ -292,7 +412,7 @@ class Client(BaseClient):
 
     def __enter__(self):
         """
-        Enter an asynchronous context manager for the admin client.
+        Enter a context manager for the admin client.
 
         Returns:
             VectorDbAdminlient: Aerospike Vector Search Admin Client instance.
@@ -301,6 +421,6 @@ class Client(BaseClient):
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         """
-        Exit an asynchronous context manager for the admin client.
+        Exit a context manager for the admin client.
         """
         self.close()

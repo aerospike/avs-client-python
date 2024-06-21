@@ -2,32 +2,32 @@ import pytest
 from ...utils import random_int
 
 
-class grant_roles_test_case:
+class revoke_roles_test_case:
     def __init__(
         self,
         *,
         username,
         password,
         roles,
-        granted_roles
+        revoked_roles
     ):
         self.username = username
         self.password = password
         self.roles = roles
-        self.granted_roles = granted_roles
+        self.revoked_roles = revoked_roles
 
 @pytest.mark.parametrize(
     "test_case",
     [
-        grant_roles_test_case(
-            username="aio-update-credentials-" + str(random_int()),
+        revoke_roles_test_case(
+            username="aio-revoke-roles-" + str(random_int()),
             password="yeoldpassword",
-            roles=[],
-            granted_roles=["admin", "read-write"]
+            roles=["admin", "read-write"],
+            revoked_roles=[]
         ),
     ],
 )
-async def test_grant_roles(session_rbac_admin_client, test_case):
+async def test_revoke_roles(session_rbac_admin_client, test_case):
     await session_rbac_admin_client.add_user(
         username=test_case.username,
         password=test_case.password,
@@ -35,9 +35,9 @@ async def test_grant_roles(session_rbac_admin_client, test_case):
 
     )
 
-    await session_rbac_admin_client.grant_roles(
+    await session_rbac_admin_client.revoke_roles(
         username=test_case.username,
-        roles=test_case.granted_roles
+        roles=test_case.roles
     )
 
     result = await session_rbac_admin_client.get_user(
@@ -46,5 +46,5 @@ async def test_grant_roles(session_rbac_admin_client, test_case):
 
     assert result.username == test_case.username
 
-    assert result.roles == test_case.granted_roles
+    assert result.roles == test_case.revoked_roles
 

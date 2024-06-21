@@ -1,21 +1,26 @@
 import pytest
+from ...utils import index_strategy
+from .sync_utils import drop_specified_index
+from hypothesis import given, settings, Verbosity
 
-@pytest.fixture
-def add_index(function_admin_client):
-    function_admin_client.index_create(
+
+
+
+@pytest.mark.parametrize("empty_test_case",[None])
+@given(random_name=index_strategy())
+@settings(max_examples=5, deadline=1000)
+def test_index_get(session_admin_client, empty_test_case, random_name):
+    session_admin_client.index_create(
         namespace="test",
-        name="index_get_1",
+        name=random_name,
         vector_field="science",
         dimensions=1024,
     )
-
-
-def test_index_get(add_index, session_admin_client):
     result = session_admin_client.index_get(
-        namespace="test", name="index_get_1"
+        namespace="test", name=random_name
     )
     
-    assert result["id"]["name"] == "index_get_1"
+    assert result["id"]["name"] == random_name
     assert result["id"]["namespace"] == "test"
     assert result["dimensions"] == 1024
     assert result['field'] == "science"
@@ -26,4 +31,6 @@ def test_index_get(add_index, session_admin_client):
     assert result["hnsw_params"]["batching_params"]["interval"] == 30000
     assert not result["hnsw_params"]["batching_params"]["disabled"]
     assert result["storage"]["namespace"] == "test"
-    assert result["storage"]["set"] == "index_get_1"
+    assert result["storage"]["set"] == random_name
+
+    drop_specified_index(session_admin_client, "test", random_name)

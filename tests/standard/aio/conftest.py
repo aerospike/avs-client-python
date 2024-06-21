@@ -4,14 +4,13 @@ from aerospike_vector_search.aio import Client
 from aerospike_vector_search.aio.admin import Client as AdminClient
 from aerospike_vector_search import types
 
-host = 'connector.aerospike.com'
+host = 'localhost'
 port = 5000
 
 @pytest.fixture(scope="session", autouse=True)
 async def drop_all_indexes():
     async with AdminClient(
-        seeds=types.HostPort(host=host, port=port), username="admin", password="admin", root_certificates="/home/dpelini/Documents/prox/rbac-server/connector.aerospike.com.crt",
-        private_key="/home/dpelini/Documents/prox/rbac-server/private_key.pem", public_key="/home/dpelini/Documents/prox/rbac-server/public_key.pem"
+        seeds=types.HostPort(host=host, port=port)
 
     ) as client:
         index_list = await client.index_list()
@@ -22,6 +21,7 @@ async def drop_all_indexes():
 
 
         await asyncio.gather(*tasks)
+
 
 @pytest.fixture(scope="module")
 async def session_admin_client():

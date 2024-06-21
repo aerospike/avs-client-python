@@ -15,13 +15,13 @@ def _prepare_seeds(seeds) -> None:
     return seeds
 
 
-def _prepare_wait_for_index_waiting(namespace, name, wait_interval):
+def _prepare_wait_for_index_waiting(client, namespace, name, wait_interval):
 
     unmerged_record_initialized = False
     start_time = time.monotonic()
     consecutive_index_validations = 0
 
-    index_stub = index_pb2_grpc.IndexServiceStub(self._channel_provider.get_channel())
+    index_stub = index_pb2_grpc.IndexServiceStub(client._channel_provider.get_channel())
     index_wait_request = types_pb2.IndexId(namespace=namespace, name=name)
     return (
         index_stub,
@@ -33,4 +33,6 @@ def _prepare_wait_for_index_waiting(namespace, name, wait_interval):
     )
 
 def _get_credentials(username, password):
+    if not username:
+        return None
     return types_pb2.Credentials(username=username, passwordCredentials=types_pb2.PasswordCredentials(password=password))

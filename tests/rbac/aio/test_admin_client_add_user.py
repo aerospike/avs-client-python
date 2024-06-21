@@ -1,5 +1,5 @@
 import pytest
-from utils import random_int
+from ...utils import random_int
 
 class add_user_test_case:
     def __init__(
