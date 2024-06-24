@@ -65,6 +65,8 @@ class ChannelProvider(base_channel_provider.BaseChannelProvider):
                 await self._update_token_and_ttl()
 
         if end_tend:
+            self._tend_initalized.set()
+
             self._tend_ended.set()
             return
 
@@ -169,17 +171,14 @@ class ChannelProvider(base_channel_provider.BaseChannelProvider):
     async def _update_token_and_ttl(
         self,
     ) -> None:
-        try: 
-            (auth_stub, auth_request) = self._prepare_authenticate(
-                self._credentials, logger
-            )
+        (auth_stub, auth_request) = self._prepare_authenticate(
+            self._credentials, logger
+        )
 
-            try:
-                response = await auth_stub.Authenticate(auth_request)
-            except grpc.RpcError as e:
-                print("Failed with error: %s", e)
-                raise types.AVSServerError(rpc_error=e)
+        try:
+            response = await auth_stub.Authenticate(auth_request)
+        except grpc.RpcError as e:
+            print("Failed with error: %s", e)
+            raise types.AVSServerError(rpc_error=e)
 
-            self._respond_authenticate(response.token)
-        except Exception as e:
-            print(e)
+        self._respond_authenticate(response.token)

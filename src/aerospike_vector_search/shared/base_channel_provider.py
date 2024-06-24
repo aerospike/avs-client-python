@@ -177,7 +177,6 @@ class BaseChannelProvider(object):
 
     def _respond_authenticate(self, token):
         payload = jwt.decode(token, "", algorithms=['RS256'], options={"verify_signature": False})
-        print(payload)
         self._ttl = self._get_ttl(payload)
         self._ttl_start = payload['exp']
 

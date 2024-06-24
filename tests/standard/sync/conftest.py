@@ -3,11 +3,9 @@ from aerospike_vector_search import Client
 from aerospike_vector_search.admin import Client as AdminClient
 from aerospike_vector_search import types
 
-host = 'localhost'
-port = 5000
 
-@pytest.fixture(scope="session", autouse=True)
-def drop_all_indexes():
+@pytest.fixture(scope="module", autouse=True)
+def drop_all_indexes(host, port):
     with AdminClient(
         seeds=types.HostPort(host=host, port=port)
 
@@ -21,7 +19,7 @@ def drop_all_indexes():
 
 
 @pytest.fixture(scope="module")
-def session_admin_client():
+def session_admin_client(host, port):
     client = AdminClient(
         seeds=types.HostPort(host=host, port=port)
     )
@@ -29,7 +27,7 @@ def session_admin_client():
     client.close()
 
 @pytest.fixture(scope="module")
-def session_vector_client():
+def session_vector_client(host, port):
     client = Client(
         seeds=types.HostPort(host=host, port=port)
     )
@@ -37,7 +35,7 @@ def session_vector_client():
     client.close()
 
 @pytest.fixture
-def function_admin_client():
+def function_admin_client(host, port):
     client = AdminClient(
         seeds=types.HostPort(host=host, port=port)
     ) 
