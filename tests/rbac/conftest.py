@@ -1,8 +1,4 @@
 import pytest
-import asyncio
-from aerospike_vector_search.aio import Client
-from aerospike_vector_search.aio.admin import Client as AdminClient
-from aerospike_vector_search import types
 
 
 def pytest_addoption(parser):
@@ -11,6 +7,9 @@ def pytest_addoption(parser):
     parser.addoption("--host", action="store", default="localhost", help="AVS Host")
     parser.addoption("--port", action="store", default=5000, help="AVS Port")
     parser.addoption("--root_certificate", action="store", default=None, help="Path to root CA certificate")
+    parser.addoption("--certificate_chain", action="store", default=None, help="Path to certificate chain")
+    parser.addoption("--private_key", action="store", default=None, help="Path to private key")
+
 
 @pytest.fixture(scope="module", autouse=True)
 def username(request):
@@ -21,9 +20,16 @@ def password(request):
     return request.config.getoption("--password")
 
 @pytest.fixture(scope="module", autouse=True)
+def private_key(request):
+    return request.config.getoption("--private_key")
+
+@pytest.fixture(scope="module", autouse=True)
+def certificate_chain(request):
+    return request.config.getoption("--certificate_chain")
+
+@pytest.fixture(scope="module", autouse=True)
 def root_certificate(request):
     return request.config.getoption("--root_certificate")
-
 
 @pytest.fixture(scope="module", autouse=True)
 def host(request):

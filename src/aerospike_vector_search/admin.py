@@ -26,6 +26,8 @@ class Client(BaseClient):
         username: Optional[str] = None,
         password: Optional[str] = None,
         root_certificate: Optional[str] = None,
+        certificate_chain: Optional[str] = None,
+        private_key: Optional[str] = None,
     ) -> None:
         """
         Initialize the Aerospike Vector Search Admin Client.
@@ -42,7 +44,7 @@ class Client(BaseClient):
         seeds = self._prepare_seeds(seeds)
 
         self._channel_provider = channel_provider.ChannelProvider(
-            seeds, listener_name, is_loadbalancer, username, password, root_certificate
+            seeds, listener_name, is_loadbalancer, username, password, root_certificate, certificate_chain, private_key
         )
 
     def index_create(

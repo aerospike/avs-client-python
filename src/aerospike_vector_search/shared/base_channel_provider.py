@@ -38,8 +38,8 @@ class BaseChannelProvider(object):
         username: Optional[str] = None,
         password: Optional[str] = None,
         root_certificate: Optional[str] = None,
+        certificate_chain: Optional[str] = None,
         private_key: Optional[str] = None,
-        public_key: Optional[str] = None
     ) -> None:
         self.seeds: tuple[types.HostPort, ...] = seeds
         self.listener_name: Optional[str] = listener_name
@@ -50,6 +50,8 @@ class BaseChannelProvider(object):
         else:
             self._token = None
         self._root_certificate = root_certificate
+        self._certificate_chain = certificate_chain
+        self._private_key = private_key
         self._ttl = 0
         self._ttl_start = 0
         self._ttl_threshold = 0.9

@@ -17,9 +17,18 @@ def root_certificate(request):
     return request.config.getoption("--root_certificate")
 
 @pytest.fixture(scope="module", autouse=True)
-async def drop_all_indexes(username, password, root_certificate, host, port):
+def private_key(request):
+    return request.config.getoption("--private_key")
+
+@pytest.fixture(scope="module", autouse=True)
+def certificate_chain(request):
+    return request.config.getoption("--certificate_chain")
+
+
+@pytest.fixture(scope="module", autouse=True)
+async def drop_all_indexes(username, password, host, port, root_certificate, certificate_chain, private_key):
     async with AdminClient(
-        seeds=types.HostPort(host=host, port=port), username=username, password=password, root_certificate=root_certificate,
+        seeds=types.HostPort(host=host, port=port), username=username, password=password, root_certificate=root_certificate, certificate_chain=certificate_chain, private_key=private_key
     ) as client:
         index_list = await client.index_list()
 
@@ -30,9 +39,9 @@ async def drop_all_indexes(username, password, root_certificate, host, port):
         await asyncio.gather(*tasks)
 
 @pytest.fixture(scope="module")
-async def session_rbac_admin_client(username, password, root_certificate, host, port):
+async def session_rbac_admin_client(username, password, root_certificate, host, port, certificate_chain, private_key):
     client = AdminClient(
-        seeds=types.HostPort(host=host, port=port), username=username, password=password, root_certificate=root_certificate,
+        seeds=types.HostPort(host=host, port=port), username=username, password=password, root_certificate=root_certificate, certificate_chain=certificate_chain, private_key=private_key
     )
     yield client
     await client.close()

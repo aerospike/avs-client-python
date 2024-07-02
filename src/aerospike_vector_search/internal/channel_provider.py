@@ -27,9 +27,11 @@ class ChannelProvider(base_channel_provider.BaseChannelProvider):
         is_loadbalancer: Optional[bool] = False,
         username: Optional[str] = None,
         password: Optional[str] = None,
-        root_certificate: Optional[str] = None
+        root_certificate: Optional[str] = None,
+        certificate_chain: Optional[str] = None,
+        private_key: Optional[str] = None,
     ) -> None:
-        super().__init__(seeds, listener_name, is_loadbalancer, username, password, root_certificate)
+        super().__init__(seeds, listener_name, is_loadbalancer, username, password, root_certificate, certificate_chain, private_key)
         self._tend_ended = threading.Event()
         self._timer = None
         self._tend()
@@ -126,7 +128,19 @@ class ChannelProvider(base_channel_provider.BaseChannelProvider):
             with open(self._root_certificate, 'rb') as f:
                 root_certificate = f.read()
 
-            ssl_credentials = grpc.ssl_channel_credentials(root_certificates=root_certificate)
+            if self._private_key:
+                with open(self._private_key, 'rb') as f:
+                    private_key = f.read()
+            else:
+                private_key = None
+                
+            if self._certificate_chain:
+                with open(self._certificate_chain, 'rb') as f:
+                    certificate_chain = f.read()
+            else:
+                certificate_chain = None
+
+            ssl_credentials = grpc.ssl_channel_credentials(root_certificates=root_certificate, certificate_chain=certificate_chain, private_key=private_key)
 
             return grpc.secure_channel(f"{host}:{port}", ssl_credentials)
 

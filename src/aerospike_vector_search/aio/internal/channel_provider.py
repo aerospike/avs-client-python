@@ -30,9 +30,11 @@ class ChannelProvider(base_channel_provider.BaseChannelProvider):
         username: Optional[str] = None,
         password: Optional[str] = None,
         root_certificate: Optional[str] = None,
+        certificate_chain: Optional[str] = None,
+        private_key: Optional[str] = None,
     ) -> None:
 
-        super().__init__(seeds, listener_name, is_loadbalancer, username, password, root_certificate)
+        super().__init__(seeds, listener_name, is_loadbalancer, username, password, root_certificate, certificate_chain, private_key)
 
         self._tend_initalized: asyncio.Event = asyncio.Event()
         self._tend_ended: asyncio.Event = asyncio.Event()
@@ -58,109 +60,125 @@ class ChannelProvider(base_channel_provider.BaseChannelProvider):
         await self._tend_initalized.wait()
 
     async def _tend(self):
-        (temp_endpoints, update_endpoints_stub, channels, end_tend) = self.init_tend()
+        try:
+            (temp_endpoints, update_endpoints_stub, channels, end_tend) = self.init_tend()
 
-        if self._token:
-            if self._check_if_token_refresh_needed():
-                await self._update_token_and_ttl()
+            if self._token:
+                if self._check_if_token_refresh_needed():
+                    await self._update_token_and_ttl()
 
-        if end_tend:
+            if end_tend:
+                self._tend_initalized.set()
+
+                self._tend_ended.set()
+                return
+
+            stubs = []
+            tasks = []
+
+            for channel in channels:
+
+                stub = vector_db_pb2_grpc.ClusterInfoStub(channel)
+                stubs.append(stub)
+                try:
+                    tasks.append(await stub.GetClusterId(empty, credentials=self._token))
+                except Exception as e:
+                    logger.debug(
+                        "While tending, failed to get cluster id with error:" + str(e)
+                    )
+
+            try:
+                new_cluster_ids = tasks
+            except Exception as e:
+                logger.debug(
+                    "While tending, failed to gather results from GetClusterId:" + str(e)
+                )
+
+            for index, value in enumerate(new_cluster_ids):
+                if self.check_cluster_id(value.id):
+                    update_endpoints_stub = stubs[index]
+                    break
+
+
+            if update_endpoints_stub:
+                try:
+                    response = await update_endpoints_stub.GetClusterEndpoints(
+                        vector_db_pb2.ClusterNodeEndpointsRequest(
+                            listenerName=self.listener_name
+                        ),
+                        credentials=self._token
+                    )
+                    temp_endpoints = self.update_temp_endpoints(response, temp_endpoints)
+                except Exception as e:
+                    logger.debug(
+                        "While tending, failed to get cluster endpoints with error:"
+                        + str(e)
+                    )
+
+                tasks = []
+                add_new_channel_info = []
+
+                for node, newEndpoints in temp_endpoints.items():
+                    (channel_endpoints, add_new_channel) = self.check_for_new_endpoints(
+                        node, newEndpoints
+                    )
+
+                    if add_new_channel:
+                        try:
+                            # TODO: Wait for all calls to drain
+                            tasks.append(channel_endpoints.channel.close())
+                        except Exception as e:
+                            logger.debug(
+                                "While tending, failed to close GRPC channel:" + str(e)
+                            )
+                        add_new_channel_info.append((node, newEndpoints))
+
+                for node, newEndpoints in add_new_channel_info:
+                    self.add_new_channel_to_node_channels(node, newEndpoints)
+
+                for node, channel_endpoints in list(self._node_channels.items()):
+                    if not self._node_channels.get(node):
+                        try:
+                            # TODO: Wait for all calls to drain
+                            tasks.append(channel_endpoints.channel.close())
+                            del self._node_channels[node]
+
+                        except Exception as e:
+                            logger.debug(
+                                "While tending, failed to close GRPC channel:" + str(e)
+                            )
+
+                await asyncio.gather(*tasks)
+
             self._tend_initalized.set()
 
-            self._tend_ended.set()
-            return
-
-        stubs = []
-        tasks = []
-
-        for channel in channels:
-
-            stub = vector_db_pb2_grpc.ClusterInfoStub(channel)
-            stubs.append(stub)
-            try:
-                tasks.append(stub.GetClusterId(empty, credentials=self._token))
-            except Exception as e:
-                logger.debug(
-                    "While tending, failed to get cluster id with error:" + str(e)
-                )
-
-        try:
-            new_cluster_ids = await asyncio.gather(*tasks)
+            # TODO: check tend interval.
+            await asyncio.sleep(1)
+            self._task = asyncio.create_task(self._tend())
         except Exception as e:
-            logger.debug(
-                "While tending, failed to gather results from GetClusterId:" + str(e)
-            )
-
-        for index, value in enumerate(new_cluster_ids):
-            if self.check_cluster_id(value.id):
-                update_endpoints_stub = stubs[index]
-                break
+            print(e)
 
 
-        if update_endpoints_stub:
-            try:
-                response = await update_endpoints_stub.GetClusterEndpoints(
-                    vector_db_pb2.ClusterNodeEndpointsRequest(
-                        listenerName=self.listener_name
-                    ),
-                    credentials=self._token
-                )
-                temp_endpoints = self.update_temp_endpoints(response, temp_endpoints)
-            except Exception as e:
-                logger.debug(
-                    "While tending, failed to get cluster endpoints with error:"
-                    + str(e)
-                )
-
-            tasks = []
-            add_new_channel_info = []
-
-            for node, newEndpoints in temp_endpoints.items():
-                (channel_endpoints, add_new_channel) = self.check_for_new_endpoints(
-                    node, newEndpoints
-                )
-
-                if add_new_channel:
-                    try:
-                        # TODO: Wait for all calls to drain
-                        tasks.append(channel_endpoints.channel.close())
-                    except Exception as e:
-                        logger.debug(
-                            "While tending, failed to close GRPC channel:" + str(e)
-                        )
-                    add_new_channel_info.append((node, newEndpoints))
-
-            for node, newEndpoints in add_new_channel_info:
-                self.add_new_channel_to_node_channels(node, newEndpoints)
-
-            for node, channel_endpoints in list(self._node_channels.items()):
-                if not self._node_channels.get(node):
-                    try:
-                        # TODO: Wait for all calls to drain
-                        tasks.append(channel_endpoints.channel.close())
-                        del self._node_channels[node]
-
-                    except Exception as e:
-                        logger.debug(
-                            "While tending, failed to close GRPC channel:" + str(e)
-                        )
-
-            await asyncio.gather(*tasks)
-
-        self._tend_initalized.set()
-
-        # TODO: check tend interval.
-        await asyncio.sleep(1)
-        self._task = asyncio.create_task(self._tend())
-
-
-    def _create_channel(self, host: str, port: int, is_tls: bool) -> grpc.aio.Channel:
+    def _create_channel(self, host: str, port: int, is_tls: bool) -> grpc.Channel:
         host = re.sub(r"%.*", "", host)
         if self._root_certificate:
             with open(self._root_certificate, 'rb') as f:
                 root_certificate = f.read()
 
-            ssl_credentials = grpc.ssl_channel_credentials(root_certificates=root_certificate)
+            if self._private_key:
+                with open(self._private_key, 'rb') as f:
+                    private_key = f.read()
+            else:
+                private_key = None
+                
+            if self._certificate_chain:
+                with open(self._certificate_chain, 'rb') as f:
+                    certificate_chain = f.read()
+            else:
+                certificate_chain = None
+
+
+            ssl_credentials = grpc.ssl_channel_credentials(root_certificates=root_certificate, certificate_chain=certificate_chain, private_key=private_key)
 
             return grpc.aio.secure_channel(f"{host}:{port}", ssl_credentials)
 
