@@ -1,0 +1,49 @@
+name: Run Unit Tests
+
+on:
+  pull_request:
+    branches:
+      - dev
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+
+    strategy:
+      matrix:
+        python-version: ["3.9", "3.10", "3.11", "3.12"]
+
+        
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    - name: Set up Python
+      uses: actions/setup-python@v2
+      with:
+        python-version: ${{ matrix.python-version }}
+
+    - name: Start Aerospike Server
+      run: |
+        docker run -d --network=host --name aerospike -p 3000:3000 -v .:/etc/aerospike aerospike/aerospike-server-enterprise:latest
+      working-directory: tests
+
+
+    - name: Start Aerospike Proximus
+      run: |
+        docker run -d --network=host -p 5000:5000 -v ./aerospike-proximus.yml:/etc/aerospike-proximus/aerospike-proximus.yml -v ./features.conf:/etc/aerospike-proximus/features.conf aerospike/aerospike-proximus:0.4.0
+      working-directory: tests
+
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        python setup.py
+        pip install -r requirements.txt
+      working-directory: tests
+
+    - name: Run unit tests
+      run: |
+        python -m pytest -s
+      working-directory: tests

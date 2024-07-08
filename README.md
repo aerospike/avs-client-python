@@ -2,7 +2,7 @@
 Python client for Aerospike Vector Search Database
 
 ## Prerequisites
- - Python 3.9 or higher
+ - Python 3.9 or higher 
  - pip version 9.0.1 or higher
  - Aerospike Vector Search DB and Aerospike clusters running.
 
