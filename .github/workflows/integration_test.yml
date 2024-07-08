@@ -24,18 +24,6 @@ jobs:
       with:
         python-version: ${{ matrix.python-version }}
 
-    - name: Start Aerospike Server
-      run: |
-        docker run -d --network=host --name aerospike -p 3000:3000 -v .:/etc/aerospike aerospike/aerospike-server-enterprise:latest
-      working-directory: tests
-
-
-    - name: Start Aerospike Proximus
-      run: |
-        docker run -d --network=host -p 5000:5000 -v ./aerospike-proximus.yml:/etc/aerospike-proximus/aerospike-proximus.yml -v ./features.conf:/etc/aerospike-proximus/features.conf aerospike/aerospike-proximus:0.4.0
-        docker ps
-      working-directory: tests
-
 
     - name: Install dependencies
       run: |
@@ -46,5 +34,8 @@ jobs:
 
     - name: Run unit tests
       run: |
+        docker run -d --network=host -p 5000:5000 -v ./aerospike-proximus.yml:/etc/aerospike-proximus/aerospike-proximus.yml -v ./features.conf:/etc/aerospike-proximus/features.conf aerospike/aerospike-proximus:0.4.0
+        docker run -d --network=host --name aerospike -p 3000:3000 -v .:/etc/aerospike aerospike/aerospike-server-enterprise:latest
+        sleep 10
         python -m pytest standard/sync -s
       working-directory: tests
