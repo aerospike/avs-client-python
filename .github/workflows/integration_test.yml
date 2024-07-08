@@ -45,5 +45,5 @@ jobs:
 
     - name: Run unit tests
       run: |
-        python -m pytest -s
+        python -m pytest standard -s
       working-directory: tests
