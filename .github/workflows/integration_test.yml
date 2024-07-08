@@ -35,7 +35,33 @@ jobs:
     - name: Run unit tests
       run: |
         docker run -d -p 5000:5000 -v ./aerospike-proximus.yml:/etc/aerospike-proximus/aerospike-proximus.yml -v ./features.conf:/etc/aerospike-proximus/features.conf aerospike/aerospike-proximus:0.4.0
+        sleep 1
         docker ps
+        docker logs aerospike-proximus        
+
+        sleep 1
+        docker ps
+        docker logs aerospike-proximus        
+
+        sleep 1
+        docker ps
+        docker logs aerospike-proximus        
+
+        sleep 1
+        docker ps
+        docker logs aerospike-proximus        
+
+        sleep 1
+        docker ps
+        docker logs aerospike-proximus     
+        sleep 1
+        docker ps
+        docker logs aerospike-proximus        
+
+        sleep 1
+        docker ps
+        docker logs aerospike-proximus     
+        
         sleep 5
         docker logs aerospike-proximus        
         docker run -d --name aerospike -p 3000:3000 -v .:/etc/aerospike aerospike/aerospike-server-enterprise:latest
