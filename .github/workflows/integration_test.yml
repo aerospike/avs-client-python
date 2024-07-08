@@ -37,7 +37,6 @@ jobs:
       env:
         FEATURE_FILE: ${{ secrets.FEATURE_FILE }}
       run: |
-        echo $FEATURE_FILE
         echo $FEATURE_FILE | base64 --decode > features.conf 
       working-directory: tests
 
