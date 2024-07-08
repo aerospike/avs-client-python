@@ -64,7 +64,7 @@ jobs:
 
         sleep 5
         docker logs aerospike-proximus        
-        docker run -d --name aerospike -p 3000:3000 -v .:/etc/aerospike aerospike/aerospike-server-enterprise:latest
+        docker run -d --name aerospike -p 3000:3000 -v .:/etc/aerospike aerospike/aerospike-server:latest
         sleep 5
         docker logs aerospike
         docker ps
