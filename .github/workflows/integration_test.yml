@@ -51,20 +51,10 @@ jobs:
       run: |
         docker run -d -p 5000:5000 --name aerospike-proximus -v ./aerospike-proximus.yml:/etc/aerospike-proximus/aerospike-proximus.yml -v ./features.conf:/etc/aerospike-proximus/features.conf aerospike.jfrog.io/docker/aerospike/aerospike-proximus-private:0.5.0-SNAPSHOT
     
-        docker run -d --name aerospike -p 3000:3000 -v .:/etc/aerospike aerospike/aerospike-server-enterprise:latest
+        docker run -d --name aerospike -p 3000:3000 -v .:/etc/aerospike aerospike/aerospike-server-enterprise:latest 
 
-        docker logs aerospike
-        sleep 1
-
-        docker logs aerospike
-        sleep 1
-
-        docker logs aerospike
-        sleep 1
-
-        docker logs aerospike
         sleep 10
 
         docker ps
-        python -m pytest standard/sync -s
+        python -m pytest standard/sync -s --host 0.0.0.0 --port 5000
       working-directory: tests
