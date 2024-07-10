@@ -106,13 +106,12 @@ jobs:
       run: |
         assets/call_gen.sh
       working-directory: tests
-      
+
     - name: Run unit tests
       run: |
         docker run -d  --network=host -p 5000:5000 --name aerospike-proximus -v ./aerospike-proximus.yml:/etc/aerospike-proximus/aerospike-proximus.yml -v ./features.conf:/etc/aerospike-proximus/features.conf aerospike.jfrog.io/docker/aerospike/aerospike-proximus-private:0.5.0-SNAPSHOT
-        sudo docker run --network=host -p 5000:5000   -v $(pwd)/aerospike-proximus.yml:/etc/aerospike-proximus/aerospike-proximus.yml   -v $(pwd)/features.conf:/etc/aerospike-proximus/features.conf   -v $(pwd)/tls:/etc/aerospike-proximus/tls aerospike.jfrog.io/docker/aerospike/aerospike-proximus-private:0.5.0-SNAPSHOT
+        docker run --network=host -p 5000:5000   -v $(pwd)/aerospike-proximus.yml:/etc/aerospike-proximus/aerospike-proximus.yml   -v $(pwd)/features.conf:/etc/aerospike-proximus/features.conf   -v $(pwd)/tls:/etc/aerospike-proximus/tls aerospike.jfrog.io/docker/aerospike/aerospike-proximus-private:0.5.0-SNAPSHOT
 
-        docker run -d --name aerospike -p 3000:3000 -v .:/etc/aerospike aerospike/aerospike-server-enterprise:latest 
 
         sleep 10
 
