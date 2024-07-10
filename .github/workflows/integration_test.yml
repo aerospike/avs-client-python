@@ -114,6 +114,8 @@ jobs:
     - name: create config
       run: |
         assets/call_gen.sh
+        cat /etc/hosts
+
       working-directory: tests
 
     - name: Run unit tests
