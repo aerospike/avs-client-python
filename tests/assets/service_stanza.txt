@@ -1,0 +1,9 @@
+      tls-id: service-tls
+
+      # Required when running behind NAT
+      advertised-listeners:
+        default:
+          # List of externally accessible addresses and
+          # ports for this Proximus instance.
+          - address: brawn
+            port: 5000

@@ -1,0 +1,13 @@
+tls:
+  service-tls:
+    trust-store:
+      store-file: /etc/aerospike-proximus/tls/root.truststore.jks 
+      store-password-file: /etc/aerospike-proximus/tls/storepass
+    key-store:
+      store-file: /etc/aerospike-proximus/tls/brawn.keystore.jks
+      store-password-file: /etc/aerospike-proximus/tls/storepass
+      key-password-file: /etc/aerospike-proximus/tls/keypass
+    mutual-auth: true
+    # Client certificate subject names that are allowed
+    allowed-peer-names:
+      - brawn
