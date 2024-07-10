@@ -30,7 +30,6 @@ jobs:
         python -m pip install --upgrade pip
         python setup.py
         pip install -r requirements.txt
-        cat /etc/hosts
 
       working-directory: tests
 
@@ -52,6 +51,8 @@ jobs:
     - name: create config
       run: |
         assets/call_gen_normal.sh
+        cat /etc/hosts
+
       working-directory: tests
 
     - name: Run unit tests
