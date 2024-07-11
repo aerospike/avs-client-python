@@ -51,6 +51,8 @@ jobs:
     - name: create config
       run: |
         assets/call_gen_normal.sh
+        cat aerospike-proximus.yml
+        cat aerospike.conf
         cat /etc/hosts
 
       working-directory: tests
@@ -119,10 +121,12 @@ jobs:
     - name: Add hosts to /etc/hosts
       run: |
         sudo echo "0.0.0.0 brawn" | sudo tee -a /etc/hosts
-        
+
     - name: create config
       run: |
-        #assets/call_gen_tls.sh
+        assets/call_gen_tls.sh
+        cat aerospike-proximus.yml
+        cat aerospike.conf
         cat /etc/hosts
       working-directory: tests
 
