@@ -116,6 +116,10 @@ jobs:
     - name: Create .rnd file if it doesn't exist
       run: touch $HOME/.rnd
 
+    - name: Add hosts to /etc/hosts
+      run: |
+        sudo echo "0.0.0.0 brawn" | sudo tee -a /etc/hosts
+        
     - name: create config
       run: |
         #assets/call_gen_tls.sh
@@ -198,6 +202,10 @@ jobs:
 
     - name: Create .rnd file if it doesn't exist
       run: touch $HOME/.rnd
+
+    - name: Add hosts to /etc/hosts
+      run: |
+        sudo echo "0.0.0.0 brawn" | sudo tee -a /etc/hosts
 
     - name: create config
       run: |
