@@ -146,7 +146,7 @@ jobs:
         sleep 10
 
         docker ps
-        python -m pytest standard/sync -s --host localhost --port 5000 --root_certificate tls/root.crt  -vs
+        python -m pytest standard/sync -s --host root --port 5000 --root_certificate tls/root.crt  -vs
 
       working-directory: tests
 
@@ -239,7 +239,7 @@ jobs:
         cat tls/brawn.key.pem 
         cat tls/brawn.crt
 
-        python -m pytest standard/sync -s --host brawn --port 5000 --root_certificate tls/root.crt --private_key tls/brawn.key.pem --certificate_chain tls/brawn.crt  -vs
+        python -m pytest standard/sync -s --host 0.0.0.0 --port 5000 --root_certificate tls/root.crt --private_key tls/brawn.key.pem --certificate_chain tls/brawn.crt  -vs
 
 
       working-directory: tests
