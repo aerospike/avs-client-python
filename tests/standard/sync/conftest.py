@@ -27,7 +27,7 @@ def session_admin_client(username, password, root_certificate, host, port, certi
 @pytest.fixture(scope="module")
 def session_admin_client(username, password, root_certificate, host, port, certificate_chain, private_key):
     client = AdminClient(
-        seeds=types.HostPort(host=host, port=port)
+        seeds=types.HostPort(host=host, port=port), username=username, password=password, root_certificate=root_certificate, certificate_chain=certificate_chain, private_key=private_key
     )
     yield client
     client.close()
