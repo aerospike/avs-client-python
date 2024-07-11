@@ -50,7 +50,7 @@ jobs:
 
     - name: create config
       run: |
-        #assets/call_gen_normal.sh
+        assets/call_gen_normal.sh
         cat /etc/hosts
 
       working-directory: tests
