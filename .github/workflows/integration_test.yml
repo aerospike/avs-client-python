@@ -146,7 +146,7 @@ jobs:
         sleep 10
 
         docker ps
-        python -m pytest standard/sync -s --host 127.0.0.1 --port 5000 --root_certificate tls/root.crt  -vs
+        python -m pytest standard/sync -s --host 0.0.0.0 --port 5000 --root_certificate tls/root.crt  -vs
 
       working-directory: tests
 
@@ -229,6 +229,15 @@ jobs:
         sleep 10
 
         docker ps
-        python -m pytest standard/sync -s --host brawn --port 5000 --root_certificate tls/root.crt --private_key tls/brawn.key.pem --certificate_chain tls/brawn.crt  -vs
+        python -m pytest standard/sync -s --host 0.0.0.0 --port 5000 --root_certificate tls/root.crt --private_key tls/brawn.key.pem --certificate_chain tls/brawn.crt  -vs
+        echo "
+
+        "
+
+        cat aerospike-proximus.yml
+        cat aerospike.conf
+        cat tls/root.crt 
+        cat tls/brawn.key.pem 
+        cat tls/brawn.crt
 
       working-directory: tests
