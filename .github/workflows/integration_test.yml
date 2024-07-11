@@ -7,7 +7,7 @@ on:
 
 jobs:
   test-normal:
-    runs-on: ubuntu-latest
+    runs-on: macos-latest
 
 
     strategy:
@@ -69,7 +69,7 @@ jobs:
       working-directory: tests
 
   test-tls:
-    runs-on: ubuntu-latest
+    runs-on: macos-latest
 
 
     strategy:
@@ -152,7 +152,7 @@ jobs:
 
 
   test-tls-auth:
-    runs-on: ubuntu-latest
+    runs-on: macos-latest
 
 
     strategy:
