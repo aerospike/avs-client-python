@@ -7,7 +7,7 @@ on:
 
 jobs:
   test-normal:
-    runs-on: macos-latest
+    runs-on: ubuntu-latest
 
 
     strategy:
@@ -41,9 +41,6 @@ jobs:
         echo $FEATURE_FILE | base64 --decode > features.conf 
       working-directory: tests
 
-    - name: Set up Docker Buildx
-      uses: docker/setup-buildx-action@v1
-
     - name: Docker Login
       uses: docker/login-action@v2
       with:
@@ -53,7 +50,7 @@ jobs:
 
     - name: create config
       run: |
-        assets/call_gen_normal.sh
+        #assets/call_gen_normal.sh
         cat /etc/hosts
 
       working-directory: tests
@@ -72,7 +69,7 @@ jobs:
       working-directory: tests
 
   test-tls:
-    runs-on: macos-latest
+    runs-on: ubuntu-latest
 
 
     strategy:
@@ -105,9 +102,6 @@ jobs:
         echo $FEATURE_FILE | base64 --decode > features.conf 
       working-directory: tests
 
-    - name: Set up Docker Buildx
-      uses: docker/setup-buildx-action@v1
-      
     - name: Docker Login
       uses: docker/login-action@v2
       with:
@@ -124,7 +118,7 @@ jobs:
 
     - name: create config
       run: |
-        assets/call_gen_tls.sh
+        #assets/call_gen_tls.sh
         cat /etc/hosts
       working-directory: tests
 
@@ -158,7 +152,7 @@ jobs:
 
 
   test-tls-auth:
-    runs-on: macos-latest
+    runs-on: ubuntu-latest
 
 
     strategy:
@@ -191,9 +185,6 @@ jobs:
         echo $FEATURE_FILE | base64 --decode > features.conf 
       working-directory: tests
 
-    - name: Set up Docker Buildx
-      uses: docker/setup-buildx-action@v1
-
     - name: Docker Login
       uses: docker/login-action@v2
       with:
@@ -208,14 +199,9 @@ jobs:
     - name: Create .rnd file if it doesn't exist
       run: touch $HOME/.rnd
 
-    - name: Add hosts to /etc/hosts
-      run: |
-        sudo echo "127.0.0.1 postgres.dolphin.com" | sudo tee -a /etc/hosts
-
-
     - name: create config
       run: |
-        assets/call_gen.sh
+        #assets/call_gen.sh
         cat /etc/hosts
       working-directory: tests
 

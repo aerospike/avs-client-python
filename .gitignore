@@ -162,7 +162,6 @@ tests/aerospike-proximus.yml
 tests/aerospike.conf
 tests/features.conf
 tests/assets/features.conf
-tests/tls/*
 
 # Notes
 notes.txt
