@@ -404,11 +404,11 @@ EOF
 
 
 		# Check if the line exists in /etc/hosts
-		if ! grep -qF "$line" /etc/hosts; then
-		    # Add the line to /etc/hosts
-		    echo "$line" | sudo tee -a /etc/hosts > /dev/null
-		    echo "Entry added to /etc/hosts."
-		fi
+		#if ! grep -qF "$line" /etc/hosts; then
+		#    # Add the line to /etc/hosts
+		#    echo "$line" | sudo tee -a /etc/hosts > /dev/null
+		#    echo "Entry added to /etc/hosts."
+		#fi
 
 	elif [[ "$mutual_auth_maybe" == "n" ]]; then
   		generate_derivative_certs "child" "child"
@@ -469,11 +469,11 @@ EOF
 
 
 		# Check if the line exists in /etc/hosts
-		if ! grep -qF "$line" /etc/hosts; then
-		    # Add the line to /etc/hosts
-		    echo "$line" | sudo tee -a /etc/hosts > /dev/null
-		    echo "Entry added to /etc/hosts."
-		fi
+		#if ! grep -qF "$line" /etc/hosts; then
+		#    # Add the line to /etc/hosts
+		#    echo "$line" | sudo tee -a /etc/hosts > /dev/null
+		#    echo "Entry added to /etc/hosts."
+		#fi
 	fi
 fi
 
