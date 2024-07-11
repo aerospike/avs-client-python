@@ -130,6 +130,10 @@ jobs:
         cat /etc/hosts
       working-directory: tests
 
+    - name: Add hosts to /etc/hosts
+      run: |
+        sudo echo "0.0.0.0 brawn" | sudo tee -a /etc/hosts
+
     - name: Run unit tests
       run: |
 
@@ -154,7 +158,7 @@ jobs:
         sleep 10
 
         docker ps
-        python -m pytest standard/sync -s --host child --port 5000 --root_certificate tls/root.crt  -vs
+        python -m pytest standard/sync -s --host 0.0.0.0 --port 5000 --root_certificate tls/root.crt  -vs
 
       working-directory: tests
 

@@ -439,17 +439,21 @@ EOF
 			read -p "Specify a port address:" port
 
 		fi
+		if [[ "$host" == "" ]]; then
+			read -p "Specify a host address:" host
 
+		fi
+		
 		service_stanza=$(cat <<EOF
       tls-id: service-tls
 
       # Required when running behind NAT
-      #advertised-listeners:
-      #  default:
+      advertised-listeners:
+        default:
           # List of externally accessible addresses and
           # ports for this Proximus instance.
-      #    - address: child
-      #      port: $port
+          - address: $host
+            port: $port
 EOF
 )
 
@@ -461,10 +465,7 @@ EOF
 
 
 
-		if [[ "$host" == "" ]]; then
-			read -p "Specify a host address:" host
 
-		fi
 		line="$host $server_name"
 
 
