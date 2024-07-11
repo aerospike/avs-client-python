@@ -62,7 +62,7 @@ class ChannelProvider(base_channel_provider.BaseChannelProvider):
 
         for channel in channels:
 
-            stub = vector_db_pb2_grpc.ClusterInfoStub(channel)
+            stub = vector_db_pb2_grpc.ClusterInfoServiceStub(channel)
             stubs.append(stub)
             try:
                 tasks.append(stub.GetClusterId(empty))

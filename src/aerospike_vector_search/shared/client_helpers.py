@@ -187,7 +187,8 @@ class BaseClient(object):
         return (transact_stub, vector_search_request)
 
     def _get_transact_stub(self):
-        return transact_pb2_grpc.TransactStub(self._channel_provider.get_channel())
+        return transact_pb2_grpc.TransactServiceStub(
+            self._channel_provider.get_channel())
 
     def _respond_get(self, response, key) -> None:
         return types.RecordWithKey(
