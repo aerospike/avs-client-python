@@ -158,8 +158,6 @@ cython_debug/
 # Vector search test files
 tests/siftsmall/*
 tests/siftsmall.tar.gz
-tests/aerospike-proximus.yml
-tests/aerospike.conf
 tests/features.conf
 tests/assets/features.conf
 
