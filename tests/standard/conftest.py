@@ -2,8 +2,8 @@ import pytest
 
 
 def pytest_addoption(parser):
-    parser.addoption("--username", action="store", default="admin", help="AVS Username")
-    parser.addoption("--password", action="store", default="admin", help="AVS Password")
+    parser.addoption("--username", action="store", default=None, help="AVS Username")
+    parser.addoption("--password", action="store", default=None, help="AVS Password")
     parser.addoption("--host", action="store", default="localhost", help="AVS Host")
     parser.addoption("--port", action="store", default=5000, help="AVS Port")
     parser.addoption("--root_certificate", action="store", default=None, help="Path to root CA certificate")
