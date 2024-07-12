@@ -385,7 +385,7 @@ EOF
         default:
           # List of externally accessible addresses and
           # ports for this Proximus instance.
-          - address: $server_name
+          - address: $host
             port: $port
 
 EOF
@@ -445,8 +445,8 @@ EOF
         default:
           # List of externally accessible addresses and
           # ports for this Proximus instance.
-          #- address: $host
-          #  port: $port
+          - address: $host
+            port: $port
 EOF
 )
 
