@@ -67,7 +67,7 @@ jobs:
         sleep 40
 
         docker ps
-        python -m pytest standard/sync -s --host 127.0.0.1 --port 5000
+        python -m pytest standard/sync -s --host 0.0.0.0 --port 5000
       working-directory: tests
 
   test-tls:

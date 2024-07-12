@@ -12,4 +12,4 @@
     --client_name brawn \
     --server_name brawn \
     --port 5000 \
-    --host localhost
+    --host 127.0.0.1
