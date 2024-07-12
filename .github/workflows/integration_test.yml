@@ -194,7 +194,7 @@ jobs:
 
     - name: Add hosts to /etc/hosts
       run: |
-        sudo echo "0.0.0.0 brawn" | sudo tee -a /etc/hosts
+        #sudo echo "0.0.0.0 brawn" | sudo tee -a /etc/hosts
 
     - name: create config
       run: |
