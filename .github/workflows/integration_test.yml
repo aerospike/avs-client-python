@@ -50,7 +50,7 @@ jobs:
 
     - name: create config
       run: |
-        assets/call_gen_normal.sh
+        #assets/call_gen_normal.sh
         cat aerospike-proximus.yml
         cat aerospike.conf
         cat /etc/hosts
@@ -198,7 +198,7 @@ jobs:
 
     - name: create config
       run: |
-        #assets/call_gen.sh
+        assets/call_gen.sh
         cat /etc/hosts
       working-directory: tests
 

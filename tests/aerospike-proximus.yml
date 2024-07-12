@@ -12,19 +12,19 @@ cluster:
 # If TLS is desired, TLS configuration ids used
 # and associated TLS configurations.
 #
-tls:
-  service-tls:
-    trust-store:
-      store-file: /etc/aerospike-proximus/tls/root.truststore.jks 
-      store-password-file: /etc/aerospike-proximus/tls/storepass
-    key-store:
-      store-file: /etc/aerospike-proximus/tls/brawn.keystore.jks
-      store-password-file: /etc/aerospike-proximus/tls/storepass
-      key-password-file: /etc/aerospike-proximus/tls/keypass
-    mutual-auth: true
-    # Client certificate subject names that are allowed
-    allowed-peer-names:
-      - brawn
+#tls:
+#  service-tls:
+#    trust-store:
+#      store-file: /etc/aerospike-proximus/tls/$root_certificate_name.truststore.jks 
+#      store-password-file: /etc/aerospike-proximus/tls/storepass
+#    key-store:
+#      store-file: /etc/aerospike-proximus/tls/$server_name.keystore.jks
+#      store-password-file: /etc/aerospike-proximus/tls/storepass
+#      key-password-file: /etc/aerospike-proximus/tls/keypass
+#    mutual-auth: true
+#    # Client certificate subject names that are allowed
+#    allowed-peer-names:
+#      - $client_name
 #  interconnect-tls:
 #    trust-store:
 #      store-file: tls/ca.aerospike.com.truststore.jks
@@ -53,15 +53,16 @@ service:
       addresses:
         localhost
       # If TLS needs to be enabled, tls configuration id.
-      tls-id: service-tls
+      #tls-id: service-tls
 
       # Required when running behind NAT
-      advertised-listeners:
-        default:
-          # List of externally accessible addresses and
-          # ports for this Proximus instance.
-          - address: brawn
-            port: 5000
+      #advertised-listeners:
+      #  default:
+      #    # List of externally accessible addresses and
+      #    # ports for this Proximus instance.
+      #    - address: $server_name
+      #      port: 5000
+
 # Management API listening ports, TLS and network interface.
 manage:
   ports:
@@ -92,11 +93,11 @@ interconnect:
 
 # To enable client authentication
 
-security:
-  auth-token:
-    private-key: /etc/aerospike-proximus/tls/jwt/private_key.pem
-    public-key: /etc/aerospike-proximus/tls/jwt/public_key.pem
-    token-expiry: 300_000
+#security:
+#  auth-token:
+#    private-key: /etc/aerospike-proximus/tls/jwt/private_key.pem
+#    public-key: /etc/aerospike-proximus/tls/jwt/public_key.pem
+#    token-expiry: 300_000
 
 # Target Aerospike cluster
 aerospike:
