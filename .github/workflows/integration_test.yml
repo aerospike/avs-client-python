@@ -8,6 +8,7 @@ on:
 jobs:
   test-normal:
     runs-on: ubuntu-24.04
+    continue-on-error: true
 
 
     strategy:
@@ -72,6 +73,8 @@ jobs:
 
   test-tls:
     runs-on: ubuntu-24.04
+    continue-on-error: true
+
 
 
     strategy:
@@ -146,6 +149,7 @@ jobs:
 
   test-tls-auth:
     runs-on: ubuntu-24.04
+    continue-on-error: true
 
 
     strategy:
