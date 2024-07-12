@@ -129,7 +129,7 @@ jobs:
     - name: Add hosts to /etc/hosts
       run: |
         sudo echo "0.0.0.0 child" | sudo tee -a /etc/hosts
-        sudo sed -i.bak 's/127.0.0.1 localhost/0.0.0.0 localhost/' "$hostsPath"
+        sudo sed -i.bak 's/127.0.0.1 localhost/0.0.0.0 localhost/' /etc/hosts
 
 
     - name: Run unit tests
@@ -197,7 +197,7 @@ jobs:
     - name: Add hosts to /etc/hosts
       run: |
         sudo echo "0.0.0.0 brawn" | sudo tee -a /etc/hosts
-        sudo sed -i.bak 's/127.0.0.1 localhost/0.0.0.0 localhost/' "$hostsPath"
+        sudo sed -i.bak 's/127.0.0.1 localhost/0.0.0.0 localhost/' /etc/hosts
 
     - name: create config
       run: |
