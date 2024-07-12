@@ -1,5 +1,6 @@
 import pytest
 from aerospike_vector_search import AVSServerError
+import grpc
 
 class insert_test_case:
     def __init__(
@@ -8,12 +9,14 @@ class insert_test_case:
         namespace,
         key,
         record_data,
-        set_name
+        set_name,
+        timeout,
     ):
         self.namespace = namespace
         self.key = key
         self.record_data = record_data
         self.set_name = set_name
+        self.timeout = timeout
 
 
 @pytest.mark.parametrize(
@@ -23,19 +26,22 @@ class insert_test_case:
             namespace="test",
             key="aio/insert/1",
             record_data={"math": [i for i in range(1024)]},
-            set_name=None
+            set_name=None,
+            timeout=None
         ),
         insert_test_case(
             namespace="test",
             key="aio/insert/2",
             record_data={"english": [float(i) for i in range(1024)]},
-            set_name=None
+            set_name=None,
+            timeout=None
         ),
         insert_test_case(
             namespace="test",
             key="aio/insert/3",
             record_data={"english": [bool(i) for i in range(1024)]},
-            set_name=None
+            set_name=None,
+            timeout=None
         )
     ],
 )
@@ -54,7 +60,8 @@ async def test_vector_insert_without_existing_record(session_vector_client, test
             namespace="test",
             key="aio/insert/4",
             record_data={"math": [i for i in range(1024)]},
-            set_name=None
+            set_name=None,
+            timeout=None
         )
     ],
 )
@@ -72,3 +79,27 @@ async def test_vector_insert_with_existing_record(session_vector_client, test_ca
             record_data=test_case.record_data,
             set_name=test_case.set_name
         )
+
+@pytest.mark.parametrize(
+    "test_case",
+    [
+        insert_test_case(
+            namespace="test",
+            key="aio/insert/5",
+            record_data={"math": [i for i in range(1024)]},
+            set_name=None,
+            timeout=0
+        )
+    ],
+)
+async def test_vector_insert_timeout(session_vector_client, test_case):
+    with pytest.raises(AVSServerError) as e_info:
+        for i in range(10):
+            await session_vector_client.insert(
+                namespace=test_case.namespace,
+                key=test_case.key,
+                record_data=test_case.record_data,
+                set_name=test_case.set_name,
+                timeout=test_case.timeout
+            )
+    assert e_info.value.rpc_error.code() == grpc.StatusCode.DEADLINE_EXCEEDED

@@ -1,5 +1,6 @@
 import pytest
 from aerospike_vector_search import AVSServerError
+import grpc
 
 class delete_test_case:
     def __init__(
@@ -9,12 +10,14 @@ class delete_test_case:
         key,
         record_data,
         set_name,
+        timeout,
 
     ):
         self.namespace = namespace
         self.key = key
         self.set_name = set_name
         self.record_data = record_data
+        self.timeout = timeout
 
 @pytest.mark.parametrize(
     "test_case",
@@ -24,12 +27,14 @@ class delete_test_case:
             key="delete/1",
             set_name=None,
             record_data={"skills": [i for i in range(1024)]},
+            timeout=None
         ),
         delete_test_case(
             namespace="test",
             key="delete/2",
             set_name=None,
             record_data={"english": [float(i) for i in range(1024)]},
+            timeout=None
         )
     ],
 )
@@ -47,21 +52,45 @@ def test_vector_delete(session_vector_client, test_case):
     with pytest.raises(AVSServerError) as e_info:
         result = session_vector_client.get(
             namespace=test_case.namespace, key=test_case.key
-        )
+        )    
 
 @pytest.mark.parametrize(
     "test_case",
     [
         delete_test_case(
             namespace="test",
-            key="aio/delete/3",
+            key="delete/3",
             set_name=None,
             record_data={"skills": [i for i in range(1024)]},
+            timeout=None
         ),
     ],
 )
-async def test_vector_delete_without_record(session_vector_client, test_case):
+def test_vector_delete_without_record(session_vector_client, test_case):
     session_vector_client.delete(
         namespace=test_case.namespace,
         key=test_case.key,
     )
+
+@pytest.mark.parametrize(
+    "test_case",
+    [
+        delete_test_case(
+            namespace="test",
+            key="delete/4",
+            set_name=None,
+            record_data={"skills": [i for i in range(1024)]},
+            timeout=0
+        ),
+    ],
+)
+def test_vector_delete_timeout(session_vector_client, test_case):
+    with pytest.raises(AVSServerError) as e_info:
+        for i in range(10):
+
+            session_vector_client.delete(
+                namespace=test_case.namespace,
+                key=test_case.key,
+                timeout=test_case.timeout
+            )
+    assert e_info.value.rpc_error.code() == grpc.StatusCode.DEADLINE_EXCEEDED

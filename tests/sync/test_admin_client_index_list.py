@@ -1,3 +1,8 @@
+from aerospike_vector_search import AVSServerError
+
+import pytest
+import grpc
+
 def test_index_list(session_admin_client):
     result = session_admin_client.index_list()
     assert len(result) > 0
@@ -15,3 +20,12 @@ def test_index_list(session_admin_client):
         assert isinstance(index['storage']['namespace'], str)
         assert isinstance(index['storage']['set'], str)
 
+    result = session_admin_client.index_get_status(
+        namespace="test", name="index_get_status_1"
+    )
+
+def test_index_list_timeout(session_admin_client):
+    with pytest.raises(AVSServerError) as e_info:
+        for i in range(10):
+            result = session_admin_client.index_list(timeout=0)
+    assert e_info.value.rpc_error.code() == grpc.StatusCode.DEADLINE_EXCEEDED

@@ -1,6 +1,6 @@
 import logging
 import random
-
+import json
 from typing import Optional, Union
 
 import grpc
@@ -29,10 +29,16 @@ class BaseChannelProvider(object):
         seeds: tuple[types.HostPort, ...],
         listener_name: Optional[str] = None,
         is_loadbalancer: Optional[bool] = False,
+        service_config_path: Optional[str] = None
     ) -> None:
         self.seeds: tuple[types.HostPort, ...] = seeds
         self.listener_name: Optional[str] = listener_name
         self._is_loadbalancer: Optional[bool] = is_loadbalancer
+
+        if self.service_config_path:
+            with open(self.service_config_path, 'rb') as f:
+                self.service_config_json = f.read() 
+
         # dict of Node Number and ChannelAndEndponts object
         self._node_channels: dict[int, ChannelAndEndpoints] = {}
         self._seedChannels: Union[list[grpc.Channel], list[grpc.Channel.aio]] = [

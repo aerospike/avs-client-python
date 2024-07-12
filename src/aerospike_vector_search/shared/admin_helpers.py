@@ -32,12 +32,14 @@ class BaseClient(object):
         sets,
         index_params,
         index_meta_data,
+        index_storage,
+        timeout,
         logger,
     ) -> None:
 
         logger.debug(
             "Creating index: namespace=%s, name=%s, vector_field=%s, dimensions=%d, vector_distance_metric=%s, "
-            "sets=%s, index_params=%s, index_meta_data=%s",
+            "sets=%s, index_params=%s, index_meta_data=%s, index_storage=%s, timeout=%s",
             namespace,
             name,
             vector_field,
@@ -46,17 +48,22 @@ class BaseClient(object):
             sets,
             index_params,
             index_meta_data,
+            index_storage,
+            timeout
         )
 
         if sets and not sets.strip():
             sets = None
         if index_params != None:
             index_params = index_params._to_pb2()
+        if index_storage != None:
+            index_storage = index_storage._to_pb2()
+
         id = self._get_index_id(namespace, name)
         vector_distance_metric = vector_distance_metric.value
 
         index_stub = self._get_index_stub()
-
+        
         index_create_request = types_pb2.IndexDefinition(
             id=id,
             vectorDistanceMetric=vector_distance_metric,
@@ -65,31 +72,32 @@ class BaseClient(object):
             field=vector_field,
             dimensions=dimensions,
             labels=index_meta_data,
+            storage=index_storage
         )
         return (index_stub, index_create_request)
 
-    def _prepare_index_drop(self, namespace, name, logger) -> None:
+    def _prepare_index_drop(self, namespace, name, timeout, logger) -> None:
 
-        logger.debug("Dropping index: namespace=%s, name=%s", namespace, name)
+        logger.debug("Dropping index: namespace=%s, name=%s, timeout=%s", namespace, name, timeout)
 
         index_stub = self._get_index_stub()
         index_drop_request = self._get_index_id(namespace, name)
 
         return (index_stub, index_drop_request)
 
-    def _prepare_index_list(self, logger) -> None:
+    def _prepare_index_list(self, timeout, logger) -> None:
 
-        logger.debug("Getting index list")
+        logger.debug("Getting index list: timeout=%s")
 
         index_stub = self._get_index_stub()
         index_list_request = empty
 
         return (index_stub, index_list_request)
 
-    def _prepare_index_get(self, namespace, name, logger) -> None:
+    def _prepare_index_get(self, namespace, name, timeout, logger) -> None:
 
         logger.debug(
-            "Getting index information: namespace=%s, name=%s", namespace, name
+            "Getting index information: namespace=%s, name=%s, timeout=%s", namespace, name, timeout
         )
 
         index_stub = self._get_index_stub()
@@ -97,9 +105,9 @@ class BaseClient(object):
 
         return (index_stub, index_get_request)
 
-    def _prepare_index_get_status(self, namespace, name, logger) -> None:
+    def _prepare_index_get_status(self, namespace, name, timeout, logger) -> None:
 
-        logger.debug("Getting index status: namespace=%s, name=%s", namespace, name)
+        logger.debug("Getting index status: namespace=%s, name=%s, timeout=%s", namespace, name, timeout)
 
         index_stub = self._get_index_stub()
         index_get_status_request = self._get_index_id(namespace, name)

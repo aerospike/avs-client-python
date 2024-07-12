@@ -3,6 +3,8 @@ import asyncio
 import pytest
 import random
 from aerospike_vector_search import types
+from aerospike_vector_search import AVSServerError
+import grpc
 
 dimensions = 128
 truth_vector_dimensions = 100
@@ -144,8 +146,6 @@ async def test_vector_search(
 
         for j, result in enumerate(results[i]):
             field_list.append(result.fields["unit_test"])
-
-            field_list.append(result.fields["unit_test"])
         for j, index in enumerate(outside):
             vector = base_numpy[index].tolist()
             if vector in field_list:
@@ -175,3 +175,30 @@ async def test_vector_is_indexed(session_vector_client, session_admin_client):
         index_name="demo",
     )
     assert result is True
+
+
+async def test_vector_is_indexed_timeout(session_vector_client, session_admin_client):
+    with pytest.raises(AVSServerError) as e_info:
+        for i in range(10):
+            result = await session_vector_client.is_indexed(
+                namespace="test",
+                key="aio/" + str(random.randrange(10_000)),
+                set_name="demo",
+                index_name="demo",
+                timeout=0
+            )
+    assert e_info.value.rpc_error.code() == grpc.StatusCode.DEADLINE_EXCEEDED
+
+async def test_vector_vector_search_timeout(session_vector_client, session_admin_client):
+    with pytest.raises(AVSServerError) as e_info:
+        for i in range(10):
+            result = await session_vector_client.vector_search(
+                namespace="test",
+                index_name="demo",
+                query=[0, 1, 2],
+                limit=100,
+                field_names=["unit_test"],
+                timeout=0
+            )
+
+    assert e_info.value.rpc_error.code() == grpc.StatusCode.DEADLINE_EXCEEDED

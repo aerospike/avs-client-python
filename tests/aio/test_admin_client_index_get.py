@@ -1,4 +1,6 @@
 import pytest
+from aerospike_vector_search import AVSServerError
+import grpc
 
 @pytest.fixture
 async def add_index(function_admin_client):
@@ -27,3 +29,11 @@ async def test_index_get(add_index, session_admin_client):
     assert not result["hnsw_params"]["batching_params"]["disabled"]
     assert result["storage"]["namespace"] == "test"
     assert result["storage"]["set"] == "index_get_1"
+
+async def test_index_get_timeout(session_admin_client):
+    with pytest.raises(AVSServerError) as e_info:
+        for i in range(10): 
+            result = await session_admin_client.index_get(
+                namespace="test", name="index_get_1", timeout=0
+            )
+    assert e_info.value.rpc_error.code() == grpc.StatusCode.DEADLINE_EXCEEDED

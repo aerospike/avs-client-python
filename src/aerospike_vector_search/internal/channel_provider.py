@@ -25,8 +25,9 @@ class ChannelProvider(base_channel_provider.BaseChannelProvider):
         seeds: tuple[types.HostPort, ...],
         listener_name: Optional[str] = None,
         is_loadbalancer: Optional[bool] = False,
+        service_config_path: Optional[str] = None
     ) -> None:
-        super().__init__(seeds, listener_name, is_loadbalancer)
+        super().__init__(seeds, listener_name, service_config_path)
         self._tend_ended = threading.Event()
         self._timer = None
         self._tend()
@@ -116,4 +117,11 @@ class ChannelProvider(base_channel_provider.BaseChannelProvider):
     def _create_channel(self, host: str, port: int, is_tls: bool) -> grpc.Channel:
         # TODO: Take care of TLS
         host = re.sub(r"%.*", "", host)
-        return grpc.insecure_channel(f"{host}:{port}")
+
+        if self.service_config_json:
+            options = []
+            options.append(("grpc.service_config", self.service_config_json))
+        else:
+            options = None
+        
+        return grpc.insecure_channel(f"{host}:{port}", options=options)

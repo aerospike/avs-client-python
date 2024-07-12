@@ -27,6 +27,7 @@ class Client(BaseClient):
         seeds: Union[types.HostPort, tuple[types.HostPort, ...]],
         listener_name: Optional[str] = None,
         is_loadbalancer: Optional[bool] = False,
+        service_config_path: Optional[str] = None
     ) -> None:
         """
         Initialize the Aerospike Vector Search Vector Client.
@@ -44,7 +45,7 @@ class Client(BaseClient):
         """
         seeds = self._prepare_seeds(seeds)
         self._channel_provider = channel_provider.ChannelProvider(
-            seeds, listener_name, is_loadbalancer
+            seeds, listener_name, is_loadbalancer, service_config_path
         )
 
     async def insert(
@@ -54,6 +55,7 @@ class Client(BaseClient):
         key: Union[int, str, bytes, bytearray],
         record_data: dict[str, Any],
         set_name: Optional[str] = None,
+        timeout: Optional[int] = None,
     ) -> None:
         """
         Insert a record into Aerospike Vector Search.
@@ -76,11 +78,15 @@ class Client(BaseClient):
         await self._channel_provider._is_ready()
 
         (transact_stub, insert_request) = self._prepare_insert(
-            namespace, key, record_data, set_name, logger
+            namespace, key, record_data, set_name, timeout, logger
         )
 
+        kwargs = {}
+        if timeout is not None:
+            kwargs['timeout'] = timeout
+            
         try:
-            await transact_stub.Put(insert_request)
+            await transact_stub.Put(insert_request, **kwargs)
         except grpc.RpcError as e:
             logger.error("Failed with error: %s", e)
             raise types.AVSServerError(rpc_error=e)
@@ -92,6 +98,7 @@ class Client(BaseClient):
         key: Union[int, str, bytes, bytearray],
         record_data: dict[str, Any],
         set_name: Optional[str] = None,
+        timeout: Optional[int] = None,
     ) -> None:
         """
         Update a record in Aerospike Vector Search.
@@ -114,11 +121,15 @@ class Client(BaseClient):
         await self._channel_provider._is_ready()
 
         (transact_stub, update_request) = self._prepare_update(
-            namespace, key, record_data, set_name, logger
+            namespace, key, record_data, set_name, timeout, logger
         )
 
+        kwargs = {}
+        if timeout is not None:
+            kwargs['timeout'] = timeout
+            
         try:
-            await transact_stub.Put(update_request)
+            await transact_stub.Put(update_request, **kwargs)
         except grpc.RpcError as e:
             logger.error("Failed with error: %s", e)
             raise types.AVSServerError(rpc_error=e)
@@ -130,6 +141,7 @@ class Client(BaseClient):
         key: Union[int, str, bytes, bytearray],
         record_data: dict[str, Any],
         set_name: Optional[str] = None,
+        timeout: Optional[int] = None,
     ) -> None:
         """
         Update a record in Aerospike Vector Search.
@@ -152,11 +164,14 @@ class Client(BaseClient):
         await self._channel_provider._is_ready()
 
         (transact_stub, upsert_request) = self._prepare_upsert(
-            namespace, key, record_data, set_name, logger
+            namespace, key, record_data, set_name, timeout, logger
         )
-
+        kwargs = {}
+        if timeout is not None:
+            kwargs['timeout'] = timeout
+            
         try:
-            await transact_stub.Put(upsert_request)
+            await transact_stub.Put(upsert_request, **kwargs)
         except grpc.RpcError as e:
             logger.error("Failed with error: %s", e)
             raise types.AVSServerError(rpc_error=e)
@@ -168,6 +183,7 @@ class Client(BaseClient):
         key: Union[int, str, bytes, bytearray],
         field_names: Optional[list[str]] = None,
         set_name: Optional[str] = None,
+        timeout: Optional[int] = None,
     ) -> types.RecordWithKey:
         """
         Read a record from Aerospike Vector Search.
@@ -190,10 +206,15 @@ class Client(BaseClient):
         await self._channel_provider._is_ready()
 
         (transact_stub, key, get_request) = self._prepare_get(
-            namespace, key, field_names, set_name, logger
+            namespace, key, field_names, set_name, timeout, logger
         )
+
+        kwargs = {}
+        if timeout is not None:
+            kwargs['timeout'] = timeout
+            
         try:
-            response = await transact_stub.Get(get_request)
+            response = await transact_stub.Get(get_request, **kwargs)
         except grpc.RpcError as e:
             logger.error("Failed with error: %s", e)
             raise types.AVSServerError(rpc_error=e)
@@ -201,7 +222,12 @@ class Client(BaseClient):
         return self._respond_get(response, key)
 
     async def exists(
-        self, *, namespace: str, key: Any, set_name: Optional[str] = None
+        self,
+        *,
+        namespace: str,
+        key: Any,
+        set_name: Optional[str] = None,
+        timeout: Optional[int] = None,
     ) -> bool:
         """
         Check if a record exists in Aerospike Vector Search.
@@ -222,11 +248,15 @@ class Client(BaseClient):
         await self._channel_provider._is_ready()
 
         (transact_stub, exists_request) = self._prepare_exists(
-            namespace, key, set_name, logger
+            namespace, key, set_name, timeout, logger
         )
 
+        kwargs = {}
+        if timeout is not None:
+            kwargs['timeout'] = timeout
+            
         try:
-            response = await transact_stub.Exists(exists_request)
+            response = await transact_stub.Exists(exists_request, **kwargs)
         except grpc.RpcError as e:
             logger.error("Failed with error: %s", e)
             raise types.AVSServerError(rpc_error=e)
@@ -234,7 +264,12 @@ class Client(BaseClient):
         return self._respond_exists(response)
 
     async def delete(
-        self, *, namespace: str, key: Any, set_name: Optional[str] = None
+        self,
+        *,
+        namespace: str,
+        key: Any,
+        set_name: Optional[str] = None,
+        timeout: Optional[int] = None,
     ) -> None:
         """
         Delete a record from Aerospike Vector Search.
@@ -252,11 +287,15 @@ class Client(BaseClient):
         await self._channel_provider._is_ready()
 
         (transact_stub, delete_request) = self._prepare_delete(
-            namespace, key, set_name, logger
+            namespace, key, set_name, timeout, logger
         )
 
+        kwargs = {}
+        if timeout is not None:
+            kwargs['timeout'] = timeout
+            
         try:
-            await transact_stub.Delete(delete_request)
+            await transact_stub.Delete(delete_request, **kwargs)
         except grpc.RpcError as e:
             logger.error("Failed with error: %s", e)
             raise types.AVSServerError(rpc_error=e)
@@ -269,6 +308,7 @@ class Client(BaseClient):
         index_name: str,
         index_namespace: Optional[str] = None,
         set_name: Optional[str] = None,
+        timeout: Optional[int] = None,
     ) -> bool:
         """
         Check if a record is indexed in the Vector DB.
@@ -292,10 +332,17 @@ class Client(BaseClient):
         await self._channel_provider._is_ready()
 
         (transact_stub, is_indexed_request) = self._prepare_is_indexed(
-            namespace, key, index_name, index_namespace, set_name, logger
+            namespace, key, index_name, index_namespace, set_name, timeout, logger
         )
+
+        kwargs = {}
+        if timeout is not None:
+            kwargs['timeout'] = timeout
+            
         try:
-            response = await transact_stub.IsIndexed(is_indexed_request)
+            response = await transact_stub.IsIndexed(
+                is_indexed_request, **kwargs
+            )
         except grpc.RpcError as e:
             logger.error("Failed with error: %s", e)
             raise types.AVSServerError(rpc_error=e)
@@ -310,6 +357,7 @@ class Client(BaseClient):
         limit: int,
         search_params: Optional[types.HnswSearchParams] = None,
         field_names: Optional[list[str]] = None,
+        timeout: Optional[int] = None,
     ) -> list[types.Neighbor]:
         """
         Perform a Hierarchical Navigable Small World (HNSW) vector search in Aerospike Vector Search.
@@ -334,11 +382,27 @@ class Client(BaseClient):
         await self._channel_provider._is_ready()
 
         (transact_stub, vector_search_request) = self._prepare_vector_search(
-            namespace, index_name, query, limit, search_params, field_names, logger
+            namespace,
+            index_name,
+            query,
+            limit,
+            search_params,
+            field_names,
+            timeout,
+            logger,
         )
 
+        kwargs = {}
+        if timeout is not None:
+            kwargs['timeout'] = timeout
+            
         try:
-            return [self._respond_neighbor(result) async for result in transact_stub.VectorSearch(vector_search_request)]
+            return [
+                self._respond_neighbor(result)
+                async for result in transact_stub.VectorSearch(
+                    vector_search_request, **kwargs
+                )
+            ]
         except grpc.RpcError as e:
             logger.error("Failed with error: %s", e)
             raise types.AVSServerError(rpc_error=e)
