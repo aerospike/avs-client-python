@@ -223,6 +223,7 @@ jobs:
 
         python -m pytest rbac/sync -s --host brawn --port 5000 --root_certificate tls/root.crt --private_key tls/brawn.key.pem --certificate_chain tls/brawn.crt  -vs
 
+        docker ps
         docker logs aerospike-proximus
-        
+
       working-directory: tests
