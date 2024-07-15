@@ -148,7 +148,6 @@ class HnswBatchingParams(object):
     Args:
         max_records (Optional[int], optional): Maximum number of records to fit in a batch. Defaults to 10000.
         interval (Optional[int], optional): The maximum amount of time in milliseconds to wait before finalizing a batch. Defaults to 10000.
-        disabled (Optional[bool], optional): Disables batching for index updates. Default is False.
     """
 
     def __init__(
@@ -156,17 +155,14 @@ class HnswBatchingParams(object):
         *,
         max_records: Optional[int] = 10000,
         interval: Optional[int] = 10000,
-        disabled: Optional[bool] = False,
     ) -> None:
         self.max_records = max_records
         self.interval = interval
-        self.disabled = disabled
 
     def _to_pb2(self):
         params = types_pb2.HnswBatchingParams()
         params.maxRecords = self.max_records
         params.interval = self.interval
-        params.disabled = self.disabled
         return params
 
 
