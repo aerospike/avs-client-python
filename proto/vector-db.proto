@@ -3,7 +3,7 @@ syntax = "proto3";
 package aerospike.vector;
 
 option go_package = "aerospike.com/vector/protos/";
-option java_package = "com.aerospike.vector.client";
+option java_package = "com.aerospike.vector.client.proto";
 option java_multiple_files = true;
 
 import "google/protobuf/empty.proto";
@@ -15,7 +15,7 @@ message AboutRequest {
 
 // The about response message.
 message AboutResponse {
-  // Proximus server version.
+  // AVS server version.
   string version = 1;
 }
 
@@ -59,32 +59,34 @@ message ClusterNodeEndpointsRequest {
   optional string listenerName = 1;
 }
 
-message OwnedPartitions {
-  repeated uint64 ownedPartitions = 1;
-}
+message ClusteringState {
+  // Indicates if this node is in a cluster.
+  bool isInCluster = 1;
 
-// Cluster partition ownership.
-message ClusterPartitions {
-  // A map from node-ids to owned partition list.
-  map<uint64, OwnedPartitions> partitions = 1;
+  // Unique identifier for the current cluster epoch.
+  // Valid only if the node is in cluster.
+  ClusterId clusterId = 2;
+
+  // Current cluster members.
+  repeated NodeId members = 3;
 }
 
 // Information about the service.
-service About {
+service AboutService {
   rpc Get (AboutRequest) returns (AboutResponse) {}
 }
 
 // Vector DB cluster service.
-service ClusterInfo {
+service ClusterInfoService {
   // Get the internal cluster node-Id for this server.
   rpc GetNodeId(google.protobuf.Empty) returns (NodeId) {}
 
   // Get current cluster-Id for the current cluster.
   rpc GetClusterId(google.protobuf.Empty) returns (ClusterId) {}
 
+  // Get current cluster-Id for the current cluster.
+  rpc GetClusteringState(google.protobuf.Empty) returns (ClusteringState) {}
+
   // Get the advertised/listening endpoints for all nodes in the cluster, given a listener name.
   rpc GetClusterEndpoints(ClusterNodeEndpointsRequest) returns(ClusterNodeEndpoints) {}
-
-  // Get per-node owned partition list for all nodes in the cluster.
-  rpc GetOwnedPartitions(google.protobuf.Empty) returns(ClusterPartitions) {}
 }
