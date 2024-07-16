@@ -16,15 +16,16 @@ class BaseClient(object):
         return helpers._prepare_seeds(seeds)
 
     def _prepare_put(
-        self, namespace, key, record_data, set_name, write_type, logger
+        self, namespace, key, record_data, set_name, write_type, timeout, logger
     ) -> None:
 
         logger.debug(
-            "Putting record: namespace=%s, key=%s, record_data:%s, set_name:%s",
+            "Putting record: namespace=%s, key=%s, record_data:%s, set_name:%s, timeout:%s",
             namespace,
             key,
             record_data,
             set_name,
+            timeout
         )
 
         key = self._get_key(namespace, set_name, key)
@@ -50,39 +51,42 @@ class BaseClient(object):
 
         return (transact_stub, put_request)
 
-    def _prepare_insert(self, namespace, key, record_data, set_name, logger) -> None:
+    def _prepare_insert(self, namespace, key, record_data, set_name, timeout, logger) -> None:
         return self._prepare_put(
             namespace,
             key,
             record_data,
             set_name,
             transact_pb2.WriteType.INSERT_ONLY,
+            timeout,
             logger,
         )
 
-    def _prepare_update(self, namespace, key, record_data, set_name, logger) -> None:
+    def _prepare_update(self, namespace, key, record_data, set_name, timeout, logger) -> None:
         return self._prepare_put(
             namespace,
             key,
             record_data,
             set_name,
             transact_pb2.WriteType.UPDATE_ONLY,
+            timeout,
             logger,
         )
 
-    def _prepare_upsert(self, namespace, key, record_data, set_name, logger) -> None:
+    def _prepare_upsert(self, namespace, key, record_data, set_name, timeout, logger) -> None:
         return self._prepare_put(
-            namespace, key, record_data, set_name, transact_pb2.WriteType.UPSERT, logger
+            namespace, key, record_data, set_name, transact_pb2.WriteType.UPSERT,  timeout, logger
         )
 
-    def _prepare_get(self, namespace, key, field_names, set_name, logger) -> None:
+    def _prepare_get(self, namespace, key, field_names, set_name, timeout, logger) -> None:
 
         logger.debug(
-            "Getting record: namespace=%s, key=%s, field_names:%s, set_name:%s",
+            "Getting record: namespace=%s, key=%s, field_names:%s, set_name:%s, timeout:%s",
             namespace,
             key,
             field_names,
             set_name,
+            timeout,
         )
 
         key = self._get_key(namespace, set_name, key)
@@ -93,13 +97,14 @@ class BaseClient(object):
 
         return (transact_stub, key, get_request)
 
-    def _prepare_exists(self, namespace, key, set_name, logger) -> None:
+    def _prepare_exists(self, namespace, key, set_name, timeout, logger) -> None:
 
         logger.debug(
-            "Getting record existence: namespace=%s, key=%s, set_name:%s",
+            "Getting record existence: namespace=%s, key=%s, set_name:%s, timeout:%s",
             namespace,
             key,
             set_name,
+            timeout,
         )
 
         key = self._get_key(namespace, set_name, key)
@@ -109,13 +114,14 @@ class BaseClient(object):
 
         return (transact_stub, exists_request)
 
-    def _prepare_delete(self, namespace, key, set_name, logger) -> None:
+    def _prepare_delete(self, namespace, key, set_name, timeout, logger) -> None:
 
         logger.debug(
-            "Deleting record: key=%s",
+            "Deleting record: namespace=%s, key=%s, set_name=%s, timeout:%s",
             namespace,
             key,
             set_name,
+            timeout,
         )
 
         key = self._get_key(namespace, set_name, key)
@@ -126,16 +132,17 @@ class BaseClient(object):
         return (transact_stub, delete_request)
 
     def _prepare_is_indexed(
-        self, namespace, key, index_name, index_namespace, set_name, logger
+        self, namespace, key, index_name, index_namespace, set_name, timeout, logger
     ) -> None:
 
         logger.debug(
-            "Checking if index exists: namespace=%s, key=%s, index_name=%s, index_namespace=%s, set_name=%s",
+            "Checking if index exists: namespace=%s, key=%s, index_name=%s, index_namespace=%s, set_name=%s, timeout:%s",
             namespace,
             key,
             index_name,
             index_namespace,
             set_name,
+            timeout,
         )
 
         if not index_namespace:
@@ -149,17 +156,18 @@ class BaseClient(object):
         return (transact_stub, is_indexed_request)
 
     def _prepare_vector_search(
-        self, namespace, index_name, query, limit, search_params, field_names, logger
+        self, namespace, index_name, query, limit, search_params, field_names, timeout, logger
     ) -> None:
 
         logger.debug(
-            "Performing vector search: namespace=%s, index_name=%s, query=%s, limit=%s, search_params=%s, field_names=%s",
+            "Performing vector search: namespace=%s, index_name=%s, query=%s, limit=%s, search_params=%s, field_names=%s, timeout:%s",
             namespace,
             index_name,
             query,
             limit,
             search_params,
             field_names,
+            timeout
         )
 
         if search_params != None:
@@ -241,7 +249,9 @@ class BaseClient(object):
         self, namespace: str, set: str, key: Union[int, str, bytes, bytearray]
     ):
         if isinstance(key, str):
-            key = types_pb2.Key(namespace=namespace, set=set, stringValue=key)
+            key = types_pb2.Key(namespace=namespace, set=None, stringValue=key)
+
+
         elif isinstance(key, int):
             key = types_pb2.Key(namespace=namespace, set=set, longValue=key)
         elif isinstance(key, (bytes, bytearray)):

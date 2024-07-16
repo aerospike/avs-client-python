@@ -25,8 +25,14 @@ class ChannelProvider(base_channel_provider.BaseChannelProvider):
         seeds: tuple[types.HostPort, ...],
         listener_name: Optional[str] = None,
         is_loadbalancer: Optional[bool] = False,
+        username: Optional[str] = None,
+        password: Optional[str] = None,
+        root_certificate: Optional[str] = None,
+        certificate_chain: Optional[str] = None,
+        private_key: Optional[str] = None,
+        service_config_path: Optional[str] = None,
     ) -> None:
-        super().__init__(seeds, listener_name, is_loadbalancer)
+        super().__init__(seeds, listener_name, is_loadbalancer, username, password, root_certificate, certificate_chain, private_key, service_config_path)
         self._tend_ended = threading.Event()
         self._timer = None
         self._tend()
@@ -47,17 +53,19 @@ class ChannelProvider(base_channel_provider.BaseChannelProvider):
 
     def _tend(self):
         (temp_endpoints, update_endpoints_stub, channels, end_tend) = self.init_tend()
+        if self._token:
+            if self._check_if_token_refresh_needed():
+                self._update_token_and_ttl()
 
         if end_tend:
             self._tend_ended.set()
-
             return
         for channel in channels:
 
             stub = vector_db_pb2_grpc.ClusterInfoStub(channel)
 
             try:
-                new_cluster_id = stub.GetClusterId(empty).id
+                new_cluster_id = stub.GetClusterId(empty, credentials=self._credentials).id
                 if self.check_cluster_id(new_cluster_id):
                     update_endpoints_stub = stub
                     break
@@ -73,7 +81,7 @@ class ChannelProvider(base_channel_provider.BaseChannelProvider):
             try:
                 response = stub.GetClusterEndpoints(
                     vector_db_pb2.ClusterNodeEndpointsRequest(
-                        listenerName=self.listener_name
+                        listenerName=self.listener_name, credentials=self._credentials
                     )
                 )
                 temp_endpoints = self.update_temp_endpoints(response, temp_endpoints)
@@ -110,10 +118,54 @@ class ChannelProvider(base_channel_provider.BaseChannelProvider):
                         logger.debug(
                             "While tending, failed to close GRPC channel:" + str(e)
                         )
-        # TODO: check tend interval.
+
+
         self._timer = threading.Timer(1, self._tend).start()
 
     def _create_channel(self, host: str, port: int, is_tls: bool) -> grpc.Channel:
-        # TODO: Take care of TLS
         host = re.sub(r"%.*", "", host)
-        return grpc.insecure_channel(f"{host}:{port}")
+
+        if self.service_config_json:
+            options = []
+            options.append(("grpc.service_config", self.service_config_json))
+        else:
+            options = None
+
+        if self._root_certificate:
+            with open(self._root_certificate, 'rb') as f:
+                root_certificate = f.read()
+
+            if self._private_key:
+                with open(self._private_key, 'rb') as f:
+                    private_key = f.read()
+            else:
+                private_key = None
+                
+            if self._certificate_chain:
+                with open(self._certificate_chain, 'rb') as f:
+                    certificate_chain = f.read()
+            else:
+                certificate_chain = None
+
+            ssl_credentials = grpc.ssl_channel_credentials(root_certificates=root_certificate, certificate_chain=certificate_chain, private_key=private_key)
+
+            return grpc.secure_channel(f"{host}:{port}", ssl_credentials, options=options)
+
+        else:
+            return grpc.insecure_channel(f"{host}:{port}", options=options)
+
+    def _update_token_and_ttl(
+        self,
+    ) -> None:
+
+        (auth_stub, auth_request) = self._prepare_authenticate(
+            self._credentials, logger
+        )
+
+        try:
+            response = auth_stub.Authenticate(auth_request)
+        except grpc.RpcError as e:
+            print("Failed with error: %s", e)
+            raise types.AVSServerError(rpc_error=e)
+
+        self._respond_authenticate(response.token)

@@ -1,0 +1,13 @@
+{
+  "methodConfig": [
+
+    {
+      "name": [
+        {
+          "service": "Transact"
+        }
+      ],
+      "timeout": "2s"
+    },
+  ]
+}

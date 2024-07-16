@@ -140,6 +140,24 @@ class VectorDistanceMetric(enum.Enum):
     MANHATTAN: types_pb2.VectorDistanceMetric = types_pb2.VectorDistanceMetric.MANHATTAN
     HAMMING: types_pb2.VectorDistanceMetric = types_pb2.VectorDistanceMetric.HAMMING
 
+class User(object):
+    """
+
+    PLACEHOLDER FOR TEXT 
+    Args:
+        max_records (Optional[int], optional): Maximum number of records to fit in a batch. Defaults to 10000.
+        interval (Optional[int], optional): The maximum amount of time in milliseconds to wait before finalizing a batch. Defaults to 10000.
+        disabled (Optional[bool], optional): Disables batching for index updates. Default is False.
+    """
+
+    def __init__(
+        self,
+        *,
+        username: str,
+        roles: Optional[list[int]] = 10000,
+    ) -> None:
+        self.username = username
+        self.roles = roles
 
 class HnswBatchingParams(object):
     """
@@ -225,6 +243,17 @@ class HnswSearchParams(object):
         params = types_pb2.HnswSearchParams()
         params.ef = self.ef
         return params
+
+class IndexStorage(object):
+    def __init__(self, *, namespace: Optional[str] = None, set_name: Optional[str] = None) -> None:
+        self.namespace = namespace
+        self.set_name = set_name
+
+    def _to_pb2(self):
+        index_storage = types_pb2.IndexStorage()
+        index_storage.namespace = self.namespace
+        index_storage.set = self.set_name
+        return index_storage
 
 
 class AVSError(Exception):

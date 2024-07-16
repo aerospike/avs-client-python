@@ -1,0 +1,18 @@
+{
+    "methodConfig": [
+        {
+            "name": [
+                {}
+            ],
+            "retryPolicy": {
+                "maxAttempts": 4,
+                "initialBackoff": "1s",
+                "maxBackoff": "5s",
+                "backoffMultiplier": 3,
+                "retryableStatusCodes": [
+                    "ALREADY_EXISTS"
+                ]
+            }
+        }
+    ]
+}

@@ -15,10 +15,10 @@ class AuthServiceStub(object):
         Args:
             channel: A grpc.Channel.
         """
-        self.Get = channel.unary_unary(
-                '/aerospike.vector.AuthService/Get',
-                request_serializer=auth__pb2.AerospikeAuthRequest.SerializeToString,
-                response_deserializer=auth__pb2.AerospikeAuthResponse.FromString,
+        self.Authenticate = channel.unary_unary(
+                '/aerospike.vector.AuthService/Authenticate',
+                request_serializer=auth__pb2.AuthRequest.SerializeToString,
+                response_deserializer=auth__pb2.AuthResponse.FromString,
                 )
 
 
@@ -26,8 +26,9 @@ class AuthServiceServicer(object):
     """Auth service
     """
 
-    def Get(self, request, context):
-        """Missing associated documentation comment in .proto file."""
+    def Authenticate(self, request, context):
+        """Request authentication.
+        """
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
@@ -35,10 +36,10 @@ class AuthServiceServicer(object):
 
 def add_AuthServiceServicer_to_server(servicer, server):
     rpc_method_handlers = {
-            'Get': grpc.unary_unary_rpc_method_handler(
-                    servicer.Get,
-                    request_deserializer=auth__pb2.AerospikeAuthRequest.FromString,
-                    response_serializer=auth__pb2.AerospikeAuthResponse.SerializeToString,
+            'Authenticate': grpc.unary_unary_rpc_method_handler(
+                    servicer.Authenticate,
+                    request_deserializer=auth__pb2.AuthRequest.FromString,
+                    response_serializer=auth__pb2.AuthResponse.SerializeToString,
             ),
     }
     generic_handler = grpc.method_handlers_generic_handler(
@@ -52,7 +53,7 @@ class AuthService(object):
     """
 
     @staticmethod
-    def Get(request,
+    def Authenticate(request,
             target,
             options=(),
             channel_credentials=None,
@@ -62,8 +63,8 @@ class AuthService(object):
             wait_for_ready=None,
             timeout=None,
             metadata=None):
-        return grpc.experimental.unary_unary(request, target, '/aerospike.vector.AuthService/Get',
-            auth__pb2.AerospikeAuthRequest.SerializeToString,
-            auth__pb2.AerospikeAuthResponse.FromString,
+        return grpc.experimental.unary_unary(request, target, '/aerospike.vector.AuthService/Authenticate',
+            auth__pb2.AuthRequest.SerializeToString,
+            auth__pb2.AuthResponse.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
