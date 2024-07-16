@@ -42,9 +42,6 @@ function generate_derivative_certs() {
 }
 ls > keep_files.txt
 
-sed -i '/tls/d' keep_files.txt
-
-cat keep_files.txt
 tls_maybe=""
 rbac_maybe=""
 root_certificate_maybe=""
@@ -473,7 +470,9 @@ fi
 
 shopt -s extglob  # Enable extended globbing
 
-mv $(comm -23 <(ls | sort) <(sort keep_files.txt)) tls/
+ls 
+
+#mv !(tls|assets|rbac|standard|requirements.txt|setup.py|utils.py|__init__.py|siftsmall|) tls/
 
 mv tls/gen.sh gen.sh
 
