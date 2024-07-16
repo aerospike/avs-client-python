@@ -525,7 +525,7 @@ def test_index_create_timeout(session_admin_client, test_case, random_name):
         pass
 
 
-    for i in range(10)
+    for i in range(10):
         try:
             session_admin_client.index_create(
                 namespace=test_case.namespace,
