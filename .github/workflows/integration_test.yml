@@ -140,7 +140,9 @@ jobs:
         docker run -d --name aerospike -p 3000:3000 -v .:/etc/aerospike aerospike/aerospike-server-enterprise:latest 
 
         sleep 5
-        cat /home/runner/work/avs-client-python/avs-client-python/tests/service_configs/retries.json
+        ls /home/runner/work/avs-client-python/avs-client-python/tests/service_configs/
+        ls /home/runner/work/avs-client-python/avs-client-python/tests/
+
         docker ps
         python -m pytest standard -s --host child --port 5000 --root_certificate tls/root.crt  -vs
 

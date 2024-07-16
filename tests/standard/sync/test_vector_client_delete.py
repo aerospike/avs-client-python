@@ -92,7 +92,7 @@ def test_vector_delete_without_record(session_vector_client, test_case, random_k
     ],
 )
 def test_vector_delete_timeout(session_vector_client, test_case, random_key):
-    for i in range(10)
+    for i in range(10):
         try:
             session_vector_client.delete(
                 namespace=test_case.namespace,
