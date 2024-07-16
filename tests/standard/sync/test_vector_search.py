@@ -1,7 +1,10 @@
 import numpy as np
 import pytest
 import random
+import time
 from aerospike_vector_search import types
+from aerospike_vector_search import AVSServerError
+import grpc
 
 dimensions = 128
 truth_vector_dimensions = 100
@@ -67,12 +70,12 @@ def query_numpy():
 
 def put_vector(client, vector, j):
     client.upsert(
-        namespace="test", key=str(j), record_data={"unit_test": vector}, set_name="demo"
+        namespace="test", key=str(j), record_data={"unit_test": vector}
     )
 
 
 def get_vector(client, j):
-    result = client.get(namespace="test", key=str(j), set_name="demo")
+    result = client.get(namespace="test", key=str(j))
 
 
 def vector_search(client, vector):
@@ -110,7 +113,6 @@ def test_vector_search(
         name="demo",
         vector_field="unit_test",
         dimensions=128,
-        sets="demo",
     )
 
     # Put base vectors for search
@@ -118,6 +120,9 @@ def test_vector_search(
         put_vector(session_vector_client, vector, j)
 
     session_vector_client.wait_for_index_completion(namespace='test', name='demo')
+
+    for j, vector in enumerate(base_numpy):
+        get_vector(session_vector_client, j)
 
 
     # Vector search all query vectors
@@ -129,6 +134,9 @@ def test_vector_search(
         else:
             results.append(vector_search_ef_80(session_vector_client, i))
         count += 1
+
+    print(len(results))
+    print(len(results[0]))
     # Get recall numbers for each query
     recall_for_each_query = []
     for i, outside in enumerate(truth_numpy):
@@ -163,8 +171,35 @@ def test_vector_search(
 def test_vector_is_indexed(session_vector_client, session_admin_client):
     result = session_vector_client.is_indexed(
         namespace="test",
-        key=str(random.randrange(10_000)),
-        set_name="demo",
+        key="" + str(random.randrange(10_000)),
         index_name="demo",
     )
     assert result is True
+
+def test_vector_is_indexed_timeout(session_vector_client, session_admin_client):
+    with pytest.raises(AVSServerError) as e_info:
+        for i in range(10):
+            result = session_vector_client.is_indexed(
+                namespace="test",
+                key="" + str(random.randrange(10_000)),
+                index_name="demo",
+                timeout=0
+            )
+    assert e_info.value.rpc_error.code() == grpc.StatusCode.DEADLINE_EXCEEDED
+
+def test_vector_vector_search_timeout(session_vector_client, session_admin_client):
+    for i in range(10):
+        try:
+            result = session_vector_client.vector_search(
+                namespace="test",
+                index_name="demo",
+                query=[0, 1, 2],
+                limit=100,
+                field_names=["unit_test"],
+                timeout=0
+            )
+        except AVSServerError as se:
+            if se.rpc_error.code() == grpc.StatusCode.DEADLINE_EXCEEDED:
+                assert se.rpc_error.code() == grpc.StatusCode.DEADLINE_EXCEEDED
+                return
+    assert 1 == 2

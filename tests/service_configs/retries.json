@@ -1,0 +1,21 @@
+{
+    "methodConfig": [
+        {
+            "name": [
+                {
+                  "service": "aerospike.vector.IndexService",
+                  "method": "Create"
+                }
+            ],
+            "retryPolicy": {
+                "maxAttempts": 5,
+                "initialBackoff": "1s",
+                "maxBackoff": "1s",
+                "backoffMultiplier": 1,
+                "retryableStatusCodes": [
+                    "ALREADY_EXISTS"
+                ]
+            }
+        }
+    ]
+}

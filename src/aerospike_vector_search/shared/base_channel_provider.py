@@ -1,12 +1,14 @@
 import logging
 import random
 import time
-import jwt
 
 from typing import Optional, Union
 
+import json
+import jwt
 import re
 import grpc
+
 
 from .. import types
 from . import helpers
@@ -40,10 +42,19 @@ class BaseChannelProvider(object):
         root_certificate: Optional[str] = None,
         certificate_chain: Optional[str] = None,
         private_key: Optional[str] = None,
+        service_config_path: Optional[str] = None
+
     ) -> None:
         self.seeds: tuple[types.HostPort, ...] = seeds
         self.listener_name: Optional[str] = listener_name
         self._is_loadbalancer: Optional[bool] = is_loadbalancer
+
+        if service_config_path:
+            with open(service_config_path, 'rb') as f:
+                self.service_config_json = f.read() 
+        else:
+            self.service_config_json = None
+
         self._credentials = helpers._get_credentials(username, password)
         if self._credentials:
             self._token = True

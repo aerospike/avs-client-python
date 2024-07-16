@@ -244,6 +244,17 @@ class HnswSearchParams(object):
         params.ef = self.ef
         return params
 
+class IndexStorage(object):
+    def __init__(self, *, namespace: Optional[str] = None, set_name: Optional[str] = None) -> None:
+        self.namespace = namespace
+        self.set_name = set_name
+
+    def _to_pb2(self):
+        index_storage = types_pb2.IndexStorage()
+        index_storage.namespace = self.namespace
+        index_storage.set = self.set_name
+        return index_storage
+
 
 class AVSError(Exception):
     """

@@ -30,8 +30,9 @@ class ChannelProvider(base_channel_provider.BaseChannelProvider):
         root_certificate: Optional[str] = None,
         certificate_chain: Optional[str] = None,
         private_key: Optional[str] = None,
+        service_config_path: Optional[str] = None,
     ) -> None:
-        super().__init__(seeds, listener_name, is_loadbalancer, username, password, root_certificate, certificate_chain, private_key)
+        super().__init__(seeds, listener_name, is_loadbalancer, username, password, root_certificate, certificate_chain, private_key, service_config_path)
         self._tend_ended = threading.Event()
         self._timer = None
         self._tend()
@@ -124,6 +125,12 @@ class ChannelProvider(base_channel_provider.BaseChannelProvider):
     def _create_channel(self, host: str, port: int, is_tls: bool) -> grpc.Channel:
         host = re.sub(r"%.*", "", host)
 
+        if self.service_config_json:
+            options = []
+            options.append(("grpc.service_config", self.service_config_json))
+        else:
+            options = None
+
         if self._root_certificate:
             with open(self._root_certificate, 'rb') as f:
                 root_certificate = f.read()
@@ -142,10 +149,10 @@ class ChannelProvider(base_channel_provider.BaseChannelProvider):
 
             ssl_credentials = grpc.ssl_channel_credentials(root_certificates=root_certificate, certificate_chain=certificate_chain, private_key=private_key)
 
-            return grpc.secure_channel(f"{host}:{port}", ssl_credentials)
+            return grpc.secure_channel(f"{host}:{port}", ssl_credentials, options=options)
 
         else:
-            return grpc.insecure_channel(f"{host}:{port}")
+            return grpc.insecure_channel(f"{host}:{port}", options=options)
 
     def _update_token_and_ttl(
         self,

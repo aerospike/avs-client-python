@@ -25,6 +25,14 @@ def password(request):
     return request.config.getoption("--password")
 
 @pytest.fixture(scope="module", autouse=True)
+def host(request):
+    return request.config.getoption("--host")
+
+@pytest.fixture(scope="module", autouse=True)
+def port(request):
+    return request.config.getoption("--port")
+    
+@pytest.fixture(scope="module", autouse=True)
 async def drop_all_indexes(host, port, username, password, root_certificate, certificate_chain, private_key):
     async with AdminClient(
         seeds=types.HostPort(host=host, port=port), username=username, password=password, root_certificate=root_certificate, certificate_chain=certificate_chain, private_key=private_key
