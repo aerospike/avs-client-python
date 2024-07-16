@@ -40,6 +40,7 @@ function generate_derivative_certs() {
 		openssl x509 -noout -text -in $2.crt
 	fi
 }
+ls > keep_files.txt
 
 tls_maybe=""
 rbac_maybe=""
@@ -469,7 +470,7 @@ fi
 
 shopt -s extglob  # Enable extended globbing
 
-mv !(tls|assets|rbac|standard|requirements.txt|setup.py|utils.py|__init__.py|siftsmall) tls/
+mv $(comm -23 <(ls | sort) <(sort keep_files.txt)) tls/
 
 mv tls/gen.sh gen.sh
 
