@@ -470,9 +470,9 @@ fi
 
 shopt -s extglob  # Enable extended globbing
 
-ls 
+ 
 
-#mv !(tls|assets|rbac|standard|requirements.txt|setup.py|utils.py|__init__.py|siftsmall|) tls/
+mv !(tls|assets|rbac|standard|requirements.txt|setup.py|utils.py|__init__.py|siftsmall|service_configs) tls/
 
 mv tls/gen.sh gen.sh
 
