@@ -40,7 +40,23 @@ function generate_derivative_certs() {
 		openssl x509 -noout -text -in $2.crt
 	fi
 }
-ls > keep_files.txt
+
+file_count=$(find . -type f | wc -l)
+dir_count=$(find . -type d | wc -l)
+total_count=$((file_count + dir_count))
+
+if test -f "features.yml"; then
+    echo "features.yml exists."
+else
+    echo "features.yml does not exist."
+fi
+
+echo "Number of files: $file_count"
+echo "Number of directories: $dir_count"
+echo "Total count: $total_count"
+
+
+
 
 tls_maybe=""
 rbac_maybe=""
