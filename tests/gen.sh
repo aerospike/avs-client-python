@@ -41,21 +41,6 @@ function generate_derivative_certs() {
 	fi
 }
 
-file_count=$(find . -type f | wc -l)
-dir_count=$(find . -type d | wc -l)
-total_count=$((file_count + dir_count))
-
-if test -f "features.yml"; then
-    echo "features.yml exists."
-else
-    echo "features.yml does not exist."
-fi
-
-echo "Number of files: $file_count"
-echo "Number of directories: $dir_count"
-echo "Total count: $total_count"
-
-
 
 
 tls_maybe=""
@@ -73,7 +58,7 @@ client_name=""
 server_name=""
 port=""
 host=""
-
+for_testing=""
 
 while [[ $# -gt 0 ]]; do
     case $1 in
@@ -137,13 +122,41 @@ while [[ $# -gt 0 ]]; do
             host="$2"
             shift 2
             ;;   
-
+        --for_testing)
+            for_testing="$2"
+            shift 2
+            ;;
         *)
             echo "Unknown parameter passed: $1"
             exit 1
             ;;
     esac
 done
+
+if [[ "$for_testing" == "y" ]]; then
+	mv_command="mv !(tls|assets|rbac|standard|requirements.txt|setup.py|utils.py|__init__.py|siftsmall|service_configs) tls/"
+	file_count=$(find . -type f | wc -l)
+	dir_count=$(find . -type d | wc -l)
+	total_count=$((file_count + dir_count))
+
+	echo "Number of files: $file_count"
+	echo "Number of directories: $dir_count"
+	echo "Total count: $total_count"
+
+	if test -f "features.yml"; then
+	    if [ "$total_count" -ne 100 ]; then
+	    	echo "Total count matches 100."
+		fi
+	else
+	    if [ "$total_count" -ne 99 ]; then
+	    	echo "File number has changed, update the following command in the script below to reflect changes $mv_command"
+		fi
+	fi
+
+fi
+
+
+
 
 
 echo "Final values:"
@@ -485,8 +498,6 @@ fi
 
 
 shopt -s extglob  # Enable extended globbing
-
- 
 
 mv !(tls|assets|rbac|standard|requirements.txt|setup.py|utils.py|__init__.py|siftsmall|service_configs) tls/
 
