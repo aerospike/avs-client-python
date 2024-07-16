@@ -135,8 +135,6 @@ def test_vector_search(
             results.append(vector_search_ef_80(session_vector_client, i))
         count += 1
 
-    print(len(results))
-    print(len(results[0]))
     # Get recall numbers for each query
     recall_for_each_query = []
     for i, outside in enumerate(truth_numpy):

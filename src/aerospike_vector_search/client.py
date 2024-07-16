@@ -393,7 +393,7 @@ class Client(BaseClient):
         name: str,
         timeout: Optional[int] = sys.maxsize,
         wait_interval: Optional[int] = 12,
-        validation_threshold: Optional[int] = 3,
+        validation_threshold: Optional[int] = 2,
     ) -> None:
         """
         Wait for the index to have no pending index update operations.

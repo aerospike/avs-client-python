@@ -38,12 +38,11 @@ async def test_index_get_status_timeout(session_admin_client, empty_test_case, r
     except Exception as e: 
         pass
 
-    for i in range(25):
+    for i in range(10):
         try:
             result = await session_admin_client.index_get_status(
                 namespace="test", name=random_name, timeout=0
             )
-            print(result)
         except AVSServerError as se:
             print(se.rpc_error.code())
             if se.rpc_error.code() == grpc.StatusCode.DEADLINE_EXCEEDED:

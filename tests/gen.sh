@@ -470,6 +470,7 @@ fi
 
 shopt -s extglob  # Enable extended globbing
 
+grep -v 'tls' keep_files.txt > temp && mv temp keep_files.txt
 mv $(comm -23 <(ls | sort) <(sort keep_files.txt)) tls/
 
 mv tls/gen.sh gen.sh
