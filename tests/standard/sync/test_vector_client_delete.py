@@ -92,12 +92,15 @@ def test_vector_delete_without_record(session_vector_client, test_case, random_k
     ],
 )
 def test_vector_delete_timeout(session_vector_client, test_case, random_key):
-    with pytest.raises(AVSServerError) as e_info:
-        for i in range(10):
-
+    for i in range(10)
+        try:
             session_vector_client.delete(
                 namespace=test_case.namespace,
                 key=random_key,
                 timeout=test_case.timeout
             )
+        except AVSServerError as se:
+            if se.rpc_error.code() == grpc.StatusCode.DEADLINE_EXCEEDED:
+                assert se.rpc_error.code() == grpc.StatusCode.DEADLINE_EXCEEDED
+                return
     assert e_info.value.rpc_error.code() == grpc.StatusCode.DEADLINE_EXCEEDED

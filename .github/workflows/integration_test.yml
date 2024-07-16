@@ -65,7 +65,7 @@ jobs:
         docker run -d --name aerospike -p 3000:3000 -v .:/etc/aerospike aerospike/aerospike-server-enterprise:latest 
 
 
-        sleep 40
+        sleep 5
 
         docker ps
         python -m pytest standard -s --host 0.0.0.0 --port 5000
@@ -139,8 +139,8 @@ jobs:
         docker run -d --name aerospike-proximus --network=host -p 5000:5000   -v ./aerospike-proximus.yml:/etc/aerospike-proximus/aerospike-proximus.yml   -v ./features.conf:/etc/aerospike-proximus/features.conf   -v ./tls:/etc/aerospike-proximus/tls aerospike.jfrog.io/docker/aerospike/aerospike-proximus-private:0.5.0-SNAPSHOT
         docker run -d --name aerospike -p 3000:3000 -v .:/etc/aerospike aerospike/aerospike-server-enterprise:latest 
 
-        sleep 40
-
+        sleep 5
+        cat /home/runner/work/avs-client-python/avs-client-python/tests/service_configs/retries.json
         docker ps
         python -m pytest standard -s --host child --port 5000 --root_certificate tls/root.crt  -vs
 
@@ -212,7 +212,7 @@ jobs:
         docker run -d --name aerospike-proximus --network=host -p 5000:5000   -v ./aerospike-proximus.yml:/etc/aerospike-proximus/aerospike-proximus.yml   -v ./features.conf:/etc/aerospike-proximus/features.conf   -v ./tls:/etc/aerospike-proximus/tls aerospike.jfrog.io/docker/aerospike/aerospike-proximus-private:0.5.0-SNAPSHOT
         docker run -d --name aerospike -p 3000:3000 -v .:/etc/aerospike aerospike/aerospike-server-enterprise:latest 
 
-        sleep 40
+        sleep 5
 
         docker ps
         echo "

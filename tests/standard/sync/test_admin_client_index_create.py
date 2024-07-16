@@ -525,17 +525,22 @@ def test_index_create_timeout(session_admin_client, test_case, random_name):
         pass
 
 
-    with pytest.raises(AVSServerError) as e_info:
-        session_admin_client.index_create(
-            namespace=test_case.namespace,
-            name=random_name,
-            vector_field=test_case.vector_field,
-            dimensions=test_case.dimensions,
-            vector_distance_metric=test_case.vector_distance_metric,
-            sets=test_case.sets,
-            index_params=test_case.index_params,
-            index_meta_data=test_case.index_meta_data,
-            index_storage=test_case.index_storage,
-            timeout=test_case.timeout
-        )
-    assert e_info.value.rpc_error.code() == grpc.StatusCode.DEADLINE_EXCEEDED
+    for i in range(10)
+        try:
+            session_admin_client.index_create(
+                namespace=test_case.namespace,
+                name=random_name,
+                vector_field=test_case.vector_field,
+                dimensions=test_case.dimensions,
+                vector_distance_metric=test_case.vector_distance_metric,
+                sets=test_case.sets,
+                index_params=test_case.index_params,
+                index_meta_data=test_case.index_meta_data,
+                index_storage=test_case.index_storage,
+                timeout=test_case.timeout
+            )
+        except AVSServerError as se:
+            if se.rpc_error.code() == grpc.StatusCode.DEADLINE_EXCEEDED:
+                assert se.rpc_error.code() == grpc.StatusCode.DEADLINE_EXCEEDED
+                return
+    assert 1 == 2

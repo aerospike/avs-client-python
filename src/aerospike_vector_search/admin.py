@@ -271,7 +271,7 @@ class Client(BaseClient):
         
 
         (user_admin_stub, add_user_request) = self._prepare_add_user(
-            username, password, roles, logger
+            username, password, roles, timeout, logger
         )
 
 

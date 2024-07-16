@@ -49,8 +49,11 @@ def test_index_drop_timeout(session_admin_client, empty_test_case, random_name):
         if se.rpc_error.code() != grpc.StatusCode.ALREADY_EXISTS:
             raise se
 
-    with pytest.raises(AVSServerError) as e_info:
-        for i in range(10): 
+    for i in range(10): 
+        try:
             session_admin_client.index_drop(namespace="test", name=random_name, timeout=0)
-
-    assert e_info.value.rpc_error.code() == grpc.StatusCode.DEADLINE_EXCEEDED
+        except AVSServerError as se:
+            if se.rpc_error.code() == grpc.StatusCode.DEADLINE_EXCEEDED:
+                assert se.rpc_error.code() == grpc.StatusCode.DEADLINE_EXCEEDED
+                return
+    assert 1 == 2

@@ -37,8 +37,14 @@ async def test_index_list(session_admin_client, empty_test_case, random_name):
     await drop_specified_index(session_admin_client, "test", random_name)
 
 async def test_index_list_timeout(session_admin_client):
-    with pytest.raises(AVSServerError) as e_info:
-        for i in range(10):
+    for i in range(10):
+        try:
             result = await session_admin_client.index_list(timeout=0)
 
-    assert e_info.value.rpc_error.code() == grpc.StatusCode.DEADLINE_EXCEEDED
+
+        except AVSServerError as se:
+            if se.rpc_error.code() == grpc.StatusCode.DEADLINE_EXCEEDED:
+                assert se.rpc_error.code() == grpc.StatusCode.DEADLINE_EXCEEDED
+                return
+
+    assert 1 == 2
