@@ -42,6 +42,9 @@ function generate_derivative_certs() {
 }
 ls > keep_files.txt
 
+sed -i '/tls/d' keep_files.txt
+
+cat keep_files.txt
 tls_maybe=""
 rbac_maybe=""
 root_certificate_maybe=""
@@ -470,7 +473,6 @@ fi
 
 shopt -s extglob  # Enable extended globbing
 
-grep -v 'tls' keep_files.txt > temp && mv temp keep_files.txt
 mv $(comm -23 <(ls | sort) <(sort keep_files.txt)) tls/
 
 mv tls/gen.sh gen.sh
