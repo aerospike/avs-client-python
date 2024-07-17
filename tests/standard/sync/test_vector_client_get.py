@@ -82,11 +82,14 @@ def test_vector_get(session_vector_client, test_case, random_key):
             set_name=None,
             record_data=None,
             expected_fields=None,
-            timeout=0
+            timeout=0.0001
         ),    
     ],
 )
-def test_vector_get_timeout(session_vector_client, test_case, random_key):
+def test_vector_get_timeout(session_vector_client, test_case, random_key, local_latency):
+    if local_latency:
+        pytest.skip("Server latency too low to test timeout")    
+
     for i in range(10):
         try:
             result = session_vector_client.get(
@@ -96,4 +99,4 @@ def test_vector_get_timeout(session_vector_client, test_case, random_key):
             if se.rpc_error.code() == grpc.StatusCode.DEADLINE_EXCEEDED:
                 assert se.rpc_error.code() == grpc.StatusCode.DEADLINE_EXCEEDED
                 return
-    assert 1 == 2
+    assert "In several attempts, the timeout did not happen" == "TEST FAIL"

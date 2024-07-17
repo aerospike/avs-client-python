@@ -10,7 +10,7 @@
                 "maxBackoff": "1s",
                 "backoffMultiplier": 1,
                 "retryableStatusCodes": [
-                    "NOT_FOUND"
+                    "NOT_FOUND", "UNAVAILABLE"
                 ]
             }
         }

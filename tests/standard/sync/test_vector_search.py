@@ -121,8 +121,6 @@ def test_vector_search(
 
     session_vector_client.wait_for_index_completion(namespace='test', name='demo')
 
-    for j, vector in enumerate(base_numpy):
-        get_vector(session_vector_client, j)
 
 
     # Vector search all query vectors
@@ -174,18 +172,28 @@ def test_vector_is_indexed(session_vector_client, session_admin_client):
     )
     assert result is True
 
-def test_vector_is_indexed_timeout(session_vector_client, session_admin_client):
-    with pytest.raises(AVSServerError) as e_info:
-        for i in range(10):
+def test_vector_is_indexed_timeout(session_vector_client, session_admin_client, local_latency):
+    if local_latency:
+        pytest.skip("Server latency too low to test timeout")    
+
+    for i in range(10):
+        try:
             result = session_vector_client.is_indexed(
                 namespace="test",
                 key="" + str(random.randrange(10_000)),
                 index_name="demo",
-                timeout=0
+                timeout=0.0001
             )
-    assert e_info.value.rpc_error.code() == grpc.StatusCode.DEADLINE_EXCEEDED
+        except AVSServerError as se:
+            if se.rpc_error.code() == grpc.StatusCode.DEADLINE_EXCEEDED:
+                assert se.rpc_error.code() == grpc.StatusCode.DEADLINE_EXCEEDED
+                return
+    assert "In several attempts, the timeout did not happen" == "TEST FAIL"
 
-def test_vector_vector_search_timeout(session_vector_client, session_admin_client):
+def test_vector_vector_search_timeout(session_vector_client, session_admin_client, local_latency):
+    if local_latency:
+        pytest.skip("Server latency too low to test timeout")    
+
     for i in range(10):
         try:
             result = session_vector_client.vector_search(
@@ -194,10 +202,10 @@ def test_vector_vector_search_timeout(session_vector_client, session_admin_clien
                 query=[0, 1, 2],
                 limit=100,
                 field_names=["unit_test"],
-                timeout=0
+                timeout=0.0001
             )
         except AVSServerError as se:
             if se.rpc_error.code() == grpc.StatusCode.DEADLINE_EXCEEDED:
                 assert se.rpc_error.code() == grpc.StatusCode.DEADLINE_EXCEEDED
                 return
-    assert 1 == 2
+    assert "In several attempts, the timeout did not happen" == "TEST FAIL"

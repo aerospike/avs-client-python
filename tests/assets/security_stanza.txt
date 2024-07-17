@@ -1,5 +1,5 @@
 security:
   auth-token:
-    private-key: /etc/aerospike-proximus/tls/jwt/private_key.pem
-    public-key: /etc/aerospike-proximus/tls/jwt/public_key.pem
+    private-key: /etc/aerospike-vector-search/tls/jwt/private_key.pem
+    public-key: /etc/aerospike-vector-search/tls/jwt/public_key.pem
     token-expiry: 300_000

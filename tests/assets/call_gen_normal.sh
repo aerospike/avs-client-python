@@ -12,4 +12,5 @@
     --client_name brawn \
     --server_name brawn \
     --port 5000 \
-    --host 127.0.0.1
+    --host 127.0.0.1 \
+    --for_testing y

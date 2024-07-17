@@ -59,6 +59,7 @@ class Client(BaseClient):
         key: Union[int, str, bytes, bytearray],
         record_data: dict[str, Any],
         set_name: Optional[str] = None,
+        ignore_mem_queue_full: Optional[bool] = False,
         timeout: Optional[int] = None,
     ) -> None:
         """
@@ -82,7 +83,7 @@ class Client(BaseClient):
          
 
         (transact_stub, insert_request) = self._prepare_insert(
-            namespace, key, record_data, set_name, timeout, logger
+            namespace, key, record_data, set_name, ignore_mem_queue_full, timeout, logger
         )
 
         kwargs = {}
@@ -102,6 +103,7 @@ class Client(BaseClient):
         key: Union[int, str, bytes, bytearray],
         record_data: dict[str, Any],
         set_name: Optional[str] = None,
+        ignore_mem_queue_full: Optional[bool] = False,
         timeout: Optional[int] = None,
     ) -> None:
         """
@@ -122,7 +124,7 @@ class Client(BaseClient):
 
         """
         (transact_stub, update_request) = self._prepare_update(
-            namespace, key, record_data, set_name, timeout, logger
+            namespace, key, record_data, set_name, ignore_mem_queue_full, timeout, logger
         )
 
         kwargs = {}
@@ -142,6 +144,7 @@ class Client(BaseClient):
         key: Union[int, str, bytes, bytearray],
         record_data: dict[str, Any],
         set_name: Optional[str] = None,
+        ignore_mem_queue_full: Optional[bool] = False,
         timeout: Optional[int] = None,
     ) -> None:
         """
@@ -165,7 +168,7 @@ class Client(BaseClient):
          
 
         (transact_stub, upsert_request) = self._prepare_upsert(
-            namespace, key, record_data, set_name, timeout, logger
+            namespace, key, record_data, set_name, ignore_mem_queue_full, timeout, logger
         )
 
         kwargs = {}

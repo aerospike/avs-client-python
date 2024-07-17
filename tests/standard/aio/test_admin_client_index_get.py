@@ -30,7 +30,6 @@ async def test_index_get(session_admin_client, empty_test_case, random_name):
     assert result["hnsw_params"]["ef"] == 100
     assert result["hnsw_params"]["batching_params"]["max_records"] == 100000
     assert result["hnsw_params"]["batching_params"]["interval"] == 30000
-    assert not result["hnsw_params"]["batching_params"]["disabled"]
     assert result["storage"]["namespace"] == "test"
     assert result["storage"]["set"] == random_name
 
@@ -39,16 +38,18 @@ async def test_index_get(session_admin_client, empty_test_case, random_name):
 @pytest.mark.parametrize("empty_test_case",[None, None])
 @given(random_name=index_strategy())
 @settings(max_examples=1, deadline=1000)
-async def test_index_get_timeout(session_admin_client, empty_test_case, random_name):
+async def test_index_get_timeout(session_admin_client, empty_test_case, random_name, local_latency):
 
+    if local_latency:
+        pytest.skip("Server latency too low to test timeout")
 
     for i in range(10): 
         try:
             result = await session_admin_client.index_get(
-                namespace="test", name=random_name, timeout=0
+                namespace="test", name=random_name, timeout=0.0001
             )
         except AVSServerError as se:
             if se.rpc_error.code() == grpc.StatusCode.DEADLINE_EXCEEDED:
                 assert se.rpc_error.code() == grpc.StatusCode.DEADLINE_EXCEEDED
                 return
-    assert 1 == 2
+    assert "In several attempts, the timeout did not happen" == "TEST FAIL"

@@ -108,11 +108,13 @@ async def test_vector_insert_with_existing_record(session_vector_client, test_ca
             namespace="test",
             record_data={"math": [i for i in range(1024)]},
             set_name=None,
-            timeout=0
+            timeout=0.0001
         )
     ],
 )
-async def test_vector_insert_timeout(session_vector_client, test_case, random_key):
+async def test_vector_insert_timeout(session_vector_client, test_case, random_key, local_latency):
+    if local_latency:
+        pytest.skip("Server latency too low to test timeout")    
     with pytest.raises(AVSServerError) as e_info:
         for i in range(10):
             await session_vector_client.insert(

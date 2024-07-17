@@ -93,11 +93,14 @@ def test_vector_upsert_with_existing_record(session_vector_client, test_case, ra
             namespace="test",
             record_data={"math": [i for i in range(1024)]},
             set_name=None,
-            timeout=0
+            timeout=0.0001
         )
     ],
 )
-def test_vector_upsert_timeout(session_vector_client, test_case, random_key):
+def test_vector_upsert_timeout(session_vector_client, test_case, random_key, local_latency):
+    if local_latency:
+        pytest.skip("Server latency too low to test timeout")    
+
     for i in range(10):
         try:
             session_vector_client.upsert(
@@ -111,4 +114,4 @@ def test_vector_upsert_timeout(session_vector_client, test_case, random_key):
             if se.rpc_error.code() == grpc.StatusCode.DEADLINE_EXCEEDED:
                 assert se.rpc_error.code() == grpc.StatusCode.DEADLINE_EXCEEDED
                 return
-    assert e_info.value.rpc_error.code() == grpc.StatusCode.DEADLINE_EXCEEDED
+    assert "In several attempts, the timeout did not happen" == "TEST FAIL"

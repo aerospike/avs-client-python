@@ -31,15 +31,16 @@ async def test_index_list(session_admin_client, empty_test_case, random_name):
         assert isinstance(index['hnsw_params']['ef'], int)
         assert isinstance(index['hnsw_params']['batching_params']['max_records'], int)
         assert isinstance(index['hnsw_params']['batching_params']['interval'], int)
-        assert isinstance(index['hnsw_params']['batching_params']['disabled'], bool)
         assert isinstance(index['storage']['namespace'], str)
         assert isinstance(index['storage']['set'], str)
     await drop_specified_index(session_admin_client, "test", random_name)
 
-async def test_index_list_timeout(session_admin_client):
+async def test_index_list_timeout(session_admin_client, local_latency):
+    if local_latency:
+        pytest.skip("Server latency too low to test timeout")    
     for i in range(10):
         try:
-            result = await session_admin_client.index_list(timeout=0)
+            result = await session_admin_client.index_list(timeout=0.0001)
 
 
         except AVSServerError as se:
@@ -47,4 +48,4 @@ async def test_index_list_timeout(session_admin_client):
                 assert se.rpc_error.code() == grpc.StatusCode.DEADLINE_EXCEEDED
                 return
 
-    assert 1 == 2
+    assert "In several attempts, the timeout did not happen" == "TEST FAIL"

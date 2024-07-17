@@ -13,7 +13,7 @@
                 "maxBackoff": "1s",
                 "backoffMultiplier": 1,
                 "retryableStatusCodes": [
-                    "ALREADY_EXISTS"
+                    "ALREADY_EXISTS", "UNAVAILABLE"
                 ]
             }
         }

@@ -3,7 +3,7 @@
 
 cluster:
   # Unique identifier for this cluster.
-  cluster-name: aerospike-proximus
+  cluster-name: aerospike-vector-search
 
   # Custom node-id as 8 byte long in Hexadecimal format.
   #  It will be auto-generated if not specified.
@@ -15,12 +15,12 @@ cluster:
 #tls:
 #  service-tls:
 #    trust-store:
-#      store-file: /etc/aerospike-proximus/tls/$root_certificate_name.truststore.jks 
-#      store-password-file: /etc/aerospike-proximus/tls/storepass
+#      store-file: /etc/aerospike-vector-search/tls/$root_certificate_name.truststore.jks 
+#      store-password-file: /etc/aerospike-vector-search/tls/storepass
 #    key-store:
-#      store-file: /etc/aerospike-proximus/tls/$server_name.keystore.jks
-#      store-password-file: /etc/aerospike-proximus/tls/storepass
-#      key-password-file: /etc/aerospike-proximus/tls/keypass
+#      store-file: /etc/aerospike-vector-search/tls/$server_name.keystore.jks
+#      store-password-file: /etc/aerospike-vector-search/tls/storepass
+#      key-password-file: /etc/aerospike-vector-search/tls/keypass
 #    mutual-auth: true
 #    # Client certificate subject names that are allowed
 #    allowed-peer-names:
@@ -95,8 +95,8 @@ interconnect:
 
 #security:
 #  auth-token:
-#    private-key: /etc/aerospike-proximus/tls/jwt/private_key.pem
-#    public-key: /etc/aerospike-proximus/tls/jwt/public_key.pem
+#    private-key: /etc/aerospike-vector-search/tls/jwt/private_key.pem
+#    public-key: /etc/aerospike-vector-search/tls/jwt/public_key.pem
 #    token-expiry: 300_000
 
 # Target Aerospike cluster
@@ -116,7 +116,7 @@ aerospike:
 
 # The logging properties.
 #logging:
-#  #file: /var/log/aerospike-proximus/aerospike-proximus.log
+#  #file: /var/log/aerospike-vector-search/aerospike-vector-search.log
 #  enable-console-logging: true
 #  levels:
 #    root: debug

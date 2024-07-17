@@ -174,17 +174,70 @@ class HnswBatchingParams(object):
         *,
         max_records: Optional[int] = 10000,
         interval: Optional[int] = 10000,
-        disabled: Optional[bool] = False,
     ) -> None:
         self.max_records = max_records
         self.interval = interval
-        self.disabled = disabled
 
     def _to_pb2(self):
         params = types_pb2.HnswBatchingParams()
         params.maxRecords = self.max_records
         params.interval = self.interval
-        params.disabled = self.disabled
+        return params
+
+
+class HnswHealerParams(object):
+    def __init__(self, *, max_scan_rate_per_node: Optional[int] = None, max_scan_page_size: Optional[int] = None, re_index_percent: Optional[int] = None, schedule_delay: Optional[int] = None, parallelism: Optional[int] = None) -> None:
+        self.max_scan_rate_per_node = max_scan_rate_per_node
+        self.max_scan_page_size = max_scan_page_size
+        self.re_index_percent = re_index_percent
+        self.schedule_delay = schedule_delay
+        self.parallelism = parallelism
+
+    def _to_pb2(self):
+        params = types_pb2.HnswHealerParams()
+        if self.max_scan_rate_per_node:
+            params.maxScanRatePerNode = self.max_scan_rate_per_node
+
+        if self.max_scan_page_size:
+
+            params.maxScanPageSize = self.max_scan_page_size
+
+        if self.re_index_percent:
+
+            params.reindexPercent = self.re_index_percent
+
+        if self.schedule_delay:
+
+            params.scheduleDelay = self.schedule_delay
+
+        if self.parallelism:
+
+            params.parallelism = self.parallelism
+
+        return params
+
+
+class HnswCachingParams(object):
+    def __init__(self, *, max_entries: Optional[int] = None, expiry: Optional[int] = None) -> None:
+        self.max_entries = max_entries
+        self.expiry = expiry
+
+    def _to_pb2(self):
+        params = types_pb2.HnswCachingParams()
+        if self.max_entries:
+            params.maxEntries = self.max_entries
+        if self.expiry:
+            params.expiry = self.expiry
+        return params
+
+class HnswIndexMergeParams(object):
+    def __init__(self, *, parallelism: Optional[int] = None) -> None:
+        self.parallelism = parallelism
+
+    def _to_pb2(self):
+        params = types_pb2.HnswIndexMergeParams()
+        if self.parallelism:
+            params.parallelism = self.parallelism
         return params
 
 
@@ -206,20 +259,37 @@ class HnswParams(object):
         ef_construction: Optional[int] = 100,
         ef: Optional[int] = 100,
         batching_params: Optional[HnswBatchingParams] = HnswBatchingParams(),
+        max_mem_queue_size: Optional[int] = None,
+        caching_params: Optional[HnswCachingParams] = HnswCachingParams(),
+        healer_params: Optional[HnswHealerParams] = HnswHealerParams(),
+        merge_params: Optional[HnswIndexMergeParams] = HnswIndexMergeParams()
     ) -> None:
         self.m = m
         self.ef_construction = ef_construction
         self.ef = ef
         self.batching_params = batching_params
+        self.max_mem_queue_size = max_mem_queue_size
+        self.caching_params = caching_params
+        self.healer_params = healer_params
+        self.merge_params = merge_params
 
     def _to_pb2(self):
         params = types_pb2.HnswParams()
         params.m = self.m
         params.efConstruction = self.ef_construction
         params.ef = self.ef
+        if self.max_mem_queue_size:
+            params.maxMemQueueSize = self.max_mem_queue_size
 
         params.batchingParams.CopyFrom(self.batching_params._to_pb2())
+        params.cachingParams.CopyFrom(self.caching_params._to_pb2())
+
+        params.healerParams.CopyFrom(self.healer_params._to_pb2())
+
+        params.mergeParams.CopyFrom(self.merge_params._to_pb2())
+
         return params
+
 
 
 class HnswSearchParams(object):

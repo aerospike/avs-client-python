@@ -65,11 +65,13 @@ async def test_vector_exists(session_vector_client, test_case, random_key):
             namespace="test",
             set_name=None,
             record_data=None,
-            timeout=0
+            timeout=0.0001
         ),
     ],
 )
-async def test_vector_exists_timeout(session_vector_client, test_case, random_key):
+async def test_vector_exists_timeout(session_vector_client, test_case, random_key, local_latency):
+    if local_latency:
+        pytest.skip("Server latency too low to test timeout")
     with pytest.raises(AVSServerError) as e_info:
         for i in range(10):
             result = await session_vector_client.exists(

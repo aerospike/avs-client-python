@@ -16,15 +16,16 @@ class BaseClient(object):
         return helpers._prepare_seeds(seeds)
 
     def _prepare_put(
-        self, namespace, key, record_data, set_name, write_type, timeout, logger
+        self, namespace, key, record_data, set_name, write_type, ignore_mem_queue_full, timeout, logger
     ) -> None:
 
         logger.debug(
-            "Putting record: namespace=%s, key=%s, record_data:%s, set_name:%s, timeout:%s",
+            "Putting record: namespace=%s, key=%s, record_data:%s, set_name:%s, ignore_mem_queue_full %s, timeout:%s",
             namespace,
             key,
             record_data,
             set_name,
+            ignore_mem_queue_full,
             timeout
         )
 
@@ -46,36 +47,38 @@ class BaseClient(object):
 
         transact_stub = self._get_transact_stub()
         put_request = transact_pb2.PutRequest(
-            key=key, writeType=write_type, fields=field_list
+            key=key, writeType=write_type, fields=field_list, ignoreMemQueueFull=ignore_mem_queue_full
         )
 
         return (transact_stub, put_request)
 
-    def _prepare_insert(self, namespace, key, record_data, set_name, timeout, logger) -> None:
+    def _prepare_insert(self, namespace, key, record_data, set_name, ignore_mem_queue_full, timeout, logger) -> None:
         return self._prepare_put(
             namespace,
             key,
             record_data,
             set_name,
             transact_pb2.WriteType.INSERT_ONLY,
+            ignore_mem_queue_full,
             timeout,
             logger,
         )
 
-    def _prepare_update(self, namespace, key, record_data, set_name, timeout, logger) -> None:
+    def _prepare_update(self, namespace, key, record_data, set_name, ignore_mem_queue_full, timeout, logger) -> None:
         return self._prepare_put(
             namespace,
             key,
             record_data,
             set_name,
             transact_pb2.WriteType.UPDATE_ONLY,
+            ignore_mem_queue_full,
             timeout,
             logger,
         )
 
-    def _prepare_upsert(self, namespace, key, record_data, set_name, timeout, logger) -> None:
+    def _prepare_upsert(self, namespace, key, record_data, set_name, ignore_mem_queue_full, timeout, logger) -> None:
         return self._prepare_put(
-            namespace, key, record_data, set_name, transact_pb2.WriteType.UPSERT,  timeout, logger
+            namespace, key, record_data, set_name, transact_pb2.WriteType.UPSERT, ignore_mem_queue_full, timeout, logger
         )
 
     def _prepare_get(self, namespace, key, field_names, set_name, timeout, logger) -> None:
@@ -93,7 +96,7 @@ class BaseClient(object):
         projection_spec = self._get_projection_spec(field_names=field_names)
 
         transact_stub = self._get_transact_stub()
-        get_request = transact_pb2.GetRequest(key=key, projectionSpec=projection_spec)
+        get_request = transact_pb2.GetRequest(key=key, projection=projection_spec)
 
         return (transact_stub, key, get_request)
 
@@ -195,7 +198,7 @@ class BaseClient(object):
         return (transact_stub, vector_search_request)
 
     def _get_transact_stub(self):
-        return transact_pb2_grpc.TransactStub(self._channel_provider.get_channel())
+        return transact_pb2_grpc.TransactServiceStub(self._channel_provider.get_channel())
 
     def _respond_get(self, response, key) -> None:
         return types.RecordWithKey(

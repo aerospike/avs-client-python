@@ -14,11 +14,13 @@ class insert_test_case:
         namespace,
         record_data,
         set_name,
-        timeout,
+        ignore_mem_queue_full,
+        timeout
     ):
         self.namespace = namespace
         self.record_data = record_data
         self.set_name = set_name
+        self.ignore_mem_queue_full = ignore_mem_queue_full
         self.timeout = timeout
 
 @given(random_key=key_strategy())
@@ -30,18 +32,21 @@ class insert_test_case:
             namespace="test",
             record_data={"math": [i for i in range(1024)]},
             set_name=None,
+            ignore_mem_queue_full=None,
             timeout=None
         ),
         insert_test_case(
             namespace="test",
             record_data={"homeSkills": [float(i) for i in range(1024)]},
             set_name=None,
+            ignore_mem_queue_full=None,
             timeout=None
         ),
         insert_test_case(
             namespace="test",
             record_data={"english": [bool(i) for i in range(1024)]},
             set_name=None,
+            ignore_mem_queue_full=None,
             timeout=None
         )
     ],
@@ -73,12 +78,13 @@ def test_vector_insert_without_existing_record(session_vector_client, test_case,
             namespace="test",
             record_data={"math": [i for i in range(1024)]},
             set_name=None,
+            ignore_mem_queue_full=None,
             timeout=None
         )
     ],
 )
 def test_vector_insert_with_existing_record(session_vector_client, test_case, random_key):
-    session_vector_client.insert(
+    session_vector_client.upsert(
         namespace=test_case.namespace,
         key=random_key,
         record_data=test_case.record_data,
@@ -97,6 +103,40 @@ def test_vector_insert_with_existing_record(session_vector_client, test_case, ra
     )
 
 @given(random_key=key_strategy())
+@settings(max_examples=5, deadline=1000)
+@pytest.mark.parametrize(
+    "test_case",
+    [
+        insert_test_case(
+            namespace="test",
+            record_data={"english": [bool(i) for i in range(1024)]},
+            set_name=None,
+            ignore_mem_queue_full=True,
+            timeout=None
+        )
+    ],
+)
+def test_vector_insert_without_existing_record_ignore_mem_queue_full(session_vector_client, test_case, random_key):
+    session_vector_client.delete(
+        namespace=test_case.namespace,
+        key=random_key,
+    )
+    
+    session_vector_client.insert(
+        namespace=test_case.namespace,
+        key=random_key,
+        record_data=test_case.record_data,
+        set_name=test_case.set_name,
+        ignore_mem_queue_full=test_case.ignore_mem_queue_full
+    )
+
+    session_vector_client.delete(
+        namespace=test_case.namespace,
+        key=random_key,
+    )
+
+
+@given(random_key=key_strategy())
 @settings(max_examples=1, deadline=1000)
 @pytest.mark.parametrize(
     "test_case",
@@ -105,11 +145,15 @@ def test_vector_insert_with_existing_record(session_vector_client, test_case, ra
             namespace="test",
             record_data={"math": [i for i in range(1024)]},
             set_name=None,
-            timeout=0
+            ignore_mem_queue_full=None,
+            timeout=0.0001
         )
     ],
 )
-def test_vector_insert_timeout(session_vector_client, test_case, random_key):
+def test_vector_insert_timeout(session_vector_client, test_case, random_key, local_latency):
+    if local_latency:
+        pytest.skip("Server latency too low to test timeout")    
+
     for i in range(10):
         try:
             session_vector_client.insert(
@@ -123,4 +167,4 @@ def test_vector_insert_timeout(session_vector_client, test_case, random_key):
             if e.rpc_error.code() == grpc.StatusCode.DEADLINE_EXCEEDED:
                 assert e.rpc_error.code() == grpc.StatusCode.DEADLINE_EXCEEDED
                 return
-    assert 1 == 2
+    assert "In several attempts, the timeout did not happen" == "TEST FAIL"

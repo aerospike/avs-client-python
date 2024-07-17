@@ -198,6 +198,46 @@ class BaseClient(object):
             )
             hnsw_params_dict["batching_params"] = batching_params_dict
 
+
+
+            caching_params_dict = hnsw_params_dict.pop("cachingParams", None)
+            if caching_params_dict:
+                caching_params_dict["max_entries"] = caching_params_dict.pop(
+                    "maxEntries", None
+                )
+                caching_params_dict["expiry"] = caching_params_dict.pop(
+                    "expiry", None
+                )
+                hnsw_params_dict["caching_params"] = caching_params_dict
+            
+            healer_params_dict = hnsw_params_dict.pop("healerParams", None)
+
+            if healer_params_dict:
+
+                healer_params_dict["max_scan_rate_per_node"] = healer_params_dict.pop(
+                    "maxScanRatePerNode", None
+                )
+                healer_params_dict["max_scan_page_size"] = healer_params_dict.pop(
+                    "maxScanPageSize", None
+                )
+                healer_params_dict["re_index_percent"] = healer_params_dict.pop(
+                    "reindexPercent", None
+                )
+                healer_params_dict["schedule_delay"] = healer_params_dict.pop(
+                    "scheduleDelay", None
+                )
+                healer_params_dict["parallelism"] = healer_params_dict.pop(
+                    "parallelism", None
+                )
+                hnsw_params_dict["healer_params"] = healer_params_dict
+          
+            merge_params_dict = hnsw_params_dict.pop("mergeParams", None)
+            if merge_params_dict:
+                merge_params_dict["parallelism"] = merge_params_dict.pop(
+                    "parallelism", None
+                )  
+                hnsw_params_dict["merge_params"] = merge_params_dict
+
             response_dict["hnsw_params"] = hnsw_params_dict
             response_list.append(response_dict)
         return response_list

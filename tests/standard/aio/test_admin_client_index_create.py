@@ -80,7 +80,6 @@ async def test_index_create(session_admin_client, test_case, random_name):
             assert result['hnsw_params']['ef'] == 100
             assert result['hnsw_params']['batching_params']['max_records'] == 100000
             assert result['hnsw_params']['batching_params']['interval'] == 30000
-            assert result['hnsw_params']['batching_params']['disabled'] == False
             assert result['storage']['namespace'] == test_case.namespace
             assert result['storage']['set'] == random_name
     assert found == True
@@ -147,7 +146,6 @@ async def test_index_create_with_dimnesions(session_admin_client, test_case, ran
             assert result['hnsw_params']['ef'] == 100
             assert result['hnsw_params']['batching_params']['max_records'] == 100000
             assert result['hnsw_params']['batching_params']['interval'] == 30000
-            assert result['hnsw_params']['batching_params']['disabled'] == False
             assert result['storage']['namespace'] == test_case.namespace
             assert result['storage']['set'] == random_name
     assert found == True
@@ -238,7 +236,6 @@ async def test_index_create_with_vector_distance_metric(
             assert result['hnsw_params']['ef'] == 100
             assert result['hnsw_params']['batching_params']['max_records'] == 100000
             assert result['hnsw_params']['batching_params']['interval'] == 30000
-            assert result['hnsw_params']['batching_params']['disabled'] == False
             assert result['storage']['namespace'] == test_case.namespace
             assert result['storage']['set'] == random_name
     assert found == True
@@ -302,7 +299,6 @@ async def test_index_create_with_sets(session_admin_client, test_case, random_na
             assert result['hnsw_params']['ef'] == 100
             assert result['hnsw_params']['batching_params']['max_records'] == 100000
             assert result['hnsw_params']['batching_params']['interval'] == 30000
-            assert result['hnsw_params']['batching_params']['disabled'] == False
             assert result['storage']['namespace'] == test_case.namespace
             assert result['storage']['set'] == random_name
     assert found == True
@@ -353,7 +349,7 @@ async def test_index_create_with_sets(session_admin_client, test_case, random_na
             sets=None,
             index_params=types.HnswParams(
                 batching_params=types.HnswBatchingParams(
-                    max_records=500, interval=500, disabled=True
+                    max_records=500, interval=500
                 )
             ),
             index_meta_data=None,
@@ -388,7 +384,6 @@ async def test_index_create_with_index_params(session_admin_client, test_case, r
             assert result['hnsw_params']['ef'] == test_case.index_params.ef
             assert result['hnsw_params']['batching_params']['max_records'] == test_case.index_params.batching_params.max_records
             assert result['hnsw_params']['batching_params']['interval'] == test_case.index_params.batching_params.interval
-            assert result['hnsw_params']['batching_params']['disabled'] == test_case.index_params.batching_params.disabled
             assert result['storage']['namespace'] == test_case.namespace
             assert result['storage']['set'] == random_name
     assert found == True
@@ -442,7 +437,6 @@ async def test_index_create_index_meta_data(session_admin_client, test_case, ran
             assert result['hnsw_params']['ef'] == 100
             assert result['hnsw_params']['batching_params']['max_records'] == 100000
             assert result['hnsw_params']['batching_params']['interval'] == 30000
-            assert result['hnsw_params']['batching_params']['disabled'] == False
             assert result['storage']['namespace'] == test_case.namespace
             assert result['storage']['set'] == random_name
     assert found == True
@@ -492,7 +486,6 @@ async def test_index_create_index_storage(session_admin_client, test_case, rando
             assert result['hnsw_params']['ef'] == 100
             assert result['hnsw_params']['batching_params']['max_records'] == 100000
             assert result['hnsw_params']['batching_params']['interval'] == 30000
-            assert result['hnsw_params']['batching_params']['disabled'] == False
             assert result['storage']['namespace'] == test_case.index_storage.namespace
             assert result['storage']['set'] == test_case.index_storage.set_name
     assert found == True
@@ -512,12 +505,15 @@ async def test_index_create_index_storage(session_admin_client, test_case, rando
             index_params=None,
             index_meta_data=None,
             index_storage=None,
-            timeout=0,
+            timeout=0.0001,
         ),
     ],
 )
-async def test_index_create_timeout(session_admin_client, test_case, random_name):
+async def test_index_create_timeout(session_admin_client, test_case, random_name, local_latency):
 
+    if local_latency:
+        pytest.skip("Server latency too low to test timeout")
+    
     with pytest.raises(AVSServerError) as e_info:
         for i in range(10):
 

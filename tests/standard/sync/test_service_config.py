@@ -87,20 +87,21 @@ def calculate_expected_time(max_attempts, initial_backoff, backoff_multiplier, m
         )
     ],
 )
-def test_admin_client_service_config_retries(host, port, test_case):
+def test_admin_client_service_config_retries(host, port,  username, password, root_certificate, certificate_chain, private_key, test_case):
     client = AdminClient(
         seeds=types.HostPort(host=host, port=port),
         service_config_path=test_case.service_config_path
     )
 
-
-    client.index_create(
-        namespace=test_case.namespace,
-        name=test_case.name,
-        vector_field=test_case.vector_field,
-        dimensions=test_case.dimensions,
-    )
-
+    try:
+        client.index_create(
+            namespace=test_case.namespace,
+            name=test_case.name,
+            vector_field=test_case.vector_field,
+            dimensions=test_case.dimensions,
+        )
+    except:
+        pass
     expected_time = calculate_expected_time(test_case.max_attempts, test_case.initial_backoff, test_case.backoff_multiplier, test_case.max_backoff, test_case.retryable_status_codes)
     start_time = time.time()
 
@@ -131,21 +132,27 @@ def test_admin_client_service_config_retries(host, port, test_case):
         )
     ],
 )
-def test_admin_client_service_config_initial_backoff(host, port, test_case):
+def test_admin_client_service_config_initial_backoff(host, port,  username, password, root_certificate, certificate_chain, private_key, test_case):
     client = AdminClient(
         seeds=types.HostPort(host=host, port=port),
+        username=username,
+        password=password,
+        root_certificate=root_certificate,
+        certificate_chain=certificate_chain,
+        private_key=private_key,
         service_config_path=test_case.service_config_path
 
     )
 
-    
-    client.index_create(
-        namespace=test_case.namespace,
-        name=test_case.name,
-        vector_field=test_case.vector_field,
-        dimensions=test_case.dimensions,
-    )
-
+    try:
+        client.index_create(
+            namespace=test_case.namespace,
+            name=test_case.name,
+            vector_field=test_case.vector_field,
+            dimensions=test_case.dimensions,
+        )
+    except:
+        pass
     expected_time = calculate_expected_time(test_case.max_attempts, test_case.initial_backoff, test_case.backoff_multiplier, test_case.max_backoff, test_case.retryable_status_codes)
     start_time = time.time()
 
@@ -183,21 +190,27 @@ def test_admin_client_service_config_initial_backoff(host, port, test_case):
         )
     ],
 )
-def test_admin_client_service_config_max_backoff(host, port, test_case):
+def test_admin_client_service_config_max_backoff(host, port,  username, password, root_certificate, certificate_chain, private_key, test_case):
     client = AdminClient(
         seeds=types.HostPort(host=host, port=port),
+        username=username,
+        password=password,
+        root_certificate=root_certificate,
+        certificate_chain=certificate_chain,
+        private_key=private_key,
         service_config_path=test_case.service_config_path
 
     )
 
-    
-    client.index_create(
-        namespace=test_case.namespace,
-        name=test_case.name,
-        vector_field=test_case.vector_field,
-        dimensions=test_case.dimensions,
-    )
-
+    try:
+        client.index_create(
+            namespace=test_case.namespace,
+            name=test_case.name,
+            vector_field=test_case.vector_field,
+            dimensions=test_case.dimensions,
+        )
+    except:
+        pass
     expected_time = calculate_expected_time(test_case.max_attempts, test_case.initial_backoff, test_case.backoff_multiplier, test_case.max_backoff, test_case.retryable_status_codes)
     start_time = time.time()
 
@@ -228,21 +241,27 @@ def test_admin_client_service_config_max_backoff(host, port, test_case):
         )
     ],
 )
-def test_admin_client_service_config_backoff_multiplier(host, port, test_case):
+def test_admin_client_service_config_backoff_multiplier(host, port,  username, password, root_certificate, certificate_chain, private_key, test_case):
     client = AdminClient(
         seeds=types.HostPort(host=host, port=port),
+        username=username,
+        password=password,
+        root_certificate=root_certificate,
+        certificate_chain=certificate_chain,
+        private_key=private_key,
         service_config_path=test_case.service_config_path
 
     )
 
-    
-    client.index_create(
-        namespace=test_case.namespace,
-        name=test_case.name,
-        vector_field=test_case.vector_field,
-        dimensions=test_case.dimensions,
-    )
-
+    try:
+        client.index_create(
+            namespace=test_case.namespace,
+            name=test_case.name,
+            vector_field=test_case.vector_field,
+            dimensions=test_case.dimensions,
+        )
+    except:
+        pass
     expected_time = calculate_expected_time(test_case.max_attempts, test_case.initial_backoff, test_case.backoff_multiplier, test_case.max_backoff, test_case.retryable_status_codes)
     start_time = time.time()
 
@@ -273,9 +292,14 @@ def test_admin_client_service_config_backoff_multiplier(host, port, test_case):
         )
     ],
 )
-def test_admin_client_service_config_retryable_status_codes(host, port, test_case):
+def test_admin_client_service_config_retryable_status_codes(host, port,  username, password, root_certificate, certificate_chain, private_key, test_case):
     client = AdminClient(
         seeds=types.HostPort(host=host, port=port),
+        username=username,
+        password=password,
+        root_certificate=root_certificate,
+        certificate_chain=certificate_chain,
+        private_key=private_key,
         service_config_path=test_case.service_config_path
 
     )

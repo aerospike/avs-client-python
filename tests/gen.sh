@@ -133,27 +133,27 @@ while [[ $# -gt 0 ]]; do
     esac
 done
 
-if [[ "$for_testing" == "y" ]]; then
-	mv_command="mv !(tls|assets|rbac|standard|requirements.txt|setup.py|utils.py|__init__.py|siftsmall|service_configs) tls/"
-	file_count=$(find . -type f | wc -l)
-	dir_count=$(find . -type d | wc -l)
-	total_count=$((file_count + dir_count))
-
-	echo "Number of files: $file_count"
-	echo "Number of directories: $dir_count"
-	echo "Total count: $total_count"
-
-	if test -f "features.yml"; then
-	    if [ "$total_count" -ne 100 ]; then
-	    	echo "Total count matches 100."
-		fi
-	else
-	    if [ "$total_count" -ne 99 ]; then
-	    	echo "File number has changed, update the following command in the script below to reflect changes $mv_command"
-		fi
-	fi
-
-fi
+#if [[ "$for_testing" == "y" ]]; then
+#	mv_command="mv !(tls|assets|rbac|standard|requirements.txt|setup.py|utils.py|__init__.py|siftsmall|service_configs) tls/"
+#	file_count=$(find . -type f | wc -l)
+#	dir_count=$(find . -type d | wc -l)
+#	total_count=$((file_count + dir_count))
+#
+#	echo "Number of files: $file_count"
+#	echo "Number of directories: $dir_count"
+#	echo "Total count: $total_count"
+#
+#	if test -f "features.yml"; then
+#	    if [ "$total_count" -ne 100 ]; then
+#	    	echo "File number has changed, update the following command in the script below to reflect changes $mv_command"
+#		fi
+#	else
+#	    if [ "$total_count" -ne 99 ]; then
+#	    	echo "File number has changed, update the following command in the script below to reflect changes $mv_command"
+#		fi
+#	fi
+#
+#fi
 
 
 
@@ -180,7 +180,7 @@ echo "host: $host"
 rm -rf tls
 mkdir -p tls
 mkdir -p tls/jwt
-cp assets/aerospike-proximus.yml aerospike-proximus.yml
+cp assets/aerospike-vector-search.yml aerospike-vector-search.yml
 cp assets/aerospike.conf aerospike.conf
 cp assets/features.conf features.conf
 
@@ -251,7 +251,7 @@ if [[ "$tls_maybe" == "y" ]]; then
 		city=${city:-Spearfish}
 		organization=${organization:-Aerospike}
 		unit=${unit:-$Client SDK Team}
-		common_name=${common_name:-aerospike-proximus}
+		common_name=${common_name:-aerospike-vector-search}
 		email=${email:-dpelini@aerospike.com}
 
 		subj="/C=$country/ST=$state/L=$city/O=$organization/OU=$unit/CN=$common_name/emailAddress=$email"
@@ -349,18 +349,18 @@ if [[ "$tls_maybe" == "y" ]]; then
 			security_stanza=$(cat <<EOF
 security:
   auth-token:
-    private-key: /etc/aerospike-proximus/tls/jwt/private_key.pem
-    public-key: /etc/aerospike-proximus/tls/jwt/public_key.pem
+    private-key: /etc/aerospike-vector-search/tls/jwt/private_key.pem
+    public-key: /etc/aerospike-vector-search/tls/jwt/public_key.pem
     token-expiry: 300_000
 EOF
 )
 
-			sed -i '96,100d' "aerospike-proximus.yml"
+			sed -i '96,100d' "aerospike-vector-search.yml"
 
 			echo "$security_stanza" | envsubst >  "assets/security_stanza.txt"
 
 
-			sed -i '95r assets/security_stanza.txt' aerospike-proximus.yml
+			sed -i '95r assets/security_stanza.txt' aerospike-vector-search.yml
 
 		fi
 	fi
@@ -383,12 +383,12 @@ EOF
 tls:
   service-tls:
     trust-store:
-      store-file: /etc/aerospike-proximus/tls/$root_certificate_name.truststore.jks 
-      store-password-file: /etc/aerospike-proximus/tls/storepass
+      store-file: /etc/aerospike-vector-search/tls/$root_certificate_name.truststore.jks 
+      store-password-file: /etc/aerospike-vector-search/tls/storepass
     key-store:
-      store-file: /etc/aerospike-proximus/tls/$server_name.keystore.jks
-      store-password-file: /etc/aerospike-proximus/tls/storepass
-      key-password-file: /etc/aerospike-proximus/tls/keypass
+      store-file: /etc/aerospike-vector-search/tls/$server_name.keystore.jks
+      store-password-file: /etc/aerospike-vector-search/tls/storepass
+      key-password-file: /etc/aerospike-vector-search/tls/keypass
     mutual-auth: true
     # Client certificate subject names that are allowed
     allowed-peer-names:
@@ -396,11 +396,11 @@ tls:
 EOF
 )
 
-		sed -i '15,27d' "aerospike-proximus.yml"
+		sed -i '15,27d' "aerospike-vector-search.yml"
 
 		echo "$tls_stanza" | envsubst > "assets/tls_stanza.txt"
 
-		sed -i '14r assets/tls_stanza.txt' aerospike-proximus.yml
+		sed -i '14r assets/tls_stanza.txt' aerospike-vector-search.yml
 
 		if [[ "$port" == "" ]]; then
 			read -p "Specify a port address:" port
@@ -421,11 +421,11 @@ EOF
 EOF
 )
 
-		sed -i '56,65d' "aerospike-proximus.yml"
+		sed -i '56,65d' "aerospike-vector-search.yml"
 
 		echo "$service_stanza" | envsubst > "assets/service_stanza.txt"
 
-		sed -i '55r assets/service_stanza.txt' aerospike-proximus.yml
+		sed -i '55r assets/service_stanza.txt' aerospike-vector-search.yml
 		if [[ "$host" == "" ]]; then
 			read -p "Specify a host address:" host
 
@@ -441,23 +441,23 @@ EOF
 tls:
   service-tls:
     trust-store:
-      store-file: /etc/aerospike-proximus/tls/$root_certificate_name.truststore.jks 
-      store-password-file: /etc/aerospike-proximus/tls/storepass
+      store-file: /etc/aerospike-vector-search/tls/$root_certificate_name.truststore.jks 
+      store-password-file: /etc/aerospike-vector-search/tls/storepass
     key-store:
-      store-file: /etc/aerospike-proximus/tls/child.keystore.jks
-      store-password-file: /etc/aerospike-proximus/tls/storepass
-      key-password-file: /etc/aerospike-proximus/tls/keypass
+      store-file: /etc/aerospike-vector-search/tls/child.keystore.jks
+      store-password-file: /etc/aerospike-vector-search/tls/storepass
+      key-password-file: /etc/aerospike-vector-search/tls/keypass
     #mutual-auth: true
     # Client certificate subject names that are allowed
     #allowed-peer-names:
     #  - child
 EOF
 )
-		sed -i '15,27d' "aerospike-proximus.yml"
+		sed -i '15,27d' "aerospike-vector-search.yml"
 
 		echo "$tls_stanza" | envsubst > "assets/tls_stanza.txt"
 
-		sed -i '14r assets/tls_stanza.txt' aerospike-proximus.yml
+		sed -i '14r assets/tls_stanza.txt' aerospike-vector-search.yml
 		if [[ "$port" == "" ]]; then
 			read -p "Specify a port address:" port
 
@@ -480,10 +480,10 @@ EOF
 EOF
 )
 
-		sed -i '56,65d' "aerospike-proximus.yml"
+		sed -i '56,65d' "aerospike-vector-search.yml"
 
 		echo "$service_stanza" | envsubst >  "assets/service_stanza.txt"
-		sed -i '55r assets/service_stanza.txt' aerospike-proximus.yml
+		sed -i '55r assets/service_stanza.txt' aerospike-vector-search.yml
 
 
 
@@ -503,7 +503,7 @@ mv !(tls|assets|rbac|standard|requirements.txt|setup.py|utils.py|__init__.py|sif
 
 mv tls/gen.sh gen.sh
 
-mv tls/aerospike-proximus.yml aerospike-proximus.yml
+mv tls/aerospike-vector-search.yml aerospike-vector-search.yml
 
 mv tls/aerospike.conf aerospike.conf
 

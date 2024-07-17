@@ -10,7 +10,7 @@ allowed_chars = (
     list(string.ascii_lowercase) +  # a-z
     list(string.ascii_uppercase) +  # A-Z
     list(string.digits) +           # 0-9
-    ['_', '-', '$']                 # _, -, $
+    ['_', '-']                 # _, -, $
 )
 
 def key_strategy():

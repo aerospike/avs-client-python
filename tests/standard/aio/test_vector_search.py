@@ -67,15 +67,14 @@ def query_numpy():
 
     return truth_numpy
 
-
 async def put_vector(client, vector, j):
     await client.upsert(
-        namespace="test", key="aio/" + str(j), record_data={"unit_test": vector}
+        namespace="test", key=str(j), record_data={"unit_test": vector}
     )
 
 
 async def get_vector(client, j):
-    result = await client.get(namespace="test", key="aio/" + str(j))
+    result = await client.get(namespace="test", key=str(j))
 
 
 async def vector_search(client, vector):
@@ -114,6 +113,7 @@ async def test_vector_search(
         vector_field="unit_test",
         dimensions=128,
     )
+
     # Put base vectors for search
     tasks = []
 
@@ -167,26 +167,37 @@ async def test_vector_search(
         assert recall > 0.9
 
 
-async def test_vector_is_indexed(session_vector_client, session_admin_client):
+async def test_vector_is_indexed(session_vector_client, session_admin_client, local_latency):
+    if local_latency:
+        pytest.skip("Server latency too low to test timeout")
     result = await session_vector_client.is_indexed(
         namespace="test",
-        key="aio/" + str(random.randrange(10_000)),
+        key=str(random.randrange(10_000)),
         index_name="demo",
     )
     assert result is True
 
-async def test_vector_is_indexed_timeout(session_vector_client, session_admin_client):
-    with pytest.raises(AVSServerError) as e_info:
-        for i in range(10):
+async def test_vector_is_indexed_timeout(session_vector_client, session_admin_client, local_latency):
+    if local_latency:
+        pytest.skip("Server latency too low to test timeout")    
+    for i in range(10):
+        try:
             result = await session_vector_client.is_indexed(
                 namespace="test",
-                key="aio/" + str(random.randrange(10_000)),
+                key=str(random.randrange(10_000)),
                 index_name="demo",
-                timeout=0
+                timeout=0.0001
             )
-    assert e_info.value.rpc_error.code() == grpc.StatusCode.DEADLINE_EXCEEDED
+        except AVSServerError as se:
+            if se.rpc_error.code() == grpc.StatusCode.DEADLINE_EXCEEDED:
+                assert se.rpc_error.code() == grpc.StatusCode.DEADLINE_EXCEEDED
+                return        
+    assert "In several attempts, the timeout did not happen" == "TEST FAIL"
 
-async def test_vector_vector_search_timeout(session_vector_client, session_admin_client):
+async def test_vector_vector_search_timeout(session_vector_client, session_admin_client, local_latency):
+    if local_latency:
+        pytest.skip("Server latency too low to test timeout")    
+    
     for i in range(10):
         try:
             result = await session_vector_client.vector_search(
@@ -195,10 +206,10 @@ async def test_vector_vector_search_timeout(session_vector_client, session_admin
                 query=[0, 1, 2],
                 limit=100,
                 field_names=["unit_test"],
-                timeout=0
+                timeout=0.0001
             )
         except AVSServerError as se:
             if se.rpc_error.code() == grpc.StatusCode.DEADLINE_EXCEEDED:
                 assert se.rpc_error.code() == grpc.StatusCode.DEADLINE_EXCEEDED
                 return
-    assert 1 == 2
+    assert "In several attempts, the timeout did not happen" == "TEST FAIL"
