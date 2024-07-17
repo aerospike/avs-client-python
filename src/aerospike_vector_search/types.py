@@ -321,8 +321,11 @@ class IndexStorage(object):
 
     def _to_pb2(self):
         index_storage = types_pb2.IndexStorage()
-        index_storage.namespace = self.namespace
-        index_storage.set = self.set_name
+        if self.namespace:
+
+            index_storage.namespace = self.namespace
+        if self.set_name:
+            index_storage.set = self.set_name
         return index_storage
 
 
