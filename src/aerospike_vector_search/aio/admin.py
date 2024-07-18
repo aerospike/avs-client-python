@@ -427,7 +427,7 @@ class Client(BaseClient):
                 # Index has been created
                 return
             except grpc.RpcError as e:
-                if e.code() in (grpc.StatusCode.UNAVAILABLE, grpc.StatusCode.NOT_FOUND):
+                if e.code() == grpc.StatusCode.NOT_FOUND:
 
                     # Wait for some more time.
                     await asyncio.sleep(wait_interval)
@@ -461,7 +461,7 @@ class Client(BaseClient):
                 # Wait for some more time.
                 await asyncio.sleep(wait_interval)
             except grpc.RpcError as e:
-                if e.code() in (grpc.StatusCode.UNAVAILABLE, grpc.StatusCode.NOT_FOUND):
+                if e.code() == grpc.StatusCode.NOT_FOUND:
                     logger.debug("Index deleted succesfully")
                     # Index has been created
                     return

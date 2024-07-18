@@ -437,11 +437,9 @@ class Client(BaseClient):
                 index_status = await index_stub.GetStatus(index_completion_request, credentials=self._channel_provider._token)
 
             except grpc.RpcError as e:
-                if e.code() == grpc.StatusCode.UNAVAILABLE:
-                    continue
-                else:
-                    logger.error("Failed with error: %s", e)
-                    raise types.AVSServerError(rpc_error=e)
+
+                logger.error("Failed with error: %s", e)
+                raise types.AVSServerError(rpc_error=e)
             if self._check_completion_condition(
                 start_time, timeout, index_status, unmerged_record_initialized
             ):
