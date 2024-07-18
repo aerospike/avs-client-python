@@ -152,7 +152,15 @@ class ChannelProvider(base_channel_provider.BaseChannelProvider):
 
                 await asyncio.gather(*tasks)
 
+            #if not self.current_server_version:
             self._tend_initalized.set()
+
+                #stub = vector_db_pb2_grpc.AboutServiceStub(self.get_channel())
+                #about_request = vector_db_pb2.AboutRequest()
+
+                #self.current_server_version = await stub.Get(about_request, credentials=self._token)
+
+                #self.client_server_compatible = self.verify_compatibile_server()
 
             # TODO: check tend interval.
             await asyncio.sleep(1)

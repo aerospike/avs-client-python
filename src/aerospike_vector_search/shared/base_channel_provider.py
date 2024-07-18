@@ -73,6 +73,8 @@ class BaseChannelProvider(object):
         ]
         self._closed: bool = False
         self._cluster_id: int = 0
+        self.current_server_version = ""
+        self.minimum_required_version = "0.9.0"
 
     def get_channel(self) -> Union[grpc.aio.Channel, grpc.Channel]:
         if not self._is_loadbalancer:
@@ -194,3 +196,9 @@ class BaseChannelProvider(object):
         self._ttl_start = payload['exp']
 
         self._token = grpc.access_token_call_credentials(token)
+
+    def verify_compatibile_server() -> bool:
+        def parse_version(v: str):
+            return tuple(map(int, v.split('.')))
+    
+        return parse_version(self.server_current_version) >= parse_version(self.minimum_required_version)
