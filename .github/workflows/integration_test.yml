@@ -218,7 +218,7 @@ jobs:
 
         sleep 5
 
-        python -m pytest standard/sync -s --host child --port 5000 --root_certificate tls/root.crt  --local_latency -vs
+        python -m pytest standard/sync -s --host child --port 5000 --root_certificate tls/root.crt --username admin --password admin --local_latency -vs
 
 
       working-directory: tests
@@ -371,7 +371,7 @@ jobs:
 
         sleep 5
 
-        python -m pytest standard/sync -s --host brawn --port 5000 --root_certificate tls/root.crt --private_key tls/brawn.key.pem --certificate_chain tls/brawn.crt --username admin --password admin --local_latency -vs
+        python -m pytest standard/sync -s --host brawn --port 5000 --root_certificate tls/root.crt --private_key tls/brawn.key.pem --certificate_chain tls/brawn.crt  --local_latency -vs
 
 
 
@@ -582,5 +582,5 @@ jobs:
 
 
         docker ps
-        python -m pytest standard/sync -s --host 0.0.0.0 --port 5000 --local_latency
+        python -m pytest standard/sync -s --host 34.42.225.207 --port 5000 --local_latency
       working-directory: tests
