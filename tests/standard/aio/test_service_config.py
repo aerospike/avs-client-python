@@ -23,8 +23,8 @@ class service_config_parse_test_case:
         ),
     ],
 )
-async def test_admin_client_service_config_parse(host, port, test_case):
-    with AdminClient(
+async def test_admin_client_service_config_parse(host, port,  username, password, root_certificate, certificate_chain, private_key, test_case):
+    async with AdminClient(
         seeds=types.HostPort(host=host, port=port),
         username=username,
         password=password,
@@ -92,7 +92,7 @@ def calculate_expected_time(max_attempts, initial_backoff, backoff_multiplier, m
     ],
 )
 async def test_admin_client_service_config_retries(host, port,  username, password, root_certificate, certificate_chain, private_key, test_case):
-    with AdminClient(
+    async with AdminClient(
         seeds=types.HostPort(host=host, port=port),
         username=username,
         password=password,
@@ -113,7 +113,7 @@ async def test_admin_client_service_config_retries(host, port,  username, passwo
         expected_time = calculate_expected_time(test_case.max_attempts, test_case.initial_backoff, test_case.backoff_multiplier, test_case.max_backoff, test_case.retryable_status_codes)
         start_time = time.time()
 
-        with pytest.raises(AVSServerError) as e_info:
+        async with pytest.raises(AVSServerError) as e_info:
             await client.index_create(
                 namespace=test_case.namespace,
                 name=test_case.name,
@@ -140,7 +140,7 @@ async def test_admin_client_service_config_retries(host, port,  username, passwo
     ],
 )
 async def test_admin_client_service_config_initial_backoff(host, port, username, password, root_certificate, certificate_chain, private_key, test_case):
-    with AdminClient(
+    async with AdminClient(
         seeds=types.HostPort(host=host, port=port),
         username=username,
         password=password,
@@ -163,7 +163,7 @@ async def test_admin_client_service_config_initial_backoff(host, port, username,
         expected_time = calculate_expected_time(test_case.max_attempts, test_case.initial_backoff, test_case.backoff_multiplier, test_case.max_backoff, test_case.retryable_status_codes)
         start_time = time.time()
 
-        with pytest.raises(AVSServerError) as e_info:
+        async with pytest.raises(AVSServerError) as e_info:
             await client.index_create(
                 namespace=test_case.namespace,
                 name=test_case.name,
@@ -197,7 +197,7 @@ async def test_admin_client_service_config_initial_backoff(host, port, username,
     ],
 )
 async def test_admin_client_service_config_max_backoff(host, port, username, password, root_certificate, certificate_chain, private_key, test_case):
-    with AdminClient(
+    async with AdminClient(
         seeds=types.HostPort(host=host, port=port),
         username=username,
         password=password,
@@ -219,7 +219,7 @@ async def test_admin_client_service_config_max_backoff(host, port, username, pas
         expected_time = calculate_expected_time(test_case.max_attempts, test_case.initial_backoff, test_case.backoff_multiplier, test_case.max_backoff, test_case.retryable_status_codes)
         start_time = time.time()
 
-        with pytest.raises(AVSServerError) as e_info:
+        async with pytest.raises(AVSServerError) as e_info:
             await client.index_create(
                 namespace=test_case.namespace,
                 name=test_case.name,
@@ -246,7 +246,7 @@ async def test_admin_client_service_config_max_backoff(host, port, username, pas
     ],
 )
 async def test_admin_client_service_config_backoff_multiplier(host, port, username, password, root_certificate, certificate_chain, private_key, test_case):
-    with AdminClient(
+    async with AdminClient(
         seeds=types.HostPort(host=host, port=port),
         username=username,
         password=password,
@@ -270,7 +270,7 @@ async def test_admin_client_service_config_backoff_multiplier(host, port, userna
         expected_time = calculate_expected_time(test_case.max_attempts, test_case.initial_backoff, test_case.backoff_multiplier, test_case.max_backoff, test_case.retryable_status_codes)
         start_time = time.time()
 
-        with pytest.raises(AVSServerError) as e_info:
+        async with pytest.raises(AVSServerError) as e_info:
             await client.index_create(
                 namespace=test_case.namespace,
                 name=test_case.name,
@@ -297,7 +297,7 @@ async def test_admin_client_service_config_backoff_multiplier(host, port, userna
     ],
 )
 async def test_admin_client_service_config_retryable_status_codes(host, port, username, password, root_certificate, certificate_chain, private_key, test_case):
-    with AdminClient(
+    async with AdminClient(
         seeds=types.HostPort(host=host, port=port),
         username=username,
         password=password,
@@ -310,7 +310,7 @@ async def test_admin_client_service_config_retryable_status_codes(host, port, us
         expected_time = calculate_expected_time(test_case.max_attempts, test_case.initial_backoff, test_case.backoff_multiplier, test_case.max_backoff, test_case.retryable_status_codes)
         start_time = time.time()
         
-        with pytest.raises(AVSServerError) as e_info:
+        async with pytest.raises(AVSServerError) as e_info:
             await client.index_get_status(
                 namespace=test_case.namespace,
                 name=test_case.name,

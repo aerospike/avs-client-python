@@ -297,7 +297,7 @@ jobs:
 
 
         docker ps
-        python -m pytest rbac -s --host child --port 5000 --root_certificate tls/root.crt  --local_latency -vs
+        python -m pytest rbac -s --host child --port 5000 --root_certificate tls/root.crt -vs
 
         docker logs aerospike-vector-search
         docker logs aerospike
