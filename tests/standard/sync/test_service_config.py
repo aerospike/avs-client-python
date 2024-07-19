@@ -23,7 +23,7 @@ class service_config_parse_test_case:
         ),
     ],
 )
-def test_admin_client_service_config_parse(host, port, test_case):
+def test_admin_client_service_config_parse(host, port,  username, password, root_certificate, certificate_chain, private_key, test_case):
     client = AdminClient(
         seeds=types.HostPort(host=host, port=port),
         service_config_path=test_case.service_config_path,

@@ -3,7 +3,7 @@
 
     {
       "name": [{}],
-      "timeout": "1s"
+      "timeout": "11s"
     },
     {
       "name": [
@@ -11,7 +11,7 @@
           "service": "Transact"
         }
       ],
-      "timeout": "2s"
+      "timeout": "12s"
     },
     {
       "name": [
@@ -20,7 +20,7 @@
           "method": "Create"
         }
       ],
-      "timeout": "3s"
+      "timeout": "13s"
     }
 
   ]
