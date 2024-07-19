@@ -119,6 +119,15 @@ class ChannelProvider(base_channel_provider.BaseChannelProvider):
                             "While tending, failed to close GRPC channel:" + str(e)
                         )
 
+        if not self.client_server_compatible:
+
+            stub = vector_db_pb2_grpc.AboutServiceStub(self.get_channel())
+            about_request = vector_db_pb2.AboutRequest()
+
+            self.current_server_version =  stub.Get(about_request, credentials=self._token).version
+            self.client_server_compatible = self.verify_compatibile_server()
+            if not self.client_server_compatible:
+                raise types.AVSClientError(message="This AVS Client version is only compatbile with AVS Servers above the following version number: " + self.minimum_required_version)
 
         self._timer = threading.Timer(1, self._tend).start()
 

@@ -96,7 +96,7 @@ def vector_search_ef_80(client, vector):
         query=vector,
         limit=100,
         field_names=["unit_test"],
-        search_params=types.HnswSearchParams(ef=80)
+        search_params=types.HnswSearchParams(ef=80),
     )
     return result
 

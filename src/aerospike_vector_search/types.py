@@ -353,3 +353,7 @@ class AVSServerError(AVSError):
 
     def __init__(self, *, rpc_error) -> None:
         self.rpc_error = rpc_error
+
+class AVSClientError(AVSError):
+    def __init__(self, *, message) -> None:
+        self.message = message

@@ -91,7 +91,9 @@ class Client(BaseClient):
             It waits for up to 100,000 seconds for the index creation to complete.
         """
 
-        await self._channel_provider._is_ready()
+        if not self._channel_provider.client_server_compatible:
+            await self._channel_provider._is_ready()
+
 
         (index_stub, index_create_request) = self._prepare_index_create(
             namespace,
@@ -140,7 +142,8 @@ class Client(BaseClient):
             This method drops an index with the specified parameters and waits for the index deletion to complete.
             It waits for up to 100,000 seconds for the index deletion to complete.
         """
-        await self._channel_provider._is_ready()
+        if not self._channel_provider.client_server_compatible:
+            await self._channel_provider._is_ready()
 
         (index_stub, index_drop_request) = self._prepare_index_drop(
             namespace, name, timeout, logger
@@ -174,7 +177,8 @@ class Client(BaseClient):
             grpc.RpcError: Raised if an error occurs during the RPC communication with the server while attempting to create the index.
             This error could occur due to various reasons such as network issues, server-side failures, or invalid request parameters.
         """
-        await self._channel_provider._is_ready()
+        if not self._channel_provider.client_server_compatible:
+            await self._channel_provider._is_ready()
 
         (index_stub, index_list_request) = self._prepare_index_list(timeout, logger)
 
@@ -207,7 +211,8 @@ class Client(BaseClient):
             This error could occur due to various reasons such as network issues, server-side failures, or invalid request parameters.
 
         """
-        await self._channel_provider._is_ready()
+        if not self._channel_provider.client_server_compatible:
+            await self._channel_provider._is_ready()
 
         (index_stub, index_get_request) = self._prepare_index_get(
             namespace, name, timeout, logger
@@ -245,7 +250,8 @@ class Client(BaseClient):
 
             Warning: This API is subject to change.
         """
-        await self._channel_provider._is_ready()
+        if not self._channel_provider.client_server_compatible:
+            await self._channel_provider._is_ready()
 
         (index_stub, index_get_status_request) = self._prepare_index_get_status(
             namespace, name, timeout, logger
@@ -264,7 +270,8 @@ class Client(BaseClient):
         return self._respond_index_get_status(response)
 
     async def add_user(self, *, username: str, password: str, roles: list[str], timeout: Optional[int] = None) -> int:
-        await self._channel_provider._is_ready()
+        if not self._channel_provider.client_server_compatible:
+            await self._channel_provider._is_ready()
 
         (user_admin_stub, add_user_request) = self._prepare_add_user(
             username, password, roles, timeout, logger
@@ -281,7 +288,8 @@ class Client(BaseClient):
             raise types.AVSServerError(rpc_error=e)
 
     async def update_credentials(self, *, username: str, password: str, timeout: Optional[int] = None) -> int:
-        await self._channel_provider._is_ready()
+        if not self._channel_provider.client_server_compatible:
+            await self._channel_provider._is_ready()
 
         (user_admin_stub, update_credentials_request) = self._prepare_update_credentials(
             username, password, timeout, logger
@@ -298,7 +306,8 @@ class Client(BaseClient):
             raise types.AVSServerError(rpc_error=e)
 
     async def drop_user(self, *, username: str, timeout: Optional[int] = None) -> int:
-        await self._channel_provider._is_ready()
+        if not self._channel_provider.client_server_compatible:
+            await self._channel_provider._is_ready()
 
         (user_admin_stub, drop_user_request) = self._prepare_drop_user(
             username, timeout, logger
@@ -315,7 +324,8 @@ class Client(BaseClient):
             raise types.AVSServerError(rpc_error=e)
 
     async def get_user(self, *, username: str, timeout: Optional[int] = None) -> int:
-        await self._channel_provider._is_ready()
+        if not self._channel_provider.client_server_compatible:
+            await self._channel_provider._is_ready()
 
         (user_admin_stub, get_user_request) = self._prepare_get_user(
             username, timeout, logger
@@ -334,7 +344,8 @@ class Client(BaseClient):
         return self._respond_get_user(response)
 
     async def list_users(self, timeout: Optional[int] = None) -> int:
-        await self._channel_provider._is_ready()
+        if not self._channel_provider.client_server_compatible:
+            await self._channel_provider._is_ready()
 
         (user_admin_stub, list_users_request) = self._prepare_list_users(
             timeout, logger
@@ -352,7 +363,8 @@ class Client(BaseClient):
         return self._respond_list_users(response)
 
     async def grant_roles(self, *, username: str, roles: list[str], timeout: Optional[int] = None) -> int:
-        await self._channel_provider._is_ready()
+        if not self._channel_provider.client_server_compatible:
+            await self._channel_provider._is_ready()
 
         (user_admin_stub, grant_roles_request) = self._prepare_grant_roles(
             username, roles, timeout, logger
@@ -369,7 +381,8 @@ class Client(BaseClient):
             raise types.AVSServerError(rpc_error=e)
 
     async def revoke_roles(self, *, username: str, roles: list[str], timeout: Optional[int] = None) -> int:
-        await self._channel_provider._is_ready()
+        if not self._channel_provider.client_server_compatible:
+            await self._channel_provider._is_ready()
 
         (user_admin_stub, revoke_roles_request) = self._prepare_revoke_roles(
             username, roles, timeout, logger
@@ -386,7 +399,8 @@ class Client(BaseClient):
             raise types.AVSServerError(rpc_error=e)
 
     async def list_roles(self, timeout: Optional[int] = None) -> int:
-        await self._channel_provider._is_ready()
+        if not self._channel_provider.client_server_compatible:
+            await self._channel_provider._is_ready()
 
         (user_admin_stub, list_roles_request) = self._prepare_list_roles(
             timeout, logger
@@ -414,7 +428,8 @@ class Client(BaseClient):
         """
         Wait for the index to be created.
         """
-        await self._channel_provider._is_ready()
+        if not self._channel_provider.client_server_compatible:
+            await self._channel_provider._is_ready()
 
         (index_stub, wait_interval, start_time, _, _, index_creation_request) = (
             self._prepare_wait_for_index_waiting(namespace, name, wait_interval)
@@ -446,7 +461,8 @@ class Client(BaseClient):
         """
         Wait for the index to be deleted.
         """
-        await self._channel_provider._is_ready()
+        if not self._channel_provider.client_server_compatible:
+            await self._channel_provider._is_ready()
 
         # Wait interval between polling
         (index_stub, wait_interval, start_time, _, _, index_deletion_request) = (

@@ -81,7 +81,8 @@ class Client(BaseClient):
 
         """
 
-        await self._channel_provider._is_ready()
+        if not self._channel_provider.client_server_compatible:
+            await self._channel_provider._is_ready()
 
         (transact_stub, insert_request) = self._prepare_insert(
             namespace, key, record_data, set_name, ignore_mem_queue_full, timeout, logger
@@ -125,7 +126,8 @@ class Client(BaseClient):
 
         """
 
-        await self._channel_provider._is_ready()
+        if not self._channel_provider.client_server_compatible:
+            await self._channel_provider._is_ready()
 
         (transact_stub, update_request) = self._prepare_update(
             namespace, key, record_data, set_name, ignore_mem_queue_full, timeout, logger
@@ -169,7 +171,8 @@ class Client(BaseClient):
 
         """
 
-        await self._channel_provider._is_ready()
+        if not self._channel_provider.client_server_compatible:
+            await self._channel_provider._is_ready()
 
         (transact_stub, upsert_request) = self._prepare_upsert(
             namespace, key, record_data, set_name, ignore_mem_queue_full, timeout, logger
@@ -212,7 +215,8 @@ class Client(BaseClient):
             This error could occur due to various reasons such as network issues, server-side failures, or invalid request parameters.
         """
 
-        await self._channel_provider._is_ready()
+        if not self._channel_provider.client_server_compatible:
+            await self._channel_provider._is_ready()
 
         (transact_stub, key, get_request) = self._prepare_get(
             namespace, key, field_names, set_name, timeout, logger
@@ -249,7 +253,8 @@ class Client(BaseClient):
             This error could occur due to various reasons such as network issues, server-side failures, or invalid request parameters.
         """
 
-        await self._channel_provider._is_ready()
+        if not self._channel_provider.client_server_compatible:
+            await self._channel_provider._is_ready()
 
         (transact_stub, exists_request) = self._prepare_exists(
             namespace, key, set_name, timeout, logger
@@ -283,7 +288,8 @@ class Client(BaseClient):
             This error could occur due to various reasons such as network issues, server-side failures, or invalid request parameters.
         """
 
-        await self._channel_provider._is_ready()
+        if not self._channel_provider.client_server_compatible:
+            await self._channel_provider._is_ready()
 
         (transact_stub, delete_request) = self._prepare_delete(
             namespace, key, set_name, timeout, logger
@@ -328,7 +334,8 @@ class Client(BaseClient):
             This error could occur due to various reasons such as network issues, server-side failures, or invalid request parameters.
         """
 
-        await self._channel_provider._is_ready()
+        if not self._channel_provider.client_server_compatible:
+            await self._channel_provider._is_ready()
 
         (transact_stub, is_indexed_request) = self._prepare_is_indexed(
             namespace, key, index_name, index_namespace, set_name, timeout, logger
@@ -376,7 +383,8 @@ class Client(BaseClient):
             grpc.RpcError: Raised if an error occurs during the RPC communication with the server while attempting to create the index.
             This error could occur due to various reasons such as network issues, server-side failures, or invalid request parameters.
         """
-        await self._channel_provider._is_ready()
+        if not self._channel_provider.client_server_compatible:
+            await self._channel_provider._is_ready()
 
         (transact_stub, vector_search_request) = self._prepare_vector_search(
             namespace, index_name, query, limit, search_params, field_names, timeout, logger
@@ -421,7 +429,8 @@ class Client(BaseClient):
             The function polls the index status with a wait interval of 10 seconds until either
             the timeout is reached or the index has no pending index update operations.
         """
-        await self._channel_provider._is_ready()
+        if not self._channel_provider.client_server_compatible:
+            await self._channel_provider._is_ready()
 
         # Wait interval between polling
         (

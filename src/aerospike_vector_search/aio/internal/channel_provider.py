@@ -61,6 +61,9 @@ class ChannelProvider(base_channel_provider.BaseChannelProvider):
     async def _is_ready(self):
         await self._tend_initalized.wait()
 
+        if not self.client_server_compatible:
+            raise types.AVSClientError(message="This AVS Client version is only compatbile with AVS Servers above the following version number: " + self.minimum_required_version)
+
     async def _tend(self):
         try:
             (temp_endpoints, update_endpoints_stub, channels, end_tend) = self.init_tend()
@@ -77,7 +80,7 @@ class ChannelProvider(base_channel_provider.BaseChannelProvider):
 
             stubs = []
             tasks = []
-
+            update_endpoints_stubs = []
             for channel in channels:
 
                 stub = vector_db_pb2_grpc.ClusterInfoServiceStub(channel)
@@ -98,13 +101,13 @@ class ChannelProvider(base_channel_provider.BaseChannelProvider):
 
             for index, value in enumerate(new_cluster_ids):
                 if self.check_cluster_id(value.id):
-                    update_endpoints_stub = stubs[index]
-                    break
+                    update_endpoints_stubs.append(stubs[index])
+        
 
 
-            if update_endpoints_stub:
+            for stub in update_endpoints_stubs:
                 try:
-                    response = await update_endpoints_stub.GetClusterEndpoints(
+                    response = await stub.GetClusterEndpoints(
                         vector_db_pb2.ClusterNodeEndpointsRequest(
                             listenerName=self.listener_name
                         ),
@@ -118,8 +121,8 @@ class ChannelProvider(base_channel_provider.BaseChannelProvider):
                     )
 
                 tasks = []
-                add_new_channel_info = []
 
+            if update_endpoints_stubs:
                 for node, newEndpoints in temp_endpoints.items():
                     (channel_endpoints, add_new_channel) = self.check_for_new_endpoints(
                         node, newEndpoints
@@ -133,13 +136,10 @@ class ChannelProvider(base_channel_provider.BaseChannelProvider):
                             logger.debug(
                                 "While tending, failed to close GRPC channel:" + str(e)
                             )
-                        add_new_channel_info.append((node, newEndpoints))
-
-                for node, newEndpoints in add_new_channel_info:
-                    self.add_new_channel_to_node_channels(node, newEndpoints)
+                        self.add_new_channel_to_node_channels(node, newEndpoints)
 
                 for node, channel_endpoints in list(self._node_channels.items()):
-                    if not self._node_channels.get(node):
+                    if not temp_endpoints.get(node):
                         try:
                             # TODO: Wait for all calls to drain
                             tasks.append(channel_endpoints.channel.close())
@@ -152,20 +152,22 @@ class ChannelProvider(base_channel_provider.BaseChannelProvider):
 
                 await asyncio.gather(*tasks)
 
-            #if not self.current_server_version:
-            self._tend_initalized.set()
+            if not self.client_server_compatible:
 
-                #stub = vector_db_pb2_grpc.AboutServiceStub(self.get_channel())
-                #about_request = vector_db_pb2.AboutRequest()
+                stub = vector_db_pb2_grpc.AboutServiceStub(self.get_channel())
+                about_request = vector_db_pb2.AboutRequest()
 
-                #self.current_server_version = await stub.Get(about_request, credentials=self._token)
+                self.current_server_version = (await stub.Get(about_request, credentials=self._token)).version
+                self.client_server_compatible = self.verify_compatibile_server()
 
-                #self.client_server_compatible = self.verify_compatibile_server()
+
+                self._tend_initalized.set() 
 
             # TODO: check tend interval.
             await asyncio.sleep(1)
             self._task = asyncio.create_task(self._tend())
         except Exception as e:
+
             print(e)
 
 
