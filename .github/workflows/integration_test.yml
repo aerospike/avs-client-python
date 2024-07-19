@@ -68,7 +68,7 @@ jobs:
         sleep 5
 
         docker ps
-        python -m pytest standard -s --host 0.0.0.0 --port 5000
+        python -m pytest standard -s --host 0.0.0.0 --port 5000 --local_latency
       working-directory: tests
 
   test-tls:
@@ -136,7 +136,7 @@ jobs:
     - name: Run unit tests
       run: |
 
-        docker run -d --name aerospike-vector-search --network=host -p 5000:5000   -v ./aerospike-vector-search.yml:/etc/aerospike-vector-search/aerospike-vector-search.yml   -v ./features.conf:/etc/aerospike-vector-search/features.conf   -v ./tls:/etc/aerospike-vector-search/tls aerospike/aerospike-vector-search:0.9.0
+        docker run -d --name aerospike-vector-search --network=host -p 5000:5000   -v $(pwd):/etc/aerospike-vector-search aerospike/aerospike-vector-search:0.9.0
         docker run -d --name aerospike -p 3000:3000 -v .:/etc/aerospike aerospike/aerospike-server-enterprise:latest 
 
         sleep 5
@@ -145,7 +145,7 @@ jobs:
 
 
         docker ps
-        python -m pytest standard -s --host child --port 5000 --root_certificate tls/root.crt  -vs
+        python -m pytest standard -s --host child --port 5000 --root_certificate tls/root.crt  --local_latency -vs
 
       working-directory: tests
 
@@ -212,7 +212,7 @@ jobs:
     - name: Run unit tests
       run: |
 
-        docker run -d --name aerospike-vector-search --network=host -p 5000:5000   -v ./aerospike-vector-search.yml:/etc/aerospike-vector-search/aerospike-vector-search.yml   -v ./features.conf:/etc/aerospike-vector-search/features.conf   -v ./tls:/etc/aerospike-vector-search/tls aerospike/aerospike-vector-search:0.9.0
+        docker run -d --name aerospike-vector-search --network=host -p 5000:5000  -v $(pwd):/etc/aerospike-vector-search aerospike/aerospike-vector-search:0.9.0
         docker run -d --name aerospike -p 3000:3000 -v .:/etc/aerospike aerospike/aerospike-server-enterprise:latest 
 
         sleep 5
@@ -228,7 +228,7 @@ jobs:
         cat tls/brawn.key.pem 
         cat tls/brawn.crt
 
-        python -m pytest rbac -s --host brawn --port 5000 --root_certificate tls/root.crt --private_key tls/brawn.key.pem --certificate_chain tls/brawn.crt  -vs
+        python -m pytest rbac -s --host brawn --port 5000 --root_certificate tls/root.crt --private_key tls/brawn.key.pem --certificate_chain tls/brawn.crt  --local_latency -vs
 
         docker ps
         docker logs aerospike-vector-search
