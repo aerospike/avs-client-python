@@ -33,7 +33,7 @@ async def test_admin_client_service_config_parse(host, port, test_case):
         private_key=private_key,
         service_config_path=test_case.service_config_path
     ) as client:
-
+        pass
 class service_config_test_case:
     def __init__(
         self,
