@@ -67,7 +67,7 @@ class ChannelProvider(base_channel_provider.BaseChannelProvider):
     async def _tend(self):
         try:
             (temp_endpoints, update_endpoints_stub, channels, end_tend) = self.init_tend()
-
+            print("\n\n\n TEND HERE \n\n\n")
             if self._token:
                 if self._check_if_token_refresh_needed():
                     await self._update_token_and_ttl()
