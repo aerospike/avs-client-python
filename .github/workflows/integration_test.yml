@@ -582,5 +582,5 @@ jobs:
 
 
         docker ps
-        python -m pytest standard/sync -s --host 34.42.225.207 --port 5000 --local_latency
+        python -m pytest standard/sync -s --host  34.122.59.14 --port 5000 --local_latency
       working-directory: tests

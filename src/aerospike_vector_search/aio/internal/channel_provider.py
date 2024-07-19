@@ -160,8 +160,9 @@ class ChannelProvider(base_channel_provider.BaseChannelProvider):
                 self.current_server_version = (await stub.Get(about_request, credentials=self._token)).version
                 self.client_server_compatible = self.verify_compatibile_server()
 
-
+                print("EXECUTED HERE")
                 self._tend_initalized.set() 
+                print(self.client_server_compatible)
 
             # TODO: check tend interval.
             await asyncio.sleep(1)
