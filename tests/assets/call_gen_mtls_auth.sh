@@ -1,6 +1,6 @@
 ./gen.sh \
-    --tls_maybe n \
-    --rbac_maybe n \
+    --tls_maybe y \
+    --rbac_maybe y \
     --root_certificate_maybe y \
     --root_certificate_name root \
     --specify_details_maybe n \
@@ -14,3 +14,5 @@
     --port 5000 \
     --host 0.0.0.0 \
     --for_testing y
+
+

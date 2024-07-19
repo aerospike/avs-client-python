@@ -1,6 +1,6 @@
 ./gen.sh \
-    --tls_maybe n \
-    --rbac_maybe n \
+    --tls_maybe y \
+    --rbac_maybe y \
     --root_certificate_maybe y \
     --root_certificate_name root \
     --specify_details_maybe n \
@@ -8,7 +8,7 @@
     --password citrusstore \
     --key_pair_maybe y \
     --key_password citrusstore \
-    --mutual_auth_maybe y \
+    --mutual_auth_maybe n \
     --client_name brawn \
     --server_name brawn \
     --port 5000 \
