@@ -12,7 +12,7 @@ jobs:
     continue-on-error: true
     strategy:
       matrix:
-        python-version: ["3.9", "3.10", "3.11", "3.12", "3.13"]
+        python-version: ["3.9", "3.10", "3.11", "3.12"]
     steps:
       - name: Call reusable setup steps
         uses: ./.github/workflows/reusable-steps.yml
@@ -29,16 +29,13 @@ jobs:
 
     strategy:
       matrix:
-        python-version: ["3.9", "3.10", "3.11", "3.12", "3.13"]
+        python-version: ["3.9", "3.10", "3.11", "3.12"]
 
     steps:
 
     - name: create config
       run: |
         #assets/call_gen_normal.sh
-        cat aerospike-vector-search.yml
-        cat aerospike.conf
-        cat /etc/hosts
 
       working-directory: tests
 
@@ -53,6 +50,11 @@ jobs:
 
         docker ps
         python -m pytest standard -s --host 0.0.0.0 --port 5000 --local_latency
+      working-directory: tests
+
+    - name : NEXT STEP
+      run: |
+        docker ps
       working-directory: tests
 
   test-tls:
@@ -135,7 +137,6 @@ jobs:
     - name: create config
       run: |
         assets/call_gen.sh
-        cat /etc/hosts
       working-directory: tests
 
     - name: Run unit tests

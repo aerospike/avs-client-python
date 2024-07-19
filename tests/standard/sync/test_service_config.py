@@ -26,7 +26,12 @@ class service_config_parse_test_case:
 def test_admin_client_service_config_parse(host, port,  username, password, root_certificate, certificate_chain, private_key, test_case):
     client = AdminClient(
         seeds=types.HostPort(host=host, port=port),
-        service_config_path=test_case.service_config_path,
+        username=username,
+        password=password,
+        root_certificate=root_certificate,
+        certificate_chain=certificate_chain,
+        private_key=private_key,
+        service_config_path=test_case.service_config_path
     )
     client.close()
 
@@ -90,6 +95,11 @@ def calculate_expected_time(max_attempts, initial_backoff, backoff_multiplier, m
 def test_admin_client_service_config_retries(host, port,  username, password, root_certificate, certificate_chain, private_key, test_case):
     client = AdminClient(
         seeds=types.HostPort(host=host, port=port),
+        username=username,
+        password=password,
+        root_certificate=root_certificate,
+        certificate_chain=certificate_chain,
+        private_key=private_key,
         service_config_path=test_case.service_config_path
     )
 
