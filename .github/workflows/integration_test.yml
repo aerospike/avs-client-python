@@ -17,6 +17,9 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
+      - name: list
+        run: |
+          ls ./.github/workflows/reusable-steps.yml
       - name: Call reusable setup steps
         uses: ./.github/workflows/reusable-steps.yml
         with:
