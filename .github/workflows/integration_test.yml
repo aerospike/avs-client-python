@@ -22,7 +22,7 @@ jobs:
 
   test-normal:
     runs-on: ubuntu-24.04
-    needs: setup-normal
+    needs: setup
 
     continue-on-error: true
     
@@ -59,7 +59,7 @@ jobs:
 
   test-tls:
     runs-on: ubuntu-24.04
-    needs: setup-normal
+    needs: setup
 
     continue-on-error: true
 
@@ -111,7 +111,7 @@ jobs:
   test-tls-auth:
     runs-on: ubuntu-24.04
 
-    needs: setup-normal
+    needs: setup
 
     continue-on-error: true
 
