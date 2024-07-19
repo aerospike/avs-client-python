@@ -144,7 +144,7 @@ jobs:
 
 
         docker ps
-        python -m pytest standard -s --host child --port 5000 --root_certificate tls/root.crt  --local_latency -vs
+        python -m pytest standard/sync -s --host child --port 5000 --root_certificate tls/root.crt  --local_latency -vs
 
         docker logs aerospike-vector-search
         docker logs aerospike
