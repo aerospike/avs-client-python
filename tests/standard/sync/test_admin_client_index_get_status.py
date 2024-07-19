@@ -12,14 +12,16 @@ import grpc
 @given(random_name=index_strategy())
 @settings(max_examples=5, deadline=1000)
 def test_index_get_status(session_admin_client, empty_test_case, random_name):
-    
-    session_admin_client.index_create(
-        namespace="test",
-        name=random_name,
-        vector_field="science",
-        dimensions=1024,
-    )
-
+    try:
+        session_admin_client.index_create(
+            namespace="test",
+            name=random_name,
+            vector_field="science",
+            dimensions=1024,
+        )
+    except AVSServerError as se:
+        if se.rpc_error.code() != grpc.StatusCode.ALREADY_EXISTS:
+            raise se
     result = session_admin_client.index_get_status(
         namespace="test", name=random_name
     )

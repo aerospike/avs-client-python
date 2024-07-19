@@ -318,6 +318,8 @@ def test_admin_client_service_config_retryable_status_codes(host, port,  usernam
                 namespace=test_case.namespace,
                 name=test_case.name,
             )
+        
+        print(e_info.value.rpc_error.code())
 
         end_time = time.time()
         elapsed_time = end_time - start_time
