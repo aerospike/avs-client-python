@@ -52,7 +52,7 @@ jobs:
     - name: create config
       run: |
         #assets/call_gen_normal.sh
-        cat aerospike-proximus.yml
+        cat aerospike-vector-search.yml
         cat aerospike.conf
         cat /etc/hosts
 
@@ -60,7 +60,7 @@ jobs:
 
     - name: Run unit tests
       run: |
-        docker run -d  --network=host -p 5000:5000 --name aerospike-proximus -v ./aerospike-proximus.yml:/etc/aerospike-proximus/aerospike-proximus.yml -v ./features.conf:/etc/aerospike-proximus/features.conf aerospike.jfrog.io/docker/aerospike/aerospike-proximus-private:0.5.0-SNAPSHOT
+        docker run -d  --network=host -p 5000:5000 --name aerospike-vector-search -v ./aerospike-vector-search.yml:/etc/aerospike-vector-search/aerospike-vector-search.yml -v ./features.conf:/etc/aerospike-vector-search/features.conf aerospike/aerospike-vector-search:0.9.0
     
         docker run -d --name aerospike -p 3000:3000 -v .:/etc/aerospike aerospike/aerospike-server-enterprise:latest 
 
@@ -124,7 +124,7 @@ jobs:
     - name: create config
       run: |
         assets/call_gen_tls.sh
-        cat aerospike-proximus.yml
+        cat aerospike-vector-search.yml
         cat aerospike.conf
         cat /etc/hosts
       working-directory: tests
@@ -136,7 +136,7 @@ jobs:
     - name: Run unit tests
       run: |
 
-        docker run -d --name aerospike-proximus --network=host -p 5000:5000   -v ./aerospike-proximus.yml:/etc/aerospike-proximus/aerospike-proximus.yml   -v ./features.conf:/etc/aerospike-proximus/features.conf   -v ./tls:/etc/aerospike-proximus/tls aerospike.jfrog.io/docker/aerospike/aerospike-proximus-private:0.5.0-SNAPSHOT
+        docker run -d --name aerospike-vector-search --network=host -p 5000:5000   -v ./aerospike-vector-search.yml:/etc/aerospike-vector-search/aerospike-vector-search.yml   -v ./features.conf:/etc/aerospike-vector-search/features.conf   -v ./tls:/etc/aerospike-vector-search/tls aerospike/aerospike-vector-search:0.9.0
         docker run -d --name aerospike -p 3000:3000 -v .:/etc/aerospike aerospike/aerospike-server-enterprise:latest 
 
         sleep 5
@@ -212,7 +212,7 @@ jobs:
     - name: Run unit tests
       run: |
 
-        docker run -d --name aerospike-proximus --network=host -p 5000:5000   -v ./aerospike-proximus.yml:/etc/aerospike-proximus/aerospike-proximus.yml   -v ./features.conf:/etc/aerospike-proximus/features.conf   -v ./tls:/etc/aerospike-proximus/tls aerospike.jfrog.io/docker/aerospike/aerospike-proximus-private:0.5.0-SNAPSHOT
+        docker run -d --name aerospike-vector-search --network=host -p 5000:5000   -v ./aerospike-vector-search.yml:/etc/aerospike-vector-search/aerospike-vector-search.yml   -v ./features.conf:/etc/aerospike-vector-search/features.conf   -v ./tls:/etc/aerospike-vector-search/tls aerospike/aerospike-vector-search:0.9.0
         docker run -d --name aerospike -p 3000:3000 -v .:/etc/aerospike aerospike/aerospike-server-enterprise:latest 
 
         sleep 5
@@ -222,7 +222,7 @@ jobs:
 
         "
 
-        cat aerospike-proximus.yml
+        cat aerospike-vector-search.yml
         cat aerospike.conf
         cat tls/root.crt 
         cat tls/brawn.key.pem 
@@ -231,6 +231,6 @@ jobs:
         python -m pytest rbac -s --host brawn --port 5000 --root_certificate tls/root.crt --private_key tls/brawn.key.pem --certificate_chain tls/brawn.crt  -vs
 
         docker ps
-        docker logs aerospike-proximus
+        docker logs aerospike-vector-search
 
       working-directory: tests
