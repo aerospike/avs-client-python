@@ -25,6 +25,8 @@ async def drop_all_indexes(host, port, username, password, root_certificate, cer
 
 @pytest.fixture(scope="module")
 async def session_admin_client(host, port, username, password, root_certificate, certificate_chain, private_key):
+    print("\n\n\n BEFORE EXE \n\n\n")
+
     client = AdminClient(
         seeds=types.HostPort(host=host, port=port), root_certificate=root_certificate, certificate_chain=certificate_chain, private_key=private_key, username=username, password=password
     )
@@ -33,6 +35,8 @@ async def session_admin_client(host, port, username, password, root_certificate,
 
 @pytest.fixture(scope="module")
 async def session_vector_client(host, port, username, password, root_certificate, certificate_chain, private_key):
+    print("\n\n\n BEFORE EXE \n\n\n")
+
     client = Client(
         seeds=types.HostPort(host=host, port=port), root_certificate=root_certificate, certificate_chain=certificate_chain, private_key=private_key, username=username, password=password
     )
@@ -41,6 +45,8 @@ async def session_vector_client(host, port, username, password, root_certificate
 
 @pytest.fixture
 async def function_admin_client(host, port, username, password, root_certificate, certificate_chain, private_key):
+    print("\n\n\n BEFORE EXE \n\n\n")
+
     client = AdminClient(
         seeds=types.HostPort(host=host, port=port), root_certificate=root_certificate, certificate_chain=certificate_chain, private_key=private_key, username=username, password=password
     ) 
