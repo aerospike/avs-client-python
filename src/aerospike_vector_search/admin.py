@@ -260,7 +260,7 @@ class Client(BaseClient):
             kwargs['timeout'] = timeout
 
         try:
-            response = index_stub.GetStatus(index_get_status_request, **kwargs)
+            response = index_stub.GetStatus(index_get_status_request, credentials=self._channel_provider._token, **kwargs)
         except grpc.RpcError as e:
             logger.error("Failed with error: %s", e)
             raise types.AVSServerError(rpc_error=e)
