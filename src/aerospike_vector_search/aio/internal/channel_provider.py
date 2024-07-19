@@ -38,6 +38,7 @@ class ChannelProvider(base_channel_provider.BaseChannelProvider):
 
         super().__init__(seeds, listener_name, is_loadbalancer, username, password, root_certificate, certificate_chain, private_key, service_config_path)
 
+        print("\n\n\n BEFORE TEND \n\n\n")
         self._tend_initalized: asyncio.Event = asyncio.Event()
         self._tend_ended: asyncio.Event = asyncio.Event()
         self._task: Optional[asyncio.Task] = None
