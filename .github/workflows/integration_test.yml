@@ -297,7 +297,7 @@ jobs:
 
 
         docker ps
-        python -m pytest rbac/aio/debug.py -s -vv --host child--port 5000 --root_certificate tls/root.crt 
+        python -m pytest rbac/aio -s -vv --host child--port 5000 --root_certificate tls/root.crt 
 
         docker logs aerospike-vector-search
         docker logs aerospike
