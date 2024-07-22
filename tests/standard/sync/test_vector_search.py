@@ -100,32 +100,16 @@ def vector_search_ef_80(client, vector):
     )
     return result
 
-def test_vector_search(
+
+async def grade_results(
+
     base_numpy,
     truth_numpy,
     query_numpy,
     session_vector_client,
     session_admin_client,
+    set_name
 ):
-
-    session_admin_client.index_create(
-        namespace="test",
-        name="demo",
-        vector_field="unit_test",
-        dimensions=128,
-        sets="demo"
-    )
-
-    # Put base vectors for search
-    for j, vector in enumerate(base_numpy):
-        put_vector(session_vector_client, vector, j)
-
-
-    # Put base vectors for search
-    for j, vector in enumerate(base_numpy):
-        get_vector(session_vector_client, j)
-
-    session_vector_client.wait_for_index_completion(namespace='test', name='demo')
 
 
 
@@ -170,9 +154,50 @@ def test_vector_search(
         assert recall > 0.9
 
 
+def test_vector_search(
+    base_numpy,
+    truth_numpy,
+    query_numpy,
+    session_vector_client,
+    session_admin_client,
+):
+    set_name=None
+
+    session_admin_client.index_create(
+        namespace="test",
+        name="demo",
+        vector_field="unit_test",
+        dimensions=128,
+        sets=set_name
+    )
+
+    # Put base vectors for search
+    for j, vector in enumerate(base_numpy):
+        put_vector(session_vector_client, vector, j)
+
+
+    # Put base vectors for search
+    for j, vector in enumerate(base_numpy):
+        get_vector(session_vector_client, j)
+
+    session_vector_client.wait_for_index_completion(namespace='test', name='demo')
+
+    grade_results(
+        base_numpy,
+        truth_numpy,
+        query_numpy,
+        session_vector_client,
+        session_admin_client
+        set_name
+    )
+
+
 def test_vector_is_indexed(session_vector_client, session_admin_client):
     val = random.randrange(10_000)
 
+    result = session_vector_client.get(namespace="test", key=val, set_name="demo")
+
+    print(result)
 
     result = session_vector_client.is_indexed(
         namespace="test",

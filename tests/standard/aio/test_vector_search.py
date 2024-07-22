@@ -67,20 +67,20 @@ def query_numpy():
 
     return truth_numpy
 
-async def put_vector(client, vector, j):
+async def put_vector(client, vector, j, set_name):
     await client.upsert(
-        namespace="test", key=str(j), record_data={"unit_test": vector}
+        namespace="test", key=str(j), record_data={"unit_test": vector}, set_name=set_name
     )
 
 
-async def get_vector(client, j):
-    result = await client.get(namespace="test", key=str(j))
+async def get_vector(client, j, set_name):
+    result = await client.get(namespace="test", key=str(j), set_name=set_name)
 
 
-async def vector_search(client, vector):
+async def vector_search(client, vector, name):
     result = await client.vector_search(
         namespace="test",
-        index_name="demo",
+        index_name=name,
         query=vector,
         limit=100,
         field_names=["unit_test"],
@@ -88,10 +88,10 @@ async def vector_search(client, vector):
     return result
 
 
-async def vector_search_ef_80(client, vector):
+async def vector_search_ef_80(client, vector, name):
     result = await client.vector_search(
         namespace="test",
-        index_name="demo",
+        index_name=name,
         query=vector,
         limit=100,
         field_names=["unit_test"],
@@ -99,39 +99,22 @@ async def vector_search_ef_80(client, vector):
     )
     return result
 
-async def test_vector_search(
+async def grade_results(
     base_numpy,
     truth_numpy,
     query_numpy,
     session_vector_client,
     session_admin_client,
+    name
 ):
-
-    await session_admin_client.index_create(
-        namespace="test",
-        name="demo",
-        vector_field="unit_test",
-        dimensions=128,
-    )
-
-    # Put base vectors for search
-    tasks = []
-
-    for j, vector in enumerate(base_numpy):
-        tasks.append(put_vector(session_vector_client, vector, j))
-
-    tasks.append(session_vector_client.wait_for_index_completion(namespace='test', name='demo'))
-    await asyncio.gather(*tasks)
-
-
     # Vector search all query vectors
     tasks = []
     count = 0
     for i in query_numpy:
         if count % 2:
-            tasks.append(vector_search(session_vector_client, i))
+            tasks.append(vector_search(session_vector_client, i, name))
         else:
-            tasks.append(vector_search_ef_80(session_vector_client, i))
+            tasks.append(vector_search_ef_80(session_vector_client, i, name))
         count += 1
 
     results = await asyncio.gather(*tasks)
@@ -166,6 +149,214 @@ async def test_vector_search(
     for recall in recall_for_each_query:
         assert recall > 0.9
 
+
+async def test_vector_search(
+    base_numpy,
+    truth_numpy,
+    query_numpy,
+    session_vector_client,
+    session_admin_client,
+):
+
+    await session_admin_client.index_create(
+        namespace="test",
+        name="demo1",
+        vector_field="unit_test",
+        dimensions=128,
+    )
+
+    # Put base vectors for search
+    tasks = []
+
+    for j, vector in enumerate(base_numpy):
+        tasks.append(put_vector(session_vector_client, vector, j, None))
+
+    tasks.append(session_vector_client.wait_for_index_completion(namespace='test', name='demo1'))
+    await asyncio.gather(*tasks)
+    grade_results(
+        base_numpy,
+        truth_numpy,
+        query_numpy,
+        session_vector_client,
+        session_admin_client,
+        name='demo1'
+    )
+
+async def test_vector_search_with_set_same_as_index(
+    base_numpy,
+    truth_numpy,
+    query_numpy,
+    session_vector_client,
+    session_admin_client,
+):
+
+    await session_admin_client.index_create(
+        namespace="test",
+        name="demo2",
+        sets="demo2",
+        vector_field="unit_test",
+        dimensions=128,
+        index_storage=types.IndexStorage(namespace="test", set_name="demo2")
+    )
+
+    # Put base vectors for search
+    tasks = []
+
+    for j, vector in enumerate(base_numpy):
+        tasks.append(put_vector(session_vector_client, vector, j, "demo2"))
+
+    tasks.append(session_vector_client.wait_for_index_completion(namespace='test', name='demo2'))
+    await asyncio.gather(*tasks)
+    grade_results(
+        base_numpy,
+        truth_numpy,
+        query_numpy,
+        session_vector_client,
+        session_admin_client,
+        name='demo2'
+    )
+
+async def test_vector_search_with_set_different_than_name(
+    base_numpy,
+    truth_numpy,
+    query_numpy,
+    session_vector_client,
+    session_admin_client,
+):
+
+    await session_admin_client.index_create(
+        namespace="test",
+        name="demo3",
+        vector_field="unit_test",
+        dimensions=128,
+        sets="example1",
+        index_storage=types.IndexStorage(namespace="test", set_name="demo3")
+
+    )
+
+    # Put base vectors for search
+    tasks = []
+
+    for j, vector in enumerate(base_numpy):
+        tasks.append(put_vector(session_vector_client, vector, j, "example1"))
+
+    tasks.append(session_vector_client.wait_for_index_completion(namespace='test', name='demo3'))
+    await asyncio.gather(*tasks)
+    grade_results(
+        base_numpy,
+        truth_numpy,
+        query_numpy,
+        session_vector_client,
+        session_admin_client,
+        name="demo3"
+    )
+
+async def test_vector_search_with_index_storage_different_than_name(
+    base_numpy,
+    truth_numpy,
+    query_numpy,
+    session_vector_client,
+    session_admin_client,
+):
+
+    await session_admin_client.index_create(
+        namespace="test",
+        name="demo4",
+        vector_field="unit_test",
+        dimensions=128,
+        sets="demo4",
+        index_storage=types.IndexStorage(namespace="test", set_name="example2")
+
+    )
+
+    # Put base vectors for search
+    tasks = []
+
+    for j, vector in enumerate(base_numpy):
+        tasks.append(put_vector(session_vector_client, vector, j,  "demo4"))
+
+    tasks.append(session_vector_client.wait_for_index_completion(namespace='test', name='demo4'))
+    await asyncio.gather(*tasks)
+    grade_results(
+        base_numpy,
+        truth_numpy,
+        query_numpy,
+        session_vector_client,
+        session_admin_client,
+        name="demo4"
+    )
+
+
+
+async def test_vector_search_with_index_storage_different_location(
+    base_numpy,
+    truth_numpy,
+    query_numpy,
+    session_vector_client,
+    session_admin_client,
+):
+
+    await session_admin_client.index_create(
+        namespace="test",
+        name="demo5",
+        vector_field="unit_test",
+        dimensions=128,
+        sets="example3",
+        index_storage=types.IndexStorage(namespace="test", set_name="example4")
+
+    )
+
+    # Put base vectors for search
+    tasks = []
+
+    for j, vector in enumerate(base_numpy):
+        tasks.append(put_vector(session_vector_client, vector, j, "example3"))
+
+    tasks.append(session_vector_client.wait_for_index_completion(namespace='test', name='demo5'))
+    await asyncio.gather(*tasks)
+    grade_results(
+        base_numpy,
+        truth_numpy,
+        query_numpy,
+        session_vector_client,
+        session_admin_client,
+        name='demo5'
+    )
+
+async def test_vector_search_with_separate_namespace(
+    base_numpy,
+    truth_numpy,
+    query_numpy,
+    session_vector_client,
+    session_admin_client,
+):
+
+    await session_admin_client.index_create(
+        namespace="test",
+        name="demo6",
+        vector_field="unit_test",
+        dimensions=128,
+        sets="demo6",
+        index_storage=types.IndexStorage(namespace="index_storage", set_name="demo6")
+
+    )
+
+    # Put base vectors for search
+    tasks = []
+
+    for j, vector in enumerate(base_numpy):
+        tasks.append(put_vector(session_vector_client, vector, j, "demo6"))
+
+    tasks.append(session_vector_client.wait_for_index_completion(namespace='test', name='demo6'))
+    await asyncio.gather(*tasks)
+    grade_results(
+        base_numpy,
+        truth_numpy,
+        query_numpy,
+        session_vector_client,
+        session_admin_client,
+        name='demo6'
+    )
 
 async def test_vector_is_indexed(session_vector_client, session_admin_client, local_latency):
     if local_latency:
