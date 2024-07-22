@@ -23,8 +23,8 @@ tls:
       key-password-file: /etc/aerospike-vector-search/tls/keypass
     #mutual-auth: true
     # Client certificate subject names that are allowed
-    #allowed-peer-names:
-    #  - child
+    allowed-peer-names:
+      - child
 #  interconnect-tls:
 #    trust-store:
 #      store-file: tls/ca.aerospike.com.truststore.jks
