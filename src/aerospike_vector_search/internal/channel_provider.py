@@ -161,10 +161,14 @@ class ChannelProvider(base_channel_provider.BaseChannelProvider):
 
                 stub = vector_db_pb2_grpc.AboutServiceStub(self.get_channel())
                 about_request = vector_db_pb2.AboutRequest()
-
-                self.current_server_version = stub.Get(
-                    about_request, credentials=self._token
-                ).version
+                try:
+                    self.current_server_version = stub.Get(
+                        about_request, credentials=self._token
+                    ).version
+                except Exception as e:
+                    logger.debug(
+                        "While tending, failed to close GRPC channel while removing unused endpoints: " + str(e)
+                    )
                 self.client_server_compatible = self.verify_compatibile_server()
                 if not self.client_server_compatible:
                     raise types.AVSClientError(
@@ -173,8 +177,9 @@ class ChannelProvider(base_channel_provider.BaseChannelProvider):
                     )
 
             self._timer = threading.Timer(1, self._tend).start()
-    except Exception as e:
-        logger.error("Tending failed at unindentified location: %s", e)
+        except Exception as e:
+            logger.error("Tending failed at unindentified location: %s", e)
+            raise e
 
     def _create_channel(self, host: str, port: int, is_tls: bool) -> grpc.Channel:
         host = re.sub(r"%.*", "", host)

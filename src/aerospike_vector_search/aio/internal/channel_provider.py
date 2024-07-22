@@ -196,6 +196,8 @@ class ChannelProvider(base_channel_provider.BaseChannelProvider):
             self._task = asyncio.create_task(self._tend())
         except Exception as e:
             logger.error("Tending failed at unindentified location: %s", e)
+            raise e
+
 
 
     def _create_channel(self, host: str, port: int, is_tls: bool) -> grpc.Channel:
