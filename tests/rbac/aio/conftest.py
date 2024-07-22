@@ -27,6 +27,7 @@ def certificate_chain(request):
 
 @pytest.fixture(scope="module", autouse=True)
 async def drop_all_indexes(username, password, host, port, root_certificate, certificate_chain, private_key):
+    print("\n\n\n\n MADE IT TO FUNCTION")
     async with AdminClient(
         seeds=types.HostPort(host=host, port=port), username=username, password=password, root_certificate=root_certificate, certificate_chain=certificate_chain, private_key=private_key
     ) as client:
@@ -40,6 +41,7 @@ async def drop_all_indexes(username, password, host, port, root_certificate, cer
 
 @pytest.fixture(scope="module")
 async def session_rbac_admin_client(username, password, root_certificate, host, port, certificate_chain, private_key):
+    print("\n\n\n\n MADE IT TO FUNCTION")
     client = AdminClient(
         seeds=types.HostPort(host=host, port=port), username=username, password=password, root_certificate=root_certificate, certificate_chain=certificate_chain, private_key=private_key
     )
