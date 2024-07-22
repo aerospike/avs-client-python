@@ -106,7 +106,7 @@ class ChannelProvider(base_channel_provider.BaseChannelProvider):
 
                 except Exception as e:
                     logger.debug(
-                        "While tending, failed to get cluster id with error:" + str(e)
+                        "While tending, failed to get cluster id with error: " + str(e)
                     )
 
             for index, value in enumerate(new_cluster_ids):
@@ -124,7 +124,7 @@ class ChannelProvider(base_channel_provider.BaseChannelProvider):
                     temp_endpoints = self.update_temp_endpoints(response, temp_endpoints)
                 except Exception as e:
                     logger.debug(
-                        "While tending, failed to get cluster endpoints with error:"
+                        "While tending, failed to get cluster endpoints with error: "
                         + str(e)
                     )
 

@@ -115,14 +115,14 @@ class ChannelProvider(base_channel_provider.BaseChannelProvider):
                     )
                 except Exception as e:
                     logger.debug(
-                        "While tending, failed to get cluster id with error:" + str(e)
+                        "While tending, failed to get cluster id with error: " + str(e)
                     )
 
             try:
                 new_cluster_ids = tasks
             except Exception as e:
                 logger.debug(
-                    "While tending, failed to gather results from GetClusterId:"
+                    "While tending, failed to gather results from GetClusterId: "
                     + str(e)
                 )
 
@@ -143,7 +143,7 @@ class ChannelProvider(base_channel_provider.BaseChannelProvider):
                     )
                 except Exception as e:
                     logger.debug(
-                        "While tending, failed to get cluster endpoints with error:"
+                        "While tending, failed to get cluster endpoints with error: "
                         + str(e)
                     )
 
@@ -161,7 +161,7 @@ class ChannelProvider(base_channel_provider.BaseChannelProvider):
                             tasks.append(channel_endpoints.channel.close())
                         except Exception as e:
                             logger.debug(
-                                "While tending, failed to close GRPC channel while replacing up old endpoints:" + str(e)
+                                "While tending, failed to close GRPC channel while replacing up old endpoints: " + str(e)
                             )
                         self.add_new_channel_to_node_channels(node, newEndpoints)
 
