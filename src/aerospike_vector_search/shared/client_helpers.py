@@ -252,15 +252,13 @@ class BaseClient(object):
         self, namespace: str, set: str, key: Union[int, str, bytes, bytearray]
     ):
         if isinstance(key, str):
-            key = types_pb2.Key(namespace=namespace, set=None, stringValue=key)
-
-
+            key = types_pb2.Key(namespace=namespace, set=set, stringValue=key)
         elif isinstance(key, int):
             key = types_pb2.Key(namespace=namespace, set=set, longValue=key)
         elif isinstance(key, (bytes, bytearray)):
             key = types_pb2.Key(namespace=namespace, set=set, bytesValue=key)
         else:
-            raise Exception("Invalid key type" + type(key))
+            raise Exception("Invalid key type" + str(type(key)))
         return key
 
     def _prepare_wait_for_index_waiting(self, namespace, name, wait_interval):

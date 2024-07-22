@@ -113,7 +113,7 @@ async def test_admin_client_service_config_retries(host, port,  username, passwo
         expected_time = calculate_expected_time(test_case.max_attempts, test_case.initial_backoff, test_case.backoff_multiplier, test_case.max_backoff, test_case.retryable_status_codes)
         start_time = time.time()
 
-        async with pytest.raises(AVSServerError) as e_info:
+        with pytest.raises(AVSServerError) as e_info:
             await client.index_create(
                 namespace=test_case.namespace,
                 name=test_case.name,
@@ -163,7 +163,7 @@ async def test_admin_client_service_config_initial_backoff(host, port, username,
         expected_time = calculate_expected_time(test_case.max_attempts, test_case.initial_backoff, test_case.backoff_multiplier, test_case.max_backoff, test_case.retryable_status_codes)
         start_time = time.time()
 
-        async with pytest.raises(AVSServerError) as e_info:
+        with pytest.raises(AVSServerError) as e_info:
             await client.index_create(
                 namespace=test_case.namespace,
                 name=test_case.name,
@@ -219,7 +219,7 @@ async def test_admin_client_service_config_max_backoff(host, port, username, pas
         expected_time = calculate_expected_time(test_case.max_attempts, test_case.initial_backoff, test_case.backoff_multiplier, test_case.max_backoff, test_case.retryable_status_codes)
         start_time = time.time()
 
-        async with pytest.raises(AVSServerError) as e_info:
+        with pytest.raises(AVSServerError) as e_info:
             await client.index_create(
                 namespace=test_case.namespace,
                 name=test_case.name,
@@ -270,7 +270,7 @@ async def test_admin_client_service_config_backoff_multiplier(host, port, userna
         expected_time = calculate_expected_time(test_case.max_attempts, test_case.initial_backoff, test_case.backoff_multiplier, test_case.max_backoff, test_case.retryable_status_codes)
         start_time = time.time()
 
-        async with pytest.raises(AVSServerError) as e_info:
+        with pytest.raises(AVSServerError) as e_info:
             await client.index_create(
                 namespace=test_case.namespace,
                 name=test_case.name,
@@ -310,7 +310,7 @@ async def test_admin_client_service_config_retryable_status_codes(host, port, us
         expected_time = calculate_expected_time(test_case.max_attempts, test_case.initial_backoff, test_case.backoff_multiplier, test_case.max_backoff, test_case.retryable_status_codes)
         start_time = time.time()
         
-        async with pytest.raises(AVSServerError) as e_info:
+        with pytest.raises(AVSServerError) as e_info:
             await client.index_get_status(
                 namespace=test_case.namespace,
                 name=test_case.name,

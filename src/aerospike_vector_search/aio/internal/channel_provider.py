@@ -35,7 +35,6 @@ class ChannelProvider(base_channel_provider.BaseChannelProvider):
         service_config_path: Optional[str] = None,
 
     ) -> None:
-        print("\n\n\n BEFORE TEND \n\n\n")
 
         super().__init__(seeds, listener_name, is_loadbalancer, username, password, root_certificate, certificate_chain, private_key, service_config_path)
 
@@ -68,7 +67,6 @@ class ChannelProvider(base_channel_provider.BaseChannelProvider):
     async def _tend(self):
         try:
             (temp_endpoints, update_endpoints_stub, channels, end_tend) = self.init_tend()
-            print("\n\n\n TEND HERE \n\n\n")
             if self._token:
                 if self._check_if_token_refresh_needed():
                     await self._update_token_and_ttl()
@@ -161,9 +159,7 @@ class ChannelProvider(base_channel_provider.BaseChannelProvider):
                 self.current_server_version = (await stub.Get(about_request, credentials=self._token)).version
                 self.client_server_compatible = self.verify_compatibile_server()
 
-                print("EXECUTED HERE")
                 self._tend_initalized.set() 
-                print(self.client_server_compatible)
 
             # TODO: check tend interval.
             await asyncio.sleep(1)

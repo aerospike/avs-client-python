@@ -319,8 +319,6 @@ def test_admin_client_service_config_retryable_status_codes(host, port,  usernam
                 name=test_case.name,
             )
         
-        print(e_info.value.rpc_error.code())
-
         end_time = time.time()
         elapsed_time = end_time - start_time
         assert abs(elapsed_time - expected_time) < 1.2

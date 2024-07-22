@@ -70,12 +70,12 @@ def query_numpy():
 
 def put_vector(client, vector, j):
     client.upsert(
-        namespace="test", key=str(j), record_data={"unit_test": vector}
+        namespace="test", key=str(j), record_data={"unit_test": vector}, set_name="demo"
     )
 
 
 def get_vector(client, j):
-    result = client.get(namespace="test", key=str(j))
+    result = client.get(namespace="test", key=str(j), set_name="demo")
 
 
 def vector_search(client, vector):
@@ -113,11 +113,17 @@ def test_vector_search(
         name="demo",
         vector_field="unit_test",
         dimensions=128,
+        sets="demo"
     )
 
     # Put base vectors for search
     for j, vector in enumerate(base_numpy):
         put_vector(session_vector_client, vector, j)
+
+
+    # Put base vectors for search
+    for j, vector in enumerate(base_numpy):
+        get_vector(session_vector_client, j)
 
     session_vector_client.wait_for_index_completion(namespace='test', name='demo')
 
@@ -165,11 +171,17 @@ def test_vector_search(
 
 
 def test_vector_is_indexed(session_vector_client, session_admin_client):
+    val = random.randrange(10_000)
+
+
     result = session_vector_client.is_indexed(
         namespace="test",
-        key="" + str(random.randrange(10_000)),
+        key=str(val),
         index_name="demo",
+        set_name="demo"
     )
+
+
     assert result is True
 
 def test_vector_is_indexed_timeout(session_vector_client, session_admin_client, local_latency):
@@ -180,7 +192,7 @@ def test_vector_is_indexed_timeout(session_vector_client, session_admin_client, 
         try:
             result = session_vector_client.is_indexed(
                 namespace="test",
-                key="" + str(random.randrange(10_000)),
+                key=500,
                 index_name="demo",
                 timeout=0.0001
             )
