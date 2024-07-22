@@ -179,7 +179,7 @@ async def test_vector_search(
 
     tasks.append(session_vector_client.wait_for_index_completion(namespace='test', name='demo1'))
     await asyncio.gather(*tasks)
-    grade_results(
+    await grade_results(
         base_numpy,
         truth_numpy,
         query_numpy,
@@ -214,7 +214,7 @@ async def test_vector_search_with_set_same_as_index(
 
     tasks.append(session_vector_client.wait_for_index_completion(namespace='test', name='demo2'))
     await asyncio.gather(*tasks)
-    grade_results(
+    await grade_results(
         base_numpy,
         truth_numpy,
         query_numpy,
@@ -253,7 +253,7 @@ async def test_vector_search_with_set_different_than_name(
 
     tasks.append(session_vector_client.wait_for_index_completion(namespace='test', name='demo3'))
     await asyncio.gather(*tasks)
-    grade_results(
+    await grade_results(
         base_numpy,
         truth_numpy,
         query_numpy,
@@ -292,7 +292,7 @@ async def test_vector_search_with_index_storage_different_than_name(
 
     tasks.append(session_vector_client.wait_for_index_completion(namespace='test', name='demo4'))
     await asyncio.gather(*tasks)
-    grade_results(
+    await grade_results(
         base_numpy,
         truth_numpy,
         query_numpy,
@@ -333,7 +333,7 @@ async def test_vector_search_with_index_storage_different_location(
 
     tasks.append(session_vector_client.wait_for_index_completion(namespace='test', name='demo5'))
     await asyncio.gather(*tasks)
-    grade_results(
+    await grade_results(
         base_numpy,
         truth_numpy,
         query_numpy,
@@ -372,7 +372,7 @@ async def test_vector_search_with_separate_namespace(
 
     tasks.append(session_vector_client.wait_for_index_completion(namespace='test', name='demo6'))
     await asyncio.gather(*tasks)
-    grade_results(
+    await grade_results(
         base_numpy,
         truth_numpy,
         query_numpy,
