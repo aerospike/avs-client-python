@@ -475,7 +475,7 @@ EOF
         default:
           # List of externally accessible addresses and
           # ports for this Proximus instance.
-          - address: $host
+          - address: child
             port: $port
 EOF
 )
