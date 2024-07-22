@@ -400,8 +400,8 @@ def test_vector_is_indexed(session_vector_client, session_admin_client):
 
     assert result is True
 
-def test_vector_is_indexed_timeout(session_vector_client, session_admin_client, local_latency):
-    if local_latency:
+def test_vector_is_indexed_timeout(session_vector_client, session_admin_client, with_latency):
+    if not with_latency:
         pytest.skip("Server latency too low to test timeout")    
 
     for i in range(10):
@@ -418,8 +418,8 @@ def test_vector_is_indexed_timeout(session_vector_client, session_admin_client, 
                 return
     assert "In several attempts, the timeout did not happen" == "TEST FAIL"
 
-def test_vector_vector_search_timeout(session_vector_client, session_admin_client, local_latency):
-    if local_latency:
+def test_vector_vector_search_timeout(session_vector_client, session_admin_client, with_latency):
+    if not with_latency:
         pytest.skip("Server latency too low to test timeout")    
 
     for i in range(10):

@@ -593,9 +593,9 @@ def test_index_create_index_storage(session_admin_client, test_case, random_name
         ),
     ],
 )
-def test_index_create_timeout(session_admin_client, test_case, random_name, local_latency):
+def test_index_create_timeout(session_admin_client, test_case, random_name, with_latency):
 
-    if local_latency:
+    if not with_latency:
         pytest.skip("Server latency too low to test timeout")
     try:
         session_admin_client.index_drop(namespace="test", name=random_name)

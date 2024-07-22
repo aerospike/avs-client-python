@@ -38,9 +38,9 @@ async def test_index_get(session_admin_client, empty_test_case, random_name):
 @pytest.mark.parametrize("empty_test_case",[None, None])
 @given(random_name=index_strategy())
 @settings(max_examples=1, deadline=1000)
-async def test_index_get_timeout(session_admin_client, empty_test_case, random_name, local_latency):
+async def test_index_get_timeout(session_admin_client, empty_test_case, random_name, with_latency):
 
-    if local_latency:
+    if not with_latency:
         pytest.skip("Server latency too low to test timeout")
 
     for i in range(10): 

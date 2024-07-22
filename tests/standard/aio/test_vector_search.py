@@ -381,9 +381,9 @@ async def test_vector_search_with_separate_namespace(
         name='demo6'
     )
 
-async def test_vector_is_indexed(session_vector_client, session_admin_client, local_latency):
-    if local_latency:
-        pytest.skip("Server latency too low to test timeout")
+async def test_vector_is_indexed(session_vector_client, session_admin_client, with_latency):
+
+
     result = await session_vector_client.is_indexed(
         namespace="test",
         key=str(random.randrange(10_000)),
@@ -391,8 +391,8 @@ async def test_vector_is_indexed(session_vector_client, session_admin_client, lo
     )
     assert result is True
 
-async def test_vector_is_indexed_timeout(session_vector_client, session_admin_client, local_latency):
-    if local_latency:
+async def test_vector_is_indexed_timeout(session_vector_client, session_admin_client, with_latency):
+    if not with_latency:
         pytest.skip("Server latency too low to test timeout")    
     for i in range(10):
         try:
@@ -408,8 +408,8 @@ async def test_vector_is_indexed_timeout(session_vector_client, session_admin_cl
                 return        
     assert "In several attempts, the timeout did not happen" == "TEST FAIL"
 
-async def test_vector_vector_search_timeout(session_vector_client, session_admin_client, local_latency):
-    if local_latency:
+async def test_vector_vector_search_timeout(session_vector_client, session_admin_client, with_latency):
+    if not with_latency:
         pytest.skip("Server latency too low to test timeout")    
     
     for i in range(10):

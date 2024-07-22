@@ -86,8 +86,8 @@ def test_vector_get(session_vector_client, test_case, random_key):
         ),    
     ],
 )
-def test_vector_get_timeout(session_vector_client, test_case, random_key, local_latency):
-    if local_latency:
+def test_vector_get_timeout(session_vector_client, test_case, random_key, with_latency):
+    if not with_latency:
         pytest.skip("Server latency too low to test timeout")    
 
     for i in range(10):

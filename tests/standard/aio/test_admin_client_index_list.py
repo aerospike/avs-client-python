@@ -35,8 +35,8 @@ async def test_index_list(session_admin_client, empty_test_case, random_name):
         assert isinstance(index['storage']['set'], str)
     await drop_specified_index(session_admin_client, "test", random_name)
 
-async def test_index_list_timeout(session_admin_client, local_latency):
-    if local_latency:
+async def test_index_list_timeout(session_admin_client, with_latency):
+    if not with_latency:
         pytest.skip("Server latency too low to test timeout")    
     for i in range(10):
         try:
