@@ -48,6 +48,8 @@ class Client(BaseClient):
         Raises:
             Exception: Raised when no seed host is provided.
         """
+        print("\n\n\n\n THIS IS RUNNING AT ALL\n\n\n")
+
         seeds = self._prepare_seeds(seeds)
         self._channel_provider = channel_provider.ChannelProvider(
             seeds, listener_name, is_loadbalancer, username, password, root_certificate, certificate_chain, private_key, service_config_path
