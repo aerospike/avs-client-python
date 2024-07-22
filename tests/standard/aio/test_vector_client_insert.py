@@ -104,6 +104,7 @@ async def test_vector_insert_with_existing_record(session_vector_client, test_ca
 @pytest.mark.parametrize(
     "test_case",
     [
+        None,
         insert_test_case(
             namespace="test",
             record_data={"math": [i for i in range(1024)]},

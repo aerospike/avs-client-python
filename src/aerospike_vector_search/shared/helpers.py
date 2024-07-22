@@ -32,7 +32,11 @@ def _prepare_wait_for_index_waiting(client, namespace, name, wait_interval):
         index_wait_request,
     )
 
+
 def _get_credentials(username, password):
     if not username:
         return None
-    return types_pb2.Credentials(username=username, passwordCredentials=types_pb2.PasswordCredentials(password=password))
+    return types_pb2.Credentials(
+        username=username,
+        passwordCredentials=types_pb2.PasswordCredentials(password=password),
+    )

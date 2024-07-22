@@ -75,6 +75,7 @@ async def test_vector_get(session_vector_client, test_case, random_key):
 @pytest.mark.parametrize(
     "test_case",
     [
+        None,
         get_test_case(
             namespace="test",
             field_names=['skills'],

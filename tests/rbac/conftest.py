@@ -9,6 +9,7 @@ def pytest_addoption(parser):
     parser.addoption("--root_certificate", action="store", default=None, help="Path to root CA certificate")
     parser.addoption("--certificate_chain", action="store", default=None, help="Path to certificate chain")
     parser.addoption("--private_key", action="store", default=None, help="Path to private key")
+    parser.addoption("--is_loadbalancer", action="store_true", help="Enable to use load balancer tending logic")
 
 
 @pytest.fixture(scope="module", autouse=True)
@@ -39,3 +40,6 @@ def host(request):
 def port(request):
     return request.config.getoption("--port")
 
+@pytest.fixture(scope="module", autouse=True)
+def is_loadbalancer(request):
+    return request.config.getoption("--is_loadbalancer")

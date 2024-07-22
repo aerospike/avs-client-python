@@ -42,16 +42,15 @@ class BaseChannelProvider(object):
         root_certificate: Optional[str] = None,
         certificate_chain: Optional[str] = None,
         private_key: Optional[str] = None,
-        service_config_path: Optional[str] = None
-
+        service_config_path: Optional[str] = None,
     ) -> None:
         self.seeds: tuple[types.HostPort, ...] = seeds
         self.listener_name: Optional[str] = listener_name
         self._is_loadbalancer: Optional[bool] = is_loadbalancer
 
         if service_config_path:
-            with open(service_config_path, 'rb') as f:
-                self.service_config_json = f.read() 
+            with open(service_config_path, "rb") as f:
+                self.service_config_json = f.read()
         else:
             self.service_config_json = None
 
@@ -164,19 +163,18 @@ class BaseChannelProvider(object):
 
         return (channel_endpoints, add_new_channel)
 
-
     def _get_ttl(self, payload):
-        return payload['exp'] - payload['iat']
+        return payload["exp"] - payload["iat"]
 
     def _check_if_token_refresh_needed(self):
-        if self._token and (time.time() - self._ttl_start) > (self._ttl * self._ttl_threshold):
+        if self._token and (time.time() - self._ttl_start) > (
+            self._ttl * self._ttl_threshold
+        ):
             return True
         return False
 
     def _prepare_authenticate(self, credentials, logger):
-        logger.debug(
-            "Refreshing auth token"
-        )
+        logger.debug("Refreshing auth token")
         auth_stub = self._get_auth_stub()
 
         auth_request = self._get_authenticate_request(self._credentials)
@@ -190,16 +188,18 @@ class BaseChannelProvider(object):
         return auth_pb2.AuthRequest(credentials=credentials)
 
     def _respond_authenticate(self, token):
-        payload = jwt.decode(token, "", algorithms=['RS256'], options={"verify_signature": False})
+        payload = jwt.decode(
+            token, "", algorithms=["RS256"], options={"verify_signature": False}
+        )
         self._ttl = self._get_ttl(payload)
-        self._ttl_start = payload['exp']
+        self._ttl_start = payload["exp"]
 
         self._token = grpc.access_token_call_credentials(token)
 
     def verify_compatibile_server(self) -> bool:
         def parse_version(v: str):
-            return tuple(map(int, v.split('.')))
-    
-        return parse_version(self.current_server_version) >= parse_version(self.minimum_required_version)
-        
-     
+            return tuple(map(int, v.split(".")))
+
+        return parse_version(self.current_server_version) >= parse_version(
+            self.minimum_required_version
+        )

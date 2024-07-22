@@ -496,6 +496,7 @@ async def test_index_create_index_storage(session_admin_client, test_case, rando
 @pytest.mark.parametrize(
     "test_case",
     [
+        None,
         index_create_test_case(
             namespace="test",
             vector_field="example_15",

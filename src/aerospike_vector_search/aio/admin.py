@@ -46,7 +46,15 @@ class Client(BaseClient):
         seeds = self._prepare_seeds(seeds)
 
         self._channel_provider = channel_provider.ChannelProvider(
-            seeds, listener_name, is_loadbalancer, username, password, root_certificate, certificate_chain, private_key, service_config_path
+            seeds,
+            listener_name,
+            is_loadbalancer,
+            username,
+            password,
+            root_certificate,
+            certificate_chain,
+            private_key,
+            service_config_path,
         )
 
     async def index_create(
@@ -94,7 +102,6 @@ class Client(BaseClient):
         if not self._channel_provider.client_server_compatible:
             await self._channel_provider._is_ready()
 
-
         (index_stub, index_create_request) = self._prepare_index_create(
             namespace,
             name,
@@ -111,10 +118,14 @@ class Client(BaseClient):
 
         kwargs = {}
         if timeout is not None:
-            kwargs['timeout'] = timeout
+            kwargs["timeout"] = timeout
 
         try:
-            await index_stub.Create(index_create_request, credentials=self._channel_provider._token, **kwargs)
+            await index_stub.Create(
+                index_create_request,
+                credentials=self._channel_provider._token,
+                **kwargs,
+            )
         except grpc.RpcError as e:
             logger.error("Failed with error: %s", e)
             raise types.AVSServerError(rpc_error=e)
@@ -126,7 +137,9 @@ class Client(BaseClient):
             logger.error("Failed waiting for creation with error: %s", e)
             raise types.AVSServerError(rpc_error=e)
 
-    async def index_drop(self, *, namespace: str, name: str, timeout: Optional[int] = None) -> None:
+    async def index_drop(
+        self, *, namespace: str, name: str, timeout: Optional[int] = None
+    ) -> None:
         """
         Drop an index.
 
@@ -151,10 +164,12 @@ class Client(BaseClient):
 
         kwargs = {}
         if timeout is not None:
-            kwargs['timeout'] = timeout
+            kwargs["timeout"] = timeout
 
         try:
-            await index_stub.Drop(index_drop_request, credentials=self._channel_provider._token, **kwargs)
+            await index_stub.Drop(
+                index_drop_request, credentials=self._channel_provider._token, **kwargs
+            )
         except grpc.RpcError as e:
             logger.error("Failed with error: %s", e)
             raise types.AVSServerError(rpc_error=e)
@@ -184,10 +199,12 @@ class Client(BaseClient):
 
         kwargs = {}
         if timeout is not None:
-            kwargs['timeout'] = timeout
+            kwargs["timeout"] = timeout
 
         try:
-            response = await index_stub.List(index_list_request, credentials=self._channel_provider._token, **kwargs)
+            response = await index_stub.List(
+                index_list_request, credentials=self._channel_provider._token, **kwargs
+            )
         except grpc.RpcError as e:
             logger.error("Failed with error: %s", e)
             raise types.AVSServerError(rpc_error=e)
@@ -220,16 +237,20 @@ class Client(BaseClient):
 
         kwargs = {}
         if timeout is not None:
-            kwargs['timeout'] = timeout
+            kwargs["timeout"] = timeout
 
         try:
-            response = await index_stub.Get(index_get_request, credentials=self._channel_provider._token, **kwargs)
+            response = await index_stub.Get(
+                index_get_request, credentials=self._channel_provider._token, **kwargs
+            )
         except grpc.RpcError as e:
             logger.error("Failed with error: %s", e)
             raise types.AVSServerError(rpc_error=e)
         return self._respond_index_get(response)
 
-    async def index_get_status(self, *, namespace: str, name: str, timeout: Optional[int] = None) -> int:
+    async def index_get_status(
+        self, *, namespace: str, name: str, timeout: Optional[int] = None
+    ) -> int:
         """
         Retrieve the number of records queued to be merged into an index.
 
@@ -259,17 +280,28 @@ class Client(BaseClient):
 
         kwargs = {}
         if timeout is not None:
-            kwargs['timeout'] = timeout
+            kwargs["timeout"] = timeout
 
         try:
-            response = await index_stub.GetStatus(index_get_status_request, credentials=self._channel_provider._token, **kwargs)
+            response = await index_stub.GetStatus(
+                index_get_status_request,
+                credentials=self._channel_provider._token,
+                **kwargs,
+            )
         except grpc.RpcError as e:
             logger.error("Failed with error: %s", e)
             raise types.AVSServerError(rpc_error=e)
 
         return self._respond_index_get_status(response)
 
-    async def add_user(self, *, username: str, password: str, roles: list[str], timeout: Optional[int] = None) -> int:
+    async def add_user(
+        self,
+        *,
+        username: str,
+        password: str,
+        roles: list[str],
+        timeout: Optional[int] = None,
+    ) -> int:
         if not self._channel_provider.client_server_compatible:
             await self._channel_provider._is_ready()
 
@@ -279,28 +311,36 @@ class Client(BaseClient):
 
         kwargs = {}
         if timeout is not None:
-            kwargs['timeout'] = timeout
+            kwargs["timeout"] = timeout
 
         try:
-            await user_admin_stub.AddUser(add_user_request, credentials=self._channel_provider._token, **kwargs)
+            await user_admin_stub.AddUser(
+                add_user_request, credentials=self._channel_provider._token, **kwargs
+            )
         except grpc.RpcError as e:
             logger.error("Failed with error: %s", e)
             raise types.AVSServerError(rpc_error=e)
 
-    async def update_credentials(self, *, username: str, password: str, timeout: Optional[int] = None) -> int:
+    async def update_credentials(
+        self, *, username: str, password: str, timeout: Optional[int] = None
+    ) -> int:
         if not self._channel_provider.client_server_compatible:
             await self._channel_provider._is_ready()
 
-        (user_admin_stub, update_credentials_request) = self._prepare_update_credentials(
-            username, password, timeout, logger
+        (user_admin_stub, update_credentials_request) = (
+            self._prepare_update_credentials(username, password, timeout, logger)
         )
 
         kwargs = {}
         if timeout is not None:
-            kwargs['timeout'] = timeout
+            kwargs["timeout"] = timeout
 
         try:
-            await user_admin_stub.UpdateCredentials(update_credentials_request, credentials=self._channel_provider._token, **kwargs)
+            await user_admin_stub.UpdateCredentials(
+                update_credentials_request,
+                credentials=self._channel_provider._token,
+                **kwargs,
+            )
         except grpc.RpcError as e:
             logger.error("Failed with error: %s", e)
             raise types.AVSServerError(rpc_error=e)
@@ -315,10 +355,12 @@ class Client(BaseClient):
 
         kwargs = {}
         if timeout is not None:
-            kwargs['timeout'] = timeout
+            kwargs["timeout"] = timeout
 
         try:
-            await user_admin_stub.DropUser(drop_user_request, credentials=self._channel_provider._token, **kwargs)
+            await user_admin_stub.DropUser(
+                drop_user_request, credentials=self._channel_provider._token, **kwargs
+            )
         except grpc.RpcError as e:
             logger.error("Failed with error: %s", e)
             raise types.AVSServerError(rpc_error=e)
@@ -333,10 +375,12 @@ class Client(BaseClient):
 
         kwargs = {}
         if timeout is not None:
-            kwargs['timeout'] = timeout
+            kwargs["timeout"] = timeout
 
         try:
-            response = await user_admin_stub.GetUser(get_user_request, credentials=self._channel_provider._token, **kwargs)
+            response = await user_admin_stub.GetUser(
+                get_user_request, credentials=self._channel_provider._token, **kwargs
+            )
         except grpc.RpcError as e:
             logger.error("Failed with error: %s", e)
             raise types.AVSServerError(rpc_error=e)
@@ -353,16 +397,20 @@ class Client(BaseClient):
 
         kwargs = {}
         if timeout is not None:
-            kwargs['timeout'] = timeout
+            kwargs["timeout"] = timeout
 
         try:
-            response = await user_admin_stub.ListUsers(list_users_request, credentials=self._channel_provider._token, **kwargs)
+            response = await user_admin_stub.ListUsers(
+                list_users_request, credentials=self._channel_provider._token, **kwargs
+            )
         except grpc.RpcError as e:
             logger.error("Failed with error: %s", e)
             raise types.AVSServerError(rpc_error=e)
         return self._respond_list_users(response)
 
-    async def grant_roles(self, *, username: str, roles: list[str], timeout: Optional[int] = None) -> int:
+    async def grant_roles(
+        self, *, username: str, roles: list[str], timeout: Optional[int] = None
+    ) -> int:
         if not self._channel_provider.client_server_compatible:
             await self._channel_provider._is_ready()
 
@@ -372,15 +420,19 @@ class Client(BaseClient):
 
         kwargs = {}
         if timeout is not None:
-            kwargs['timeout'] = timeout
+            kwargs["timeout"] = timeout
 
         try:
-            await user_admin_stub.GrantRoles(grant_roles_request, credentials=self._channel_provider._token, **kwargs)
+            await user_admin_stub.GrantRoles(
+                grant_roles_request, credentials=self._channel_provider._token, **kwargs
+            )
         except grpc.RpcError as e:
             logger.error("Failed with error: %s", e)
             raise types.AVSServerError(rpc_error=e)
 
-    async def revoke_roles(self, *, username: str, roles: list[str], timeout: Optional[int] = None) -> int:
+    async def revoke_roles(
+        self, *, username: str, roles: list[str], timeout: Optional[int] = None
+    ) -> int:
         if not self._channel_provider.client_server_compatible:
             await self._channel_provider._is_ready()
 
@@ -390,10 +442,14 @@ class Client(BaseClient):
 
         kwargs = {}
         if timeout is not None:
-            kwargs['timeout'] = timeout
+            kwargs["timeout"] = timeout
 
         try:
-            await user_admin_stub.RevokeRoles(revoke_roles_request, credentials=self._channel_provider._token, **kwargs)
+            await user_admin_stub.RevokeRoles(
+                revoke_roles_request,
+                credentials=self._channel_provider._token,
+                **kwargs,
+            )
         except grpc.RpcError as e:
             logger.error("Failed with error: %s", e)
             raise types.AVSServerError(rpc_error=e)
@@ -408,10 +464,12 @@ class Client(BaseClient):
 
         kwargs = {}
         if timeout is not None:
-            kwargs['timeout'] = timeout
+            kwargs["timeout"] = timeout
 
         try:
-            response = await user_admin_stub.ListRoles(list_roles_request, credentials=self._channel_provider._token, **kwargs)
+            response = await user_admin_stub.ListRoles(
+                list_roles_request, credentials=self._channel_provider._token, **kwargs
+            )
         except grpc.RpcError as e:
             logger.error("Failed with error: %s", e)
             raise types.AVSServerError(rpc_error=e)
@@ -437,7 +495,9 @@ class Client(BaseClient):
         while True:
             self._check_timeout(start_time, timeout)
             try:
-                await index_stub.GetStatus(index_creation_request, credentials=self._channel_provider._token)
+                await index_stub.GetStatus(
+                    index_creation_request, credentials=self._channel_provider._token
+                )
                 logger.debug("Index created succesfully")
                 # Index has been created
                 return
@@ -473,7 +533,9 @@ class Client(BaseClient):
             self._check_timeout(start_time, timeout)
 
             try:
-                await index_stub.GetStatus(index_deletion_request, credentials=self._channel_provider._token)
+                await index_stub.GetStatus(
+                    index_deletion_request, credentials=self._channel_provider._token
+                )
                 # Wait for some more time.
                 await asyncio.sleep(wait_interval)
             except grpc.RpcError as e:

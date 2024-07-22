@@ -33,10 +33,19 @@ class ChannelProvider(base_channel_provider.BaseChannelProvider):
         certificate_chain: Optional[str] = None,
         private_key: Optional[str] = None,
         service_config_path: Optional[str] = None,
-
     ) -> None:
 
-        super().__init__(seeds, listener_name, is_loadbalancer, username, password, root_certificate, certificate_chain, private_key, service_config_path)
+        super().__init__(
+            seeds,
+            listener_name,
+            is_loadbalancer,
+            username,
+            password,
+            root_certificate,
+            certificate_chain,
+            private_key,
+            service_config_path,
+        )
 
         self._tend_initalized: asyncio.Event = asyncio.Event()
         self._tend_ended: asyncio.Event = asyncio.Event()
@@ -62,16 +71,32 @@ class ChannelProvider(base_channel_provider.BaseChannelProvider):
         await self._tend_initalized.wait()
 
         if not self.client_server_compatible:
-            raise types.AVSClientError(message="This AVS Client version is only compatbile with AVS Servers above the following version number: " + self.minimum_required_version)
+            raise types.AVSClientError(
+                message="This AVS Client version is only compatbile with AVS Servers above the following version number: "
+                + self.minimum_required_version
+            )
 
     async def _tend(self):
         try:
-            (temp_endpoints, update_endpoints_stub, channels, end_tend) = self.init_tend()
+            (temp_endpoints, update_endpoints_stub, channels, end_tend) = (
+                self.init_tend()
+            )
             if self._token:
                 if self._check_if_token_refresh_needed():
                     await self._update_token_and_ttl()
 
             if end_tend:
+
+                if not self.client_server_compatible:
+
+                    stub = vector_db_pb2_grpc.AboutServiceStub(self.get_channel())
+                    about_request = vector_db_pb2.AboutRequest()
+
+                    self.current_server_version = (
+                        await stub.Get(about_request, credentials=self._token)
+                    ).version
+                    self.client_server_compatible = self.verify_compatibile_server()
+
                 self._tend_initalized.set()
 
                 self._tend_ended.set()
@@ -85,7 +110,9 @@ class ChannelProvider(base_channel_provider.BaseChannelProvider):
                 stub = vector_db_pb2_grpc.ClusterInfoServiceStub(channel)
                 stubs.append(stub)
                 try:
-                    tasks.append(await stub.GetClusterId(empty, credentials=self._token))
+                    tasks.append(
+                        await stub.GetClusterId(empty, credentials=self._token)
+                    )
                 except Exception as e:
                     logger.debug(
                         "While tending, failed to get cluster id with error:" + str(e)
@@ -95,14 +122,13 @@ class ChannelProvider(base_channel_provider.BaseChannelProvider):
                 new_cluster_ids = tasks
             except Exception as e:
                 logger.debug(
-                    "While tending, failed to gather results from GetClusterId:" + str(e)
+                    "While tending, failed to gather results from GetClusterId:"
+                    + str(e)
                 )
 
             for index, value in enumerate(new_cluster_ids):
                 if self.check_cluster_id(value.id):
                     update_endpoints_stubs.append(stubs[index])
-        
-
 
             for stub in update_endpoints_stubs:
                 try:
@@ -110,9 +136,11 @@ class ChannelProvider(base_channel_provider.BaseChannelProvider):
                         vector_db_pb2.ClusterNodeEndpointsRequest(
                             listenerName=self.listener_name
                         ),
-                        credentials=self._token
+                        credentials=self._token,
                     )
-                    temp_endpoints = self.update_temp_endpoints(response, temp_endpoints)
+                    temp_endpoints = self.update_temp_endpoints(
+                        response, temp_endpoints
+                    )
                 except Exception as e:
                     logger.debug(
                         "While tending, failed to get cluster endpoints with error:"
@@ -156,10 +184,12 @@ class ChannelProvider(base_channel_provider.BaseChannelProvider):
                 stub = vector_db_pb2_grpc.AboutServiceStub(self.get_channel())
                 about_request = vector_db_pb2.AboutRequest()
 
-                self.current_server_version = (await stub.Get(about_request, credentials=self._token)).version
+                self.current_server_version = (
+                    await stub.Get(about_request, credentials=self._token)
+                ).version
                 self.client_server_compatible = self.verify_compatibile_server()
 
-                self._tend_initalized.set() 
+                self._tend_initalized.set()
 
             # TODO: check tend interval.
             await asyncio.sleep(1)
@@ -168,10 +198,9 @@ class ChannelProvider(base_channel_provider.BaseChannelProvider):
 
             print(e)
 
-
     def _create_channel(self, host: str, port: int, is_tls: bool) -> grpc.Channel:
         host = re.sub(r"%.*", "", host)
-        
+
         if self.service_config_json:
             options = []
             options.append(("grpc.service_config", self.service_config_json))
@@ -179,30 +208,33 @@ class ChannelProvider(base_channel_provider.BaseChannelProvider):
             options = None
 
         if self._root_certificate:
-            with open(self._root_certificate, 'rb') as f:
+            with open(self._root_certificate, "rb") as f:
                 root_certificate = f.read()
 
             if self._private_key:
-                with open(self._private_key, 'rb') as f:
+                with open(self._private_key, "rb") as f:
                     private_key = f.read()
             else:
                 private_key = None
-                
+
             if self._certificate_chain:
-                with open(self._certificate_chain, 'rb') as f:
+                with open(self._certificate_chain, "rb") as f:
                     certificate_chain = f.read()
             else:
                 certificate_chain = None
 
+            ssl_credentials = grpc.ssl_channel_credentials(
+                root_certificates=root_certificate,
+                certificate_chain=certificate_chain,
+                private_key=private_key,
+            )
 
-            ssl_credentials = grpc.ssl_channel_credentials(root_certificates=root_certificate, certificate_chain=certificate_chain, private_key=private_key)
-
-
-            return grpc.aio.secure_channel(f"{host}:{port}", ssl_credentials, options=options)
+            return grpc.aio.secure_channel(
+                f"{host}:{port}", ssl_credentials, options=options
+            )
 
         else:
             return grpc.aio.insecure_channel(f"{host}:{port}", options=options)
-
 
     async def _update_token_and_ttl(
         self,

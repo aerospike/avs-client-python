@@ -11,6 +11,7 @@ from .shared.client_helpers import BaseClient
 
 logger = logging.getLogger(__name__)
 
+
 class Client(BaseClient):
     """
     Aerospike Vector Search Vector Client
@@ -49,7 +50,15 @@ class Client(BaseClient):
         """
         seeds = self._prepare_seeds(seeds)
         self._channel_provider = channel_provider.ChannelProvider(
-            seeds, listener_name, is_loadbalancer, username, password, root_certificate, certificate_chain, private_key, service_config_path
+            seeds,
+            listener_name,
+            is_loadbalancer,
+            username,
+            password,
+            root_certificate,
+            certificate_chain,
+            private_key,
+            service_config_path,
         )
 
     def insert(
@@ -80,18 +89,24 @@ class Client(BaseClient):
 
         """
 
-         
-
         (transact_stub, insert_request) = self._prepare_insert(
-            namespace, key, record_data, set_name, ignore_mem_queue_full, timeout, logger
+            namespace,
+            key,
+            record_data,
+            set_name,
+            ignore_mem_queue_full,
+            timeout,
+            logger,
         )
 
         kwargs = {}
         if timeout is not None:
-            kwargs['timeout'] = timeout
+            kwargs["timeout"] = timeout
 
         try:
-             transact_stub.Put(insert_request, credentials=self._channel_provider._token, **kwargs)
+            transact_stub.Put(
+                insert_request, credentials=self._channel_provider._token, **kwargs
+            )
         except grpc.RpcError as e:
             logger.error("Failed with error: %s", e)
             raise types.AVSServerError(rpc_error=e)
@@ -124,15 +139,23 @@ class Client(BaseClient):
 
         """
         (transact_stub, update_request) = self._prepare_update(
-            namespace, key, record_data, set_name, ignore_mem_queue_full, timeout, logger
+            namespace,
+            key,
+            record_data,
+            set_name,
+            ignore_mem_queue_full,
+            timeout,
+            logger,
         )
 
         kwargs = {}
         if timeout is not None:
-            kwargs['timeout'] = timeout
+            kwargs["timeout"] = timeout
 
         try:
-             transact_stub.Put(update_request, credentials=self._channel_provider._token, **kwargs)
+            transact_stub.Put(
+                update_request, credentials=self._channel_provider._token, **kwargs
+            )
         except grpc.RpcError as e:
             logger.error("Failed with error: %s", e)
             raise types.AVSServerError(rpc_error=e)
@@ -165,18 +188,24 @@ class Client(BaseClient):
 
         """
 
-         
-
         (transact_stub, upsert_request) = self._prepare_upsert(
-            namespace, key, record_data, set_name, ignore_mem_queue_full, timeout, logger
+            namespace,
+            key,
+            record_data,
+            set_name,
+            ignore_mem_queue_full,
+            timeout,
+            logger,
         )
 
         kwargs = {}
         if timeout is not None:
-            kwargs['timeout'] = timeout
+            kwargs["timeout"] = timeout
 
         try:
-             transact_stub.Put(upsert_request, credentials=self._channel_provider._token, **kwargs)
+            transact_stub.Put(
+                upsert_request, credentials=self._channel_provider._token, **kwargs
+            )
         except grpc.RpcError as e:
             logger.error("Failed with error: %s", e)
             raise types.AVSServerError(rpc_error=e)
@@ -208,18 +237,18 @@ class Client(BaseClient):
             This error could occur due to various reasons such as network issues, server-side failures, or invalid request parameters.
         """
 
-         
-
         (transact_stub, key, get_request) = self._prepare_get(
             namespace, key, field_names, set_name, timeout, logger
         )
 
         kwargs = {}
         if timeout is not None:
-            kwargs['timeout'] = timeout
+            kwargs["timeout"] = timeout
 
         try:
-            response =  transact_stub.Get(get_request, credentials=self._channel_provider._token, **kwargs)
+            response = transact_stub.Get(
+                get_request, credentials=self._channel_provider._token, **kwargs
+            )
         except grpc.RpcError as e:
             logger.error("Failed with error: %s", e)
             raise types.AVSServerError(rpc_error=e)
@@ -227,7 +256,12 @@ class Client(BaseClient):
         return self._respond_get(response, key)
 
     def exists(
-        self, *, namespace: str, key: Any, set_name: Optional[str] = None, timeout: Optional[int] = None,
+        self,
+        *,
+        namespace: str,
+        key: Any,
+        set_name: Optional[str] = None,
+        timeout: Optional[int] = None,
     ) -> bool:
         """
         Check if a record exists in Aerospike Vector Search.
@@ -245,19 +279,18 @@ class Client(BaseClient):
             This error could occur due to various reasons such as network issues, server-side failures, or invalid request parameters.
         """
 
-         
-
         (transact_stub, exists_request) = self._prepare_exists(
             namespace, key, set_name, timeout, logger
         )
 
         kwargs = {}
         if timeout is not None:
-            kwargs['timeout'] = timeout
-
+            kwargs["timeout"] = timeout
 
         try:
-            response =  transact_stub.Exists(exists_request, credentials=self._channel_provider._token, **kwargs)
+            response = transact_stub.Exists(
+                exists_request, credentials=self._channel_provider._token, **kwargs
+            )
         except grpc.RpcError as e:
             logger.error("Failed with error: %s", e)
             raise types.AVSServerError(rpc_error=e)
@@ -265,7 +298,12 @@ class Client(BaseClient):
         return self._respond_exists(response)
 
     def delete(
-        self, *, namespace: str, key: Any, set_name: Optional[str] = None, timeout: Optional[int] = None,
+        self,
+        *,
+        namespace: str,
+        key: Any,
+        set_name: Optional[str] = None,
+        timeout: Optional[int] = None,
     ) -> None:
         """
         Delete a record from Aerospike Vector Search.
@@ -280,18 +318,18 @@ class Client(BaseClient):
             This error could occur due to various reasons such as network issues, server-side failures, or invalid request parameters.
         """
 
-         
-
         (transact_stub, delete_request) = self._prepare_delete(
             namespace, key, set_name, timeout, logger
         )
 
         kwargs = {}
         if timeout is not None:
-            kwargs['timeout'] = timeout
+            kwargs["timeout"] = timeout
 
         try:
-             transact_stub.Delete(delete_request, credentials=self._channel_provider._token, **kwargs)
+            transact_stub.Delete(
+                delete_request, credentials=self._channel_provider._token, **kwargs
+            )
         except grpc.RpcError as e:
             logger.error("Failed with error: %s", e)
             raise types.AVSServerError(rpc_error=e)
@@ -325,18 +363,18 @@ class Client(BaseClient):
             This error could occur due to various reasons such as network issues, server-side failures, or invalid request parameters.
         """
 
-         
-
         (transact_stub, is_indexed_request) = self._prepare_is_indexed(
             namespace, key, index_name, index_namespace, set_name, timeout, logger
         )
 
         kwargs = {}
         if timeout is not None:
-            kwargs['timeout'] = timeout
+            kwargs["timeout"] = timeout
 
         try:
-            response =  transact_stub.IsIndexed(is_indexed_request, credentials=self._channel_provider._token, **kwargs)
+            response = transact_stub.IsIndexed(
+                is_indexed_request, credentials=self._channel_provider._token, **kwargs
+            )
         except grpc.RpcError as e:
             logger.error("Failed with error: %s", e)
             raise types.AVSServerError(rpc_error=e)
@@ -373,18 +411,31 @@ class Client(BaseClient):
             grpc.RpcError: Raised if an error occurs during the RPC communication with the server while attempting to create the index.
             This error could occur due to various reasons such as network issues, server-side failures, or invalid request parameters.
         """
-         
 
         (transact_stub, vector_search_request) = self._prepare_vector_search(
-            namespace, index_name, query, limit, search_params, field_names, timeout, logger
+            namespace,
+            index_name,
+            query,
+            limit,
+            search_params,
+            field_names,
+            timeout,
+            logger,
         )
 
         kwargs = {}
         if timeout is not None:
-            kwargs['timeout'] = timeout
+            kwargs["timeout"] = timeout
 
         try:
-            return [self._respond_neighbor(result) for result in transact_stub.VectorSearch(vector_search_request, credentials=self._channel_provider._token, **kwargs)]
+            return [
+                self._respond_neighbor(result)
+                for result in transact_stub.VectorSearch(
+                    vector_search_request,
+                    credentials=self._channel_provider._token,
+                    **kwargs,
+                )
+            ]
         except grpc.RpcError as e:
             logger.error("Failed with error: %s", e)
             raise types.AVSServerError(rpc_error=e)
@@ -418,7 +469,6 @@ class Client(BaseClient):
             The function polls the index status with a wait interval of 10 seconds until either
             the timeout is reached or the index has no pending index update operations.
         """
-         
 
         # Wait interval between polling
         (
@@ -432,7 +482,9 @@ class Client(BaseClient):
 
         while True:
             try:
-                index_status =  index_stub.GetStatus(index_completion_request, credentials=self._channel_provider._token)
+                index_status = index_stub.GetStatus(
+                    index_completion_request, credentials=self._channel_provider._token
+                )
             except grpc.RpcError as e:
 
                 logger.error("Failed with error: %s", e)

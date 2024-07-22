@@ -1,6 +1,7 @@
 import pytest
 from ...utils import key_strategy
 from hypothesis import given, settings, Verbosity
+import numpy as np
 
 from aerospike_vector_search import AVSServerError
 import grpc
@@ -12,11 +13,14 @@ class upsert_test_case:
         record_data,
         set_name,
         timeout,
+        key=None
     ):
         self.namespace = namespace
         self.record_data = record_data
         self.set_name = set_name
         self.timeout = timeout
+
+        self.key = key
 
 @given(random_key=key_strategy())
 @settings(max_examples=5, deadline=1000)
@@ -84,11 +88,46 @@ async def test_vector_upsert_with_existing_record(session_vector_client, test_ca
         key=random_key,
     )
 
+
+@pytest.mark.parametrize(
+    "test_case",
+    [
+        upsert_test_case(
+            namespace="test",
+            record_data={"math": [i for i in range(1024)]},
+            set_name=None,
+            timeout=None,
+            key=np.int32(31)
+        ),
+        upsert_test_case(
+            namespace="test",
+            record_data={"math": [i for i in range(1024)]},
+            set_name=None,
+            timeout=None,
+            key=np.array([b'a', b'b', b'c'])
+        )
+    ],
+)
+async def test_vector_upsert_with_numpy_key(session_vector_client, test_case):
+    await session_vector_client.upsert(
+        namespace=test_case.namespace,
+        key=test_case.key,
+        record_data=test_case.record_data,
+        set_name=test_case.set_name
+    )
+
+    await session_vector_client.delete(
+        namespace=test_case.namespace,
+        key=test_case.key,
+    )
+
+
 @given(random_key=key_strategy())
 @settings(max_examples=5, deadline=1000)
 @pytest.mark.parametrize(
     "test_case",
     [
+        None,
         upsert_test_case(
             namespace="test",
             record_data={"math": [i for i in range(1024)]},
@@ -99,7 +138,10 @@ async def test_vector_upsert_with_existing_record(session_vector_client, test_ca
 )
 async def test_vector_upsert_timeout(session_vector_client, test_case, random_key, with_latency):
     if not with_latency:
-        pytest.skip("Server latency too low to test timeout")    
+        print("INSIDE")
+        pytest.skip("Server latency too low to test timeout")  
+
+    print(with_latency)  
     with pytest.raises(AVSServerError) as e_info:
         for i in range(10):
             await session_vector_client.upsert(

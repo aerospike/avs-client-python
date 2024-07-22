@@ -97,6 +97,7 @@ async def test_vector_update_without_existing_record(session_vector_client, test
 @pytest.mark.parametrize(
     "test_case",
     [
+        None,
         update_test_case(
             namespace="test",
             record_data={"math": [i for i in range(1024)]},
@@ -107,7 +108,8 @@ async def test_vector_update_without_existing_record(session_vector_client, test
 )
 async def test_vector_update_timeout(session_vector_client, test_case, random_key, with_latency):
     if not with_latency:
-        pytest.skip("Server latency too low to test timeout")    
+        pytest.skip("Server latency too low to test timeout")   
+    print(with_latency) 
     with pytest.raises(AVSServerError) as e_info:
         for i in range(10):
             await session_vector_client.update(

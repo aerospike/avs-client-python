@@ -32,7 +32,17 @@ class ChannelProvider(base_channel_provider.BaseChannelProvider):
         private_key: Optional[str] = None,
         service_config_path: Optional[str] = None,
     ) -> None:
-        super().__init__(seeds, listener_name, is_loadbalancer, username, password, root_certificate, certificate_chain, private_key, service_config_path)
+        super().__init__(
+            seeds,
+            listener_name,
+            is_loadbalancer,
+            username,
+            password,
+            root_certificate,
+            certificate_chain,
+            private_key,
+            service_config_path,
+        )
         self._tend_ended = threading.Event()
         self._timer = None
         self._tend()
@@ -58,26 +68,52 @@ class ChannelProvider(base_channel_provider.BaseChannelProvider):
                 self._update_token_and_ttl()
 
         if end_tend:
+
+            if not self.client_server_compatible:
+
+                stub = vector_db_pb2_grpc.AboutServiceStub(self.get_channel())
+                about_request = vector_db_pb2.AboutRequest()
+
+                self.current_server_version = stub.Get(
+                    about_request, credentials=self._token
+                ).version
+                self.client_server_compatible = self.verify_compatibile_server()
+                if not self.client_server_compatible:
+                    self._tend_ended.set()
+                    raise types.AVSClientError(
+                        message="This AVS Client version is only compatbile with AVS Servers above the following version number: "
+                        + self.minimum_required_version
+                    )
+
             self._tend_ended.set()
+
             return
+
+        update_endpoints_stubs = []
+        new_cluster_ids = []
         for channel in channels:
 
+            stubs = []
+
             stub = vector_db_pb2_grpc.ClusterInfoServiceStub(channel)
+            stubs.append(stub)
 
             try:
-                new_cluster_id = stub.GetClusterId(empty, credentials=self._credentials).id
-                if self.check_cluster_id(new_cluster_id):
-                    update_endpoints_stub = stub
-                    break
-                else:
-                    continue
+                new_cluster_ids.append(
+                    stub.GetClusterId(empty, credentials=self._credentials)
+                )
 
             except Exception as e:
                 logger.debug(
                     "While tending, failed to get cluster id with error:" + str(e)
                 )
 
-        if update_endpoints_stub:
+        for index, value in enumerate(new_cluster_ids):
+            if self.check_cluster_id(value.id):
+                update_endpoints_stubs.append(stubs[index])
+
+        for stub in update_endpoints_stubs:
+
             try:
                 response = stub.GetClusterEndpoints(
                     vector_db_pb2.ClusterNodeEndpointsRequest(
@@ -91,6 +127,7 @@ class ChannelProvider(base_channel_provider.BaseChannelProvider):
                     + str(e)
                 )
 
+        if update_endpoints_stubs:
             for node, newEndpoints in temp_endpoints.items():
                 (channel_endpoints, add_new_channel) = self.check_for_new_endpoints(
                     node, newEndpoints
@@ -124,10 +161,15 @@ class ChannelProvider(base_channel_provider.BaseChannelProvider):
             stub = vector_db_pb2_grpc.AboutServiceStub(self.get_channel())
             about_request = vector_db_pb2.AboutRequest()
 
-            self.current_server_version =  stub.Get(about_request, credentials=self._token).version
+            self.current_server_version = stub.Get(
+                about_request, credentials=self._token
+            ).version
             self.client_server_compatible = self.verify_compatibile_server()
             if not self.client_server_compatible:
-                raise types.AVSClientError(message="This AVS Client version is only compatbile with AVS Servers above the following version number: " + self.minimum_required_version)
+                raise types.AVSClientError(
+                    message="This AVS Client version is only compatbile with AVS Servers above the following version number: "
+                    + self.minimum_required_version
+                )
 
         self._timer = threading.Timer(1, self._tend).start()
 
@@ -141,24 +183,30 @@ class ChannelProvider(base_channel_provider.BaseChannelProvider):
             options = None
 
         if self._root_certificate:
-            with open(self._root_certificate, 'rb') as f:
+            with open(self._root_certificate, "rb") as f:
                 root_certificate = f.read()
 
             if self._private_key:
-                with open(self._private_key, 'rb') as f:
+                with open(self._private_key, "rb") as f:
                     private_key = f.read()
             else:
                 private_key = None
-                
+
             if self._certificate_chain:
-                with open(self._certificate_chain, 'rb') as f:
+                with open(self._certificate_chain, "rb") as f:
                     certificate_chain = f.read()
             else:
                 certificate_chain = None
 
-            ssl_credentials = grpc.ssl_channel_credentials(root_certificates=root_certificate, certificate_chain=certificate_chain, private_key=private_key)
+            ssl_credentials = grpc.ssl_channel_credentials(
+                root_certificates=root_certificate,
+                certificate_chain=certificate_chain,
+                private_key=private_key,
+            )
 
-            return grpc.secure_channel(f"{host}:{port}", ssl_credentials, options=options)
+            return grpc.secure_channel(
+                f"{host}:{port}", ssl_credentials, options=options
+            )
 
         else:
             return grpc.insecure_channel(f"{host}:{port}", options=options)

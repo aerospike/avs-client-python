@@ -140,10 +140,11 @@ class VectorDistanceMetric(enum.Enum):
     MANHATTAN: types_pb2.VectorDistanceMetric = types_pb2.VectorDistanceMetric.MANHATTAN
     HAMMING: types_pb2.VectorDistanceMetric = types_pb2.VectorDistanceMetric.HAMMING
 
+
 class User(object):
     """
 
-    PLACEHOLDER FOR TEXT 
+    PLACEHOLDER FOR TEXT
     Args:
         max_records (Optional[int], optional): Maximum number of records to fit in a batch. Defaults to 10000.
         interval (Optional[int], optional): The maximum amount of time in milliseconds to wait before finalizing a batch. Defaults to 10000.
@@ -158,6 +159,7 @@ class User(object):
     ) -> None:
         self.username = username
         self.roles = roles
+
 
 class HnswBatchingParams(object):
     """
@@ -186,7 +188,15 @@ class HnswBatchingParams(object):
 
 
 class HnswHealerParams(object):
-    def __init__(self, *, max_scan_rate_per_node: Optional[int] = None, max_scan_page_size: Optional[int] = None, re_index_percent: Optional[int] = None, schedule_delay: Optional[int] = None, parallelism: Optional[int] = None) -> None:
+    def __init__(
+        self,
+        *,
+        max_scan_rate_per_node: Optional[int] = None,
+        max_scan_page_size: Optional[int] = None,
+        re_index_percent: Optional[int] = None,
+        schedule_delay: Optional[int] = None,
+        parallelism: Optional[int] = None,
+    ) -> None:
         self.max_scan_rate_per_node = max_scan_rate_per_node
         self.max_scan_page_size = max_scan_page_size
         self.re_index_percent = re_index_percent
@@ -218,7 +228,9 @@ class HnswHealerParams(object):
 
 
 class HnswCachingParams(object):
-    def __init__(self, *, max_entries: Optional[int] = None, expiry: Optional[int] = None) -> None:
+    def __init__(
+        self, *, max_entries: Optional[int] = None, expiry: Optional[int] = None
+    ) -> None:
         self.max_entries = max_entries
         self.expiry = expiry
 
@@ -229,6 +241,7 @@ class HnswCachingParams(object):
         if self.expiry:
             params.expiry = self.expiry
         return params
+
 
 class HnswIndexMergeParams(object):
     def __init__(self, *, parallelism: Optional[int] = None) -> None:
@@ -262,7 +275,7 @@ class HnswParams(object):
         max_mem_queue_size: Optional[int] = None,
         caching_params: Optional[HnswCachingParams] = HnswCachingParams(),
         healer_params: Optional[HnswHealerParams] = HnswHealerParams(),
-        merge_params: Optional[HnswIndexMergeParams] = HnswIndexMergeParams()
+        merge_params: Optional[HnswIndexMergeParams] = HnswIndexMergeParams(),
     ) -> None:
         self.m = m
         self.ef_construction = ef_construction
@@ -291,7 +304,6 @@ class HnswParams(object):
         return params
 
 
-
 class HnswSearchParams(object):
     def __init__(self, *, ef: Optional[int] = None) -> None:
         """
@@ -314,8 +326,11 @@ class HnswSearchParams(object):
         params.ef = self.ef
         return params
 
+
 class IndexStorage(object):
-    def __init__(self, *, namespace: Optional[str] = None, set_name: Optional[str] = None) -> None:
+    def __init__(
+        self, *, namespace: Optional[str] = None, set_name: Optional[str] = None
+    ) -> None:
         self.namespace = namespace
         self.set_name = set_name
 
@@ -354,6 +369,13 @@ class AVSServerError(AVSError):
     def __init__(self, *, rpc_error) -> None:
         self.rpc_error = rpc_error
 
+    def __str__(self):
+        return f"AVSServerError(rpc_error={self.rpc_error})"
+
+
 class AVSClientError(AVSError):
     def __init__(self, *, message) -> None:
         self.message = message
+
+    def __str__(self):
+        return f"AVSClientError(message={self.message})"

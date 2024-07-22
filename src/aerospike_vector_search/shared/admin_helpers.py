@@ -49,7 +49,7 @@ class BaseClient(object):
             index_params,
             index_meta_data,
             index_storage,
-            timeout
+            timeout,
         )
 
         if sets and not sets.strip():
@@ -72,13 +72,18 @@ class BaseClient(object):
             field=vector_field,
             dimensions=dimensions,
             labels=index_meta_data,
-            storage=index_storage
+            storage=index_storage,
         )
         return (index_stub, index_create_request)
 
     def _prepare_index_drop(self, namespace, name, timeout, logger) -> None:
 
-        logger.debug("Dropping index: namespace=%s, name=%s, timeout=%s", namespace, name, timeout)
+        logger.debug(
+            "Dropping index: namespace=%s, name=%s, timeout=%s",
+            namespace,
+            name,
+            timeout,
+        )
 
         index_stub = self._get_index_stub()
         index_drop_request = self._get_index_id(namespace, name)
@@ -97,7 +102,10 @@ class BaseClient(object):
     def _prepare_index_get(self, namespace, name, timeout, logger) -> None:
 
         logger.debug(
-            "Getting index information: namespace=%s, name=%s, timeout=%s", namespace, name, timeout
+            "Getting index information: namespace=%s, name=%s, timeout=%s",
+            namespace,
+            name,
+            timeout,
         )
 
         index_stub = self._get_index_stub()
@@ -107,7 +115,12 @@ class BaseClient(object):
 
     def _prepare_index_get_status(self, namespace, name, timeout, logger) -> None:
 
-        logger.debug("Getting index status: namespace=%s, name=%s, timeout=%s", namespace, name, timeout)
+        logger.debug(
+            "Getting index status: namespace=%s, name=%s, timeout=%s",
+            namespace,
+            name,
+            timeout,
+        )
 
         index_stub = self._get_index_stub()
         index_get_status_request = self._get_index_id(namespace, name)
@@ -115,20 +128,35 @@ class BaseClient(object):
         return (index_stub, index_get_status_request)
 
     def _prepare_add_user(self, username, password, roles, timeout, logger) -> None:
-        logger.debug("Getting index status: username=%s, password=%s, roles=%s, timeout=%s", username, password, roles, timeout)
+        logger.debug(
+            "Getting index status: username=%s, password=%s, roles=%s, timeout=%s",
+            username,
+            password,
+            roles,
+            timeout,
+        )
 
         user_admin_stub = self._get_user_admin_stub()
         credentials = helpers._get_credentials(username, password)
-        add_user_request = user_admin_pb2.AddUserRequest(credentials=credentials, roles=roles)
+        add_user_request = user_admin_pb2.AddUserRequest(
+            credentials=credentials, roles=roles
+        )
 
         return (user_admin_stub, add_user_request)
 
     def _prepare_update_credentials(self, username, password, timeout, logger) -> None:
-        logger.debug("Getting index status: username=%s, password=%s, timeout=%s", username, password, timeout)
+        logger.debug(
+            "Getting index status: username=%s, password=%s, timeout=%s",
+            username,
+            password,
+            timeout,
+        )
 
         user_admin_stub = self._get_user_admin_stub()
         credentials = helpers._get_credentials(username, password)
-        update_user_request = user_admin_pb2.UpdateCredentialsRequest(credentials=credentials)
+        update_user_request = user_admin_pb2.UpdateCredentialsRequest(
+            credentials=credentials
+        )
 
         return (user_admin_stub, update_user_request)
 
@@ -157,18 +185,32 @@ class BaseClient(object):
         return (user_admin_stub, list_users_request)
 
     def _prepare_grant_roles(self, username, roles, timeout, logger) -> None:
-        logger.debug("Getting index status: username=%s, roles=%s, timeout=%s", username, roles, timeout)
+        logger.debug(
+            "Getting index status: username=%s, roles=%s, timeout=%s",
+            username,
+            roles,
+            timeout,
+        )
 
         user_admin_stub = self._get_user_admin_stub()
-        grant_roles_request = user_admin_pb2.GrantRolesRequest(username=username, roles=roles)
+        grant_roles_request = user_admin_pb2.GrantRolesRequest(
+            username=username, roles=roles
+        )
 
         return (user_admin_stub, grant_roles_request)
 
     def _prepare_revoke_roles(self, username, roles, timeout, logger) -> None:
-        logger.debug("Getting index status: username=%s, roles=%s, timeout=%s", username, roles, timeout)
+        logger.debug(
+            "Getting index status: username=%s, roles=%s, timeout=%s",
+            username,
+            roles,
+            timeout,
+        )
 
         user_admin_stub = self._get_user_admin_stub()
-        revoke_roles_request = user_admin_pb2.RevokeRolesRequest(username=username, roles=roles)
+        revoke_roles_request = user_admin_pb2.RevokeRolesRequest(
+            username=username, roles=roles
+        )
 
         return (user_admin_stub, revoke_roles_request)
 
@@ -198,18 +240,14 @@ class BaseClient(object):
             )
             hnsw_params_dict["batching_params"] = batching_params_dict
 
-
-
             caching_params_dict = hnsw_params_dict.pop("cachingParams", None)
             if caching_params_dict:
                 caching_params_dict["max_entries"] = caching_params_dict.pop(
                     "maxEntries", None
                 )
-                caching_params_dict["expiry"] = caching_params_dict.pop(
-                    "expiry", None
-                )
+                caching_params_dict["expiry"] = caching_params_dict.pop("expiry", None)
                 hnsw_params_dict["caching_params"] = caching_params_dict
-            
+
             healer_params_dict = hnsw_params_dict.pop("healerParams", None)
 
             if healer_params_dict:
@@ -230,12 +268,12 @@ class BaseClient(object):
                     "parallelism", None
                 )
                 hnsw_params_dict["healer_params"] = healer_params_dict
-          
+
             merge_params_dict = hnsw_params_dict.pop("mergeParams", None)
             if merge_params_dict:
                 merge_params_dict["parallelism"] = merge_params_dict.pop(
                     "parallelism", None
-                )  
+                )
                 hnsw_params_dict["merge_params"] = merge_params_dict
 
             response_dict["hnsw_params"] = hnsw_params_dict
@@ -262,7 +300,6 @@ class BaseClient(object):
         return response_dict
 
     def _respond_get_user(self, response) -> None:
-        
 
         return types.User(username=response.username, roles=list(response.roles))
 
@@ -274,7 +311,7 @@ class BaseClient(object):
 
     def _respond_list_roles(self, response) -> None:
         return list(response.roles)
-        
+
     def _respond_index_get_status(self, response) -> None:
         return response.unmergedRecordCount
 
@@ -282,7 +319,9 @@ class BaseClient(object):
         return index_pb2_grpc.IndexServiceStub(self._channel_provider.get_channel())
 
     def _get_user_admin_stub(self):
-        return user_admin_pb2_grpc.UserAdminServiceStub(self._channel_provider.get_channel())
+        return user_admin_pb2_grpc.UserAdminServiceStub(
+            self._channel_provider.get_channel()
+        )
 
     def _get_index_id(self, namespace, name):
         return types_pb2.IndexId(namespace=namespace, name=name)

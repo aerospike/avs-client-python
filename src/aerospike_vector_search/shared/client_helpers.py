@@ -1,6 +1,6 @@
 from typing import Any, Optional, Union
 import time
-import numpy
+import numpy as np
 from . import conversions
 
 from .proto_generated import transact_pb2
@@ -16,7 +16,15 @@ class BaseClient(object):
         return helpers._prepare_seeds(seeds)
 
     def _prepare_put(
-        self, namespace, key, record_data, set_name, write_type, ignore_mem_queue_full, timeout, logger
+        self,
+        namespace,
+        key,
+        record_data,
+        set_name,
+        write_type,
+        ignore_mem_queue_full,
+        timeout,
+        logger,
     ) -> None:
 
         logger.debug(
@@ -26,14 +34,14 @@ class BaseClient(object):
             record_data,
             set_name,
             ignore_mem_queue_full,
-            timeout
+            timeout,
         )
 
         key = self._get_key(namespace, set_name, key)
         field_list = []
 
         for k, v in record_data.items():
-            if isinstance(v, numpy.ndarray):
+            if isinstance(v, np.ndarray):
                 field_list.append(
                     types_pb2.Field(
                         name=k, value=conversions.toVectorDbValue(v.tolist())
@@ -47,12 +55,24 @@ class BaseClient(object):
 
         transact_stub = self._get_transact_stub()
         put_request = transact_pb2.PutRequest(
-            key=key, writeType=write_type, fields=field_list, ignoreMemQueueFull=ignore_mem_queue_full
+            key=key,
+            writeType=write_type,
+            fields=field_list,
+            ignoreMemQueueFull=ignore_mem_queue_full,
         )
 
         return (transact_stub, put_request)
 
-    def _prepare_insert(self, namespace, key, record_data, set_name, ignore_mem_queue_full, timeout, logger) -> None:
+    def _prepare_insert(
+        self,
+        namespace,
+        key,
+        record_data,
+        set_name,
+        ignore_mem_queue_full,
+        timeout,
+        logger,
+    ) -> None:
         return self._prepare_put(
             namespace,
             key,
@@ -64,7 +84,16 @@ class BaseClient(object):
             logger,
         )
 
-    def _prepare_update(self, namespace, key, record_data, set_name, ignore_mem_queue_full, timeout, logger) -> None:
+    def _prepare_update(
+        self,
+        namespace,
+        key,
+        record_data,
+        set_name,
+        ignore_mem_queue_full,
+        timeout,
+        logger,
+    ) -> None:
         return self._prepare_put(
             namespace,
             key,
@@ -76,12 +105,30 @@ class BaseClient(object):
             logger,
         )
 
-    def _prepare_upsert(self, namespace, key, record_data, set_name, ignore_mem_queue_full, timeout, logger) -> None:
+    def _prepare_upsert(
+        self,
+        namespace,
+        key,
+        record_data,
+        set_name,
+        ignore_mem_queue_full,
+        timeout,
+        logger,
+    ) -> None:
         return self._prepare_put(
-            namespace, key, record_data, set_name, transact_pb2.WriteType.UPSERT, ignore_mem_queue_full, timeout, logger
+            namespace,
+            key,
+            record_data,
+            set_name,
+            transact_pb2.WriteType.UPSERT,
+            ignore_mem_queue_full,
+            timeout,
+            logger,
         )
 
-    def _prepare_get(self, namespace, key, field_names, set_name, timeout, logger) -> None:
+    def _prepare_get(
+        self, namespace, key, field_names, set_name, timeout, logger
+    ) -> None:
 
         logger.debug(
             "Getting record: namespace=%s, key=%s, field_names:%s, set_name:%s, timeout:%s",
@@ -159,7 +206,15 @@ class BaseClient(object):
         return (transact_stub, is_indexed_request)
 
     def _prepare_vector_search(
-        self, namespace, index_name, query, limit, search_params, field_names, timeout, logger
+        self,
+        namespace,
+        index_name,
+        query,
+        limit,
+        search_params,
+        field_names,
+        timeout,
+        logger,
     ) -> None:
 
         logger.debug(
@@ -170,7 +225,7 @@ class BaseClient(object):
             limit,
             search_params,
             field_names,
-            timeout
+            timeout,
         )
 
         if search_params != None:
@@ -180,7 +235,7 @@ class BaseClient(object):
 
         index = types_pb2.IndexId(namespace=namespace, name=index_name)
 
-        if isinstance(query, numpy.ndarray):
+        if isinstance(query, np.ndarray):
             query_vector = conversions.toVectorDbValue(query.tolist()).vectorValue
         else:
             query_vector = conversions.toVectorDbValue(query).vectorValue
@@ -198,7 +253,9 @@ class BaseClient(object):
         return (transact_stub, vector_search_request)
 
     def _get_transact_stub(self):
-        return transact_pb2_grpc.TransactServiceStub(self._channel_provider.get_channel())
+        return transact_pb2_grpc.TransactServiceStub(
+            self._channel_provider.get_channel()
+        )
 
     def _respond_get(self, response, key) -> None:
         return types.RecordWithKey(
@@ -251,6 +308,13 @@ class BaseClient(object):
     def _get_key(
         self, namespace: str, set: str, key: Union[int, str, bytes, bytearray]
     ):
+
+        if isinstance(key, np.ndarray):
+            key = key.tobytes()
+
+        if isinstance(key, np.generic):
+            key = key.item()
+
         if isinstance(key, str):
             key = types_pb2.Key(namespace=namespace, set=set, stringValue=key)
         elif isinstance(key, int):

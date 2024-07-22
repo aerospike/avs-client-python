@@ -81,6 +81,7 @@ async def test_vector_delete_without_record(session_vector_client, test_case, ra
 @pytest.mark.parametrize(
     "test_case",
     [
+        None,
         delete_test_case(
             namespace="test",
             set_name=None,

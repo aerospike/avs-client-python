@@ -61,6 +61,7 @@ async def test_vector_exists(session_vector_client, test_case, random_key):
 @pytest.mark.parametrize(
     "test_case",
     [
+        None,
         exists_test_case(
             namespace="test",
             set_name=None,
