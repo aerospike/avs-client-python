@@ -388,6 +388,7 @@ async def test_vector_is_indexed(session_vector_client, session_admin_client, wi
         namespace="test",
         key=str(random.randrange(10_000)),
         index_name="demo2",
+        set_name="demo2"
     )
     assert result is True
 
