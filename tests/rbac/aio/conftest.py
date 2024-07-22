@@ -24,7 +24,7 @@ def private_key(request):
 def certificate_chain(request):
     return request.config.getoption("--certificate_chain")
 
-
+"""
 @pytest.fixture(scope="module", autouse=True)
 async def drop_all_indexes(username, password, host, port, root_certificate, certificate_chain, private_key):
     print("\n\n\n\n MADE IT TO FUNCTION")
@@ -38,6 +38,7 @@ async def drop_all_indexes(username, password, host, port, root_certificate, cer
             tasks.append(client.index_drop(namespace="test", name=item['id']['name']))
 
         await asyncio.gather(*tasks)
+"""
 
 @pytest.fixture(scope="module")
 async def session_rbac_admin_client(username, password, root_certificate, host, port, certificate_chain, private_key):
