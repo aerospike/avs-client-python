@@ -124,7 +124,7 @@ class Client(BaseClient):
                 **kwargs,
             )
         except grpc.RpcError as e:
-            logger.error("Failed with error: %s", e)
+            logger.error("Failed to create index with error: %s", e)
             raise types.AVSServerError(rpc_error=e)
         try:
             self._wait_for_index_creation(
@@ -166,7 +166,7 @@ class Client(BaseClient):
                 index_drop_request, credentials=self._channel_provider._token, **kwargs
             )
         except grpc.RpcError as e:
-            logger.error("Failed with error: %s", e)
+            logger.error("Failed to drop index with error: %s", e)
             raise types.AVSServerError(rpc_error=e)
         try:
             self._wait_for_index_deletion(
@@ -199,7 +199,7 @@ class Client(BaseClient):
                 index_list_request, credentials=self._channel_provider._token, **kwargs
             )
         except grpc.RpcError as e:
-            logger.error("Failed with error: %s", e)
+            logger.error("Failed to list indexes with error: %s", e)
             raise types.AVSServerError(rpc_error=e)
         return self._respond_index_list(response)
 
@@ -235,7 +235,7 @@ class Client(BaseClient):
                 index_get_request, credentials=self._channel_provider._token, **kwargs
             )
         except grpc.RpcError as e:
-            logger.error("Failed with error: %s", e)
+            logger.error("Failed to get index with error: %s", e)
             raise types.AVSServerError(rpc_error=e)
         return self._respond_index_get(response)
 
@@ -278,7 +278,7 @@ class Client(BaseClient):
                 **kwargs,
             )
         except grpc.RpcError as e:
-            logger.error("Failed with error: %s", e)
+            logger.error("Failed to get index status with error: %s", e)
             raise types.AVSServerError(rpc_error=e)
 
         return self._respond_index_get_status(response)
@@ -305,7 +305,7 @@ class Client(BaseClient):
                 add_user_request, credentials=self._channel_provider._token, **kwargs
             )
         except grpc.RpcError as e:
-            logger.error("Failed with error: %s", e)
+            logger.error("Failed to add user with error: %s", e)
             raise types.AVSServerError(rpc_error=e)
 
     def update_credentials(
@@ -325,7 +325,7 @@ class Client(BaseClient):
                 update_credentials_request, credentials=self._channel_provider._token
             )
         except grpc.RpcError as e:
-            logger.error("Failed with error: %s", e)
+            logger.error("Failed to update credentials with error: %s", e)
             raise types.AVSServerError(rpc_error=e)
 
     def drop_user(self, *, username: str, timeout: Optional[int] = None) -> int:
@@ -343,7 +343,7 @@ class Client(BaseClient):
                 drop_user_request, credentials=self._channel_provider._token, **kwargs
             )
         except grpc.RpcError as e:
-            logger.error("Failed with error: %s", e)
+            logger.error("Failed to drop user with error: %s", e)
             raise types.AVSServerError(rpc_error=e)
 
     def get_user(self, *, username: str, timeout: Optional[int] = None) -> int:
@@ -361,7 +361,7 @@ class Client(BaseClient):
                 get_user_request, credentials=self._channel_provider._token, **kwargs
             )
         except grpc.RpcError as e:
-            logger.error("Failed with error: %s", e)
+            logger.error("Failed to get user with error: %s", e)
             raise types.AVSServerError(rpc_error=e)
 
         return self._respond_get_user(response)
@@ -381,7 +381,7 @@ class Client(BaseClient):
                 list_users_request, credentials=self._channel_provider._token, **kwargs
             )
         except grpc.RpcError as e:
-            logger.error("Failed with error: %s", e)
+            logger.error("Failed to list user with error: %s", e)
             raise types.AVSServerError(rpc_error=e)
         return self._respond_list_users(response)
 
@@ -402,7 +402,7 @@ class Client(BaseClient):
                 grant_roles_request, credentials=self._channel_provider._token, **kwargs
             )
         except grpc.RpcError as e:
-            logger.error("Failed with error: %s", e)
+            logger.error("Failed to grant roles with error: %s", e)
             raise types.AVSServerError(rpc_error=e)
 
     def revoke_roles(
@@ -424,7 +424,7 @@ class Client(BaseClient):
                 **kwargs,
             )
         except grpc.RpcError as e:
-            logger.error("Failed with error: %s", e)
+            logger.error("Failed to revoke roles with error: %s", e)
             raise types.AVSServerError(rpc_error=e)
 
     def list_roles(self, timeout: Optional[int] = None) -> int:
@@ -442,7 +442,7 @@ class Client(BaseClient):
                 list_roles_request, credentials=self._channel_provider._token, **kwargs
             )
         except grpc.RpcError as e:
-            logger.error("Failed with error: %s", e)
+            logger.error("Failed to list roles with error: %s", e)
             raise types.AVSServerError(rpc_error=e)
         return self._respond_list_roles(response)
 
@@ -476,7 +476,7 @@ class Client(BaseClient):
                     # Wait for some more time.
                     time.sleep(wait_interval)
                 else:
-                    logger.error("Failed with error: %s", e)
+                    logger.error("Failed waiting for index creation with error: %s", e)
                     raise types.AVSServerError(rpc_error=e)
 
     def _wait_for_index_deletion(
@@ -511,6 +511,7 @@ class Client(BaseClient):
                     # Index has been created
                     return
                 else:
+                    logger.error("Failed waiting for index deletion with error: %s", e)
                     raise types.AVSServerError(rpc_error=e)
 
     def close(self):

@@ -62,12 +62,100 @@ class ChannelProvider(base_channel_provider.BaseChannelProvider):
             self._timer.join()
 
     def _tend(self):
-        (temp_endpoints, update_endpoints_stub, channels, end_tend) = self.init_tend()
-        if self._token:
-            if self._check_if_token_refresh_needed():
-                self._update_token_and_ttl()
+        try:
+            (temp_endpoints, update_endpoints_stub, channels, end_tend) = self.init_tend()
+            if self._token:
+                if self._check_if_token_refresh_needed():
+                    self._update_token_and_ttl()
 
-        if end_tend:
+            if end_tend:
+
+                if not self.client_server_compatible:
+
+                    stub = vector_db_pb2_grpc.AboutServiceStub(self.get_channel())
+                    about_request = vector_db_pb2.AboutRequest()
+
+                    self.current_server_version = stub.Get(
+                        about_request, credentials=self._token
+                    ).version
+                    self.client_server_compatible = self.verify_compatibile_server()
+                    if not self.client_server_compatible:
+                        self._tend_ended.set()
+                        raise types.AVSClientError(
+                            message="This AVS Client version is only compatbile with AVS Servers above the following version number: "
+                            + self.minimum_required_version
+                        )
+
+                self._tend_ended.set()
+
+                return
+
+            update_endpoints_stubs = []
+            new_cluster_ids = []
+            for channel in channels:
+
+                stubs = []
+
+                stub = vector_db_pb2_grpc.ClusterInfoServiceStub(channel)
+                stubs.append(stub)
+
+                try:
+                    new_cluster_ids.append(
+                        stub.GetClusterId(empty, credentials=self._credentials)
+                    )
+
+                except Exception as e:
+                    logger.debug(
+                        "While tending, failed to get cluster id with error:" + str(e)
+                    )
+
+            for index, value in enumerate(new_cluster_ids):
+                if self.check_cluster_id(value.id):
+                    update_endpoints_stubs.append(stubs[index])
+
+            for stub in update_endpoints_stubs:
+
+                try:
+                    response = stub.GetClusterEndpoints(
+                        vector_db_pb2.ClusterNodeEndpointsRequest(
+                            listenerName=self.listener_name, credentials=self._credentials
+                        )
+                    )
+                    temp_endpoints = self.update_temp_endpoints(response, temp_endpoints)
+                except Exception as e:
+                    logger.debug(
+                        "While tending, failed to get cluster endpoints with error:"
+                        + str(e)
+                    )
+
+            if update_endpoints_stubs:
+                for node, newEndpoints in temp_endpoints.items():
+                    (channel_endpoints, add_new_channel) = self.check_for_new_endpoints(
+                        node, newEndpoints
+                    )
+
+                    if add_new_channel:
+                        try:
+                            # TODO: Wait for all calls to drain
+                            channel_endpoints.channel.close()
+                        except Exception as e:
+                            logger.debug(
+                                "While tending, failed to close GRPC channel while replacing up old endpoints:" + str(e)
+                            )
+
+                        self.add_new_channel_to_node_channels(node, newEndpoints)
+
+                for node, channel_endpoints in list(self._node_channels.items()):
+                    if not self._node_channels.get(node):
+                        try:
+                            # TODO: Wait for all calls to drain
+                            channel_endpoints.channel.close()
+                            del self._node_channels[node]
+
+                        except Exception as e:
+                            logger.debug(
+                                "While tending, failed to close GRPC channel while removing unused endpoints: " + str(e)
+                            )
 
             if not self.client_server_compatible:
 
@@ -79,99 +167,14 @@ class ChannelProvider(base_channel_provider.BaseChannelProvider):
                 ).version
                 self.client_server_compatible = self.verify_compatibile_server()
                 if not self.client_server_compatible:
-                    self._tend_ended.set()
                     raise types.AVSClientError(
                         message="This AVS Client version is only compatbile with AVS Servers above the following version number: "
                         + self.minimum_required_version
                     )
 
-            self._tend_ended.set()
-
-            return
-
-        update_endpoints_stubs = []
-        new_cluster_ids = []
-        for channel in channels:
-
-            stubs = []
-
-            stub = vector_db_pb2_grpc.ClusterInfoServiceStub(channel)
-            stubs.append(stub)
-
-            try:
-                new_cluster_ids.append(
-                    stub.GetClusterId(empty, credentials=self._credentials)
-                )
-
-            except Exception as e:
-                logger.debug(
-                    "While tending, failed to get cluster id with error:" + str(e)
-                )
-
-        for index, value in enumerate(new_cluster_ids):
-            if self.check_cluster_id(value.id):
-                update_endpoints_stubs.append(stubs[index])
-
-        for stub in update_endpoints_stubs:
-
-            try:
-                response = stub.GetClusterEndpoints(
-                    vector_db_pb2.ClusterNodeEndpointsRequest(
-                        listenerName=self.listener_name, credentials=self._credentials
-                    )
-                )
-                temp_endpoints = self.update_temp_endpoints(response, temp_endpoints)
-            except Exception as e:
-                logger.debug(
-                    "While tending, failed to get cluster endpoints with error:"
-                    + str(e)
-                )
-
-        if update_endpoints_stubs:
-            for node, newEndpoints in temp_endpoints.items():
-                (channel_endpoints, add_new_channel) = self.check_for_new_endpoints(
-                    node, newEndpoints
-                )
-
-                if add_new_channel:
-                    try:
-                        # TODO: Wait for all calls to drain
-                        channel_endpoints.channel.close()
-                    except Exception as e:
-                        logger.debug(
-                            "While tending, failed to close GRPC channel:" + str(e)
-                        )
-
-                    self.add_new_channel_to_node_channels(node, newEndpoints)
-
-            for node, channel_endpoints in list(self._node_channels.items()):
-                if not self._node_channels.get(node):
-                    try:
-                        # TODO: Wait for all calls to drain
-                        channel_endpoints.channel.close()
-                        del self._node_channels[node]
-
-                    except Exception as e:
-                        logger.debug(
-                            "While tending, failed to close GRPC channel:" + str(e)
-                        )
-
-        if not self.client_server_compatible:
-
-            stub = vector_db_pb2_grpc.AboutServiceStub(self.get_channel())
-            about_request = vector_db_pb2.AboutRequest()
-
-            self.current_server_version = stub.Get(
-                about_request, credentials=self._token
-            ).version
-            self.client_server_compatible = self.verify_compatibile_server()
-            if not self.client_server_compatible:
-                raise types.AVSClientError(
-                    message="This AVS Client version is only compatbile with AVS Servers above the following version number: "
-                    + self.minimum_required_version
-                )
-
-        self._timer = threading.Timer(1, self._tend).start()
+            self._timer = threading.Timer(1, self._tend).start()
+    except Exception as e:
+        logger.error("Tending failed at unindentified location: %s", e)
 
     def _create_channel(self, host: str, port: int, is_tls: bool) -> grpc.Channel:
         host = re.sub(r"%.*", "", host)
@@ -222,7 +225,7 @@ class ChannelProvider(base_channel_provider.BaseChannelProvider):
         try:
             response = auth_stub.Authenticate(auth_request)
         except grpc.RpcError as e:
-            print("Failed with error: %s", e)
+            print("Failed to refresh authentication token with error: %s", e)
             raise types.AVSServerError(rpc_error=e)
 
         self._respond_authenticate(response.token)

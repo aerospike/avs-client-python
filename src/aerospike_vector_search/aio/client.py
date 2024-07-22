@@ -112,7 +112,7 @@ class Client(BaseClient):
                 insert_request, credentials=self._channel_provider._token, **kwargs
             )
         except grpc.RpcError as e:
-            logger.error("Failed with error: %s", e)
+            logger.error("Failed to insert vector with error: %s", e)
             raise types.AVSServerError(rpc_error=e)
 
     async def update(
@@ -165,7 +165,7 @@ class Client(BaseClient):
                 update_request, credentials=self._channel_provider._token, **kwargs
             )
         except grpc.RpcError as e:
-            logger.error("Failed with error: %s", e)
+            logger.error("Failed to update vector with error: %s", e)
             raise types.AVSServerError(rpc_error=e)
 
     async def upsert(
@@ -218,7 +218,7 @@ class Client(BaseClient):
                 upsert_request, credentials=self._channel_provider._token, **kwargs
             )
         except grpc.RpcError as e:
-            logger.error("Failed with error: %s", e)
+            logger.error("Failed to upsert vector with error: %s", e)
             raise types.AVSServerError(rpc_error=e)
 
     async def get(
@@ -264,7 +264,7 @@ class Client(BaseClient):
                 get_request, credentials=self._channel_provider._token, **kwargs
             )
         except grpc.RpcError as e:
-            logger.error("Failed with error: %s", e)
+            logger.error("Failed to get vector with error: %s", e)
             raise types.AVSServerError(rpc_error=e)
 
         return self._respond_get(response, key)
@@ -309,7 +309,7 @@ class Client(BaseClient):
                 exists_request, credentials=self._channel_provider._token, **kwargs
             )
         except grpc.RpcError as e:
-            logger.error("Failed with error: %s", e)
+            logger.error("Failed to verfiy vector existence with error: %s", e)
             raise types.AVSServerError(rpc_error=e)
 
         return self._respond_exists(response)
@@ -351,7 +351,7 @@ class Client(BaseClient):
                 delete_request, credentials=self._channel_provider._token, **kwargs
             )
         except grpc.RpcError as e:
-            logger.error("Failed with error: %s", e)
+            logger.error("Failed to delete vector with error: %s", e)
             raise types.AVSServerError(rpc_error=e)
 
     async def is_indexed(
@@ -399,7 +399,7 @@ class Client(BaseClient):
                 is_indexed_request, credentials=self._channel_provider._token, **kwargs
             )
         except grpc.RpcError as e:
-            logger.error("Failed with error: %s", e)
+            logger.error("Failed to verify vector indexing status with error: %s", e)
             raise types.AVSServerError(rpc_error=e)
         return self._respond_is_indexed(response)
 
@@ -462,7 +462,7 @@ class Client(BaseClient):
                 )
             ]
         except grpc.RpcError as e:
-            logger.error("Failed with error: %s", e)
+            logger.error("Failed to vector search with error: %s", e)
             raise types.AVSServerError(rpc_error=e)
 
     async def wait_for_index_completion(
@@ -514,7 +514,7 @@ class Client(BaseClient):
 
             except grpc.RpcError as e:
 
-                logger.error("Failed with error: %s", e)
+                logger.error("Failed waiting for index completion with error: %s", e)
                 raise types.AVSServerError(rpc_error=e)
             if self._check_completion_condition(
                 start_time, timeout, index_status, unmerged_record_initialized

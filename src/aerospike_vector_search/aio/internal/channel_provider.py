@@ -161,7 +161,7 @@ class ChannelProvider(base_channel_provider.BaseChannelProvider):
                             tasks.append(channel_endpoints.channel.close())
                         except Exception as e:
                             logger.debug(
-                                "While tending, failed to close GRPC channel:" + str(e)
+                                "While tending, failed to close GRPC channel while replacing up old endpoints:" + str(e)
                             )
                         self.add_new_channel_to_node_channels(node, newEndpoints)
 
@@ -174,7 +174,7 @@ class ChannelProvider(base_channel_provider.BaseChannelProvider):
 
                         except Exception as e:
                             logger.debug(
-                                "While tending, failed to close GRPC channel:" + str(e)
+                                "While tending, failed to close GRPC channel while removing unused endpoints: " + str(e)
                             )
 
                 await asyncio.gather(*tasks)
@@ -195,8 +195,8 @@ class ChannelProvider(base_channel_provider.BaseChannelProvider):
             await asyncio.sleep(1)
             self._task = asyncio.create_task(self._tend())
         except Exception as e:
+            logger.error("Tending failed at unindentified location: %s", e)
 
-            print(e)
 
     def _create_channel(self, host: str, port: int, is_tls: bool) -> grpc.Channel:
         host = re.sub(r"%.*", "", host)
@@ -246,7 +246,7 @@ class ChannelProvider(base_channel_provider.BaseChannelProvider):
         try:
             response = await auth_stub.Authenticate(auth_request)
         except grpc.RpcError as e:
-            print("Failed with error: %s", e)
+            print("Failed to refresh authentication token with error: %s", e)
             raise types.AVSServerError(rpc_error=e)
 
         self._respond_authenticate(response.token)
