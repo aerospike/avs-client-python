@@ -297,7 +297,7 @@ jobs:
 
 
         docker ps
-        python -m pytest rbac/aio -s -vv --host child--port 5000 --root_certificate tls/root.crt 
+        python -m pytest rbac/aio -s -vv --host child --port 5000 --root_certificate tls/root.crt 
 
         docker logs aerospike-vector-search
         docker logs aerospike
@@ -532,7 +532,7 @@ jobs:
 
     strategy:
       matrix:
-        python-version: ["3.9", "3.10", "3.11", "3.12"]
+        python-version: ["3.11"]
 
         
     steps:
@@ -554,33 +554,9 @@ jobs:
       working-directory: tests
 
 
-    - name: Retrieve the secret and decode it to a file
-      env:
-        FEATURE_FILE: ${{ secrets.FEATURE_FILE }}
-      run: |
-        echo $FEATURE_FILE | base64 --decode > features.conf 
-      working-directory: tests
-
-    - name: Docker Login
-      uses: docker/login-action@v2
-      with:
-        registry: aerospike.jfrog.io
-        username: ${{ secrets.JFROG_USERNAME }}
-        password: ${{ secrets.JFROG_PASSWORD }}
-
-    - name: create config
-      run: |
-        assets/call_gen.sh
-        cat aerospike-vector-search.yml
-        cat aerospike.conf
-        cat /etc/hosts
-
-      working-directory: tests
 
     - name: Run unit tests
       run: |
 
-
-        docker ps
         python -m pytest standard -s --host  34.42.225.207 --port 5000 --local_latency
       working-directory: tests

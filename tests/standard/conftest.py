@@ -10,6 +10,7 @@ def pytest_addoption(parser):
     parser.addoption("--certificate_chain", action="store", default=None, help="Path to certificate chain")
     parser.addoption("--private_key", action="store", default=None, help="Path to private key")
     parser.addoption("--local_latency", action="store_true", help="Skip the test if latency is too low to effectively trigger timeout")
+    parser.addoption("--extensive_vector_search", action="store_true", help="Run extensive vector search testing")
 
 
 @pytest.fixture(scope="module", autouse=True)
@@ -43,3 +44,7 @@ def port(request):
 @pytest.fixture(scope="module", autouse=True)
 def local_latency(request):
     return request.config.getoption("--local_latency")
+
+@pytest.fixture(scope="module", autouse=True)
+def extensive_vector_search(request):
+    return request.config.getoption("--extensive_vector_search")
