@@ -297,7 +297,7 @@ jobs:
 
 
         docker ps
-        python -m pytest rbac/aio/test_admin_client_add_user.py -s -vv --host child --port 5000 --root_certificate tls/root.crt --timeout=30
+        python -m pytest rbac/aio/debug.py -s -vv --host child --port 5000 --root_certificate tls/root.crt --timeout=30
 
         docker logs aerospike-vector-search
         docker logs aerospike
