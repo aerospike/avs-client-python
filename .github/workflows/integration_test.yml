@@ -218,7 +218,7 @@ jobs:
 
         sleep 5
 
-        python -m pytest standard/aio -s -vv --host child --port 5000 --root_certificate tls/root.crt --username admin --password admin --local_latency 
+        python -m pytest standard/aio -s -vv --host child --port 5000 --root_certificate tls/root.crt --username admin --password admin --local_latency  --timeout=30
 
 
       working-directory: tests
@@ -297,7 +297,7 @@ jobs:
 
 
         docker ps
-        python -m pytest rbac/aio -s -vv --host child --port 5000 --root_certificate tls/root.crt 
+        python -m pytest rbac/aio -s -vv --host child --port 5000 --root_certificate tls/root.crt --timeout=30
 
         docker logs aerospike-vector-search
         docker logs aerospike
