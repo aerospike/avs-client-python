@@ -284,7 +284,7 @@ jobs:
 
     - name: Add hosts to /etc/hosts
       run: |
-        sudo echo "0.0.0.0 child" | sudo tee -a /etc/hosts
+        #sudo echo "0.0.0.0 child" | sudo tee -a /etc/hosts
         cat /etc/hosts
 
     - name: Run unit tests
@@ -298,7 +298,7 @@ jobs:
 
 
         docker ps
-        python -m pytest rbac/aio/debug.py -s -vv --host child --port 5000 --root_certificate tls/child.crt --timeout=30
+        python -m pytest rbac/aio/debug.py -s -vv --host child --port 5000 --root_certificate tls/root.crt --timeout=30
 
         docker logs aerospike-vector-search
         docker logs aerospike
