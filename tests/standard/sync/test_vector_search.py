@@ -76,7 +76,6 @@ def put_vector(client, vector, j, set_name):
 
 def get_vector(client, j, set_name):
     result = client.get(namespace="test", key=str(j), set_name=set_name)
-    print(result)
 
 def vector_search(client, vector, name):
     result = client.vector_search(
@@ -167,7 +166,7 @@ def test_vector_search(
 
     if not extensive_vector_search:
         pytest.skip("Extensive vector tests disabled") 
-        
+
     session_admin_client.index_create(
         namespace="test",
         name="demo1",
@@ -389,14 +388,11 @@ def test_vector_search_with_separate_namespace(
 
 
 def test_vector_is_indexed(session_vector_client, session_admin_client):
-    val = random.randrange(10_000)
-
-    result = session_vector_client.get(namespace="test", key=val, set_name="demo1")
 
 
     result = session_vector_client.is_indexed(
         namespace="test",
-        key=str(val),
+        key=str(random.randrange(10_000)),
         index_name="demo2",
         set_name="demo2"
     )

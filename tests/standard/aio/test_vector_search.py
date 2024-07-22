@@ -387,7 +387,7 @@ async def test_vector_is_indexed(session_vector_client, session_admin_client, lo
     result = await session_vector_client.is_indexed(
         namespace="test",
         key=str(random.randrange(10_000)),
-        index_name="demo",
+        index_name="demo2",
     )
     assert result is True
 
@@ -399,7 +399,7 @@ async def test_vector_is_indexed_timeout(session_vector_client, session_admin_cl
             result = await session_vector_client.is_indexed(
                 namespace="test",
                 key=str(random.randrange(10_000)),
-                index_name="demo",
+                index_name="demo2",
                 timeout=0.0001
             )
         except AVSServerError as se:
@@ -416,7 +416,7 @@ async def test_vector_vector_search_timeout(session_vector_client, session_admin
         try:
             result = await session_vector_client.vector_search(
                 namespace="test",
-                index_name="demo",
+                index_name="demo2",
                 query=[0, 1, 2],
                 limit=100,
                 field_names=["unit_test"],
