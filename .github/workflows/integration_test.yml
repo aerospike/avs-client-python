@@ -68,7 +68,7 @@ jobs:
         sleep 5
 
         docker ps
-        python -m pytest standard -s --host 0.0.0.0 --port 5000 
+        python -m pytest standard/sync -s --host 0.0.0.0 --port 5000 
       working-directory: tests
 
   test-tls:
@@ -144,7 +144,7 @@ jobs:
 
 
         docker ps
-        python -m pytest standard -s --host child --port 5000 --root_certificate tls/root.crt   -vs
+        python -m pytest standard/sync -s --host child --port 5000 --root_certificate tls/root.crt   -vs
 
         docker logs aerospike-vector-search
         docker logs aerospike
@@ -217,7 +217,7 @@ jobs:
 
         sleep 5
 
-        python -m pytest standard -s -vv --host child --port 5000 --root_certificate tls/root.crt --username admin --password admin  
+        python -m pytest standard/sync -s -vv --host child --port 5000 --root_certificate tls/root.crt --username admin --password admin  
 
       working-directory: tests
 
@@ -370,7 +370,7 @@ jobs:
 
         sleep 5
 
-        python -m pytest standard -s --host brawn --port 5000 --root_certificate tls/root.crt --private_key tls/brawn.key.pem --certificate_chain tls/brawn.crt   -vs
+        python -m pytest standard/sync -s --host brawn --port 5000 --root_certificate tls/root.crt --private_key tls/brawn.key.pem --certificate_chain tls/brawn.crt   -vs
 
 
 
@@ -444,7 +444,7 @@ jobs:
 
         sleep 5
 
-        python -m pytest standard -s --host brawn --port 5000 --root_certificate tls/root.crt --private_key tls/brawn.key.pem --certificate_chain tls/brawn.crt --username admin --password admin  -vs
+        python -m pytest standard/sync -s --host brawn --port 5000 --root_certificate tls/root.crt --private_key tls/brawn.key.pem --certificate_chain tls/brawn.crt --username admin --password admin  -vs
 
 
 
@@ -584,7 +584,7 @@ jobs:
 
         sleep 5
 
-        python -m pytest standard -s --host 0.0.0.0 --port 5000 --is_loadbalancer -vs
+        python -m pytest standard/sync -s --host 0.0.0.0 --port 5000 --is_loadbalancer -vs
       working-directory: tests
 
   test-exhaustive-vector-search:
@@ -650,7 +650,7 @@ jobs:
 
         sleep 5
 
-        python -m pytest standard -s --host 0.0.0.0 --port 5000 --extensive_vector_search -vs
+        python -m pytest standard/sync -s --host 0.0.0.0 --port 5000 --extensive_vector_search -vs
       working-directory: tests
 
 #
@@ -687,5 +687,5 @@ jobs:
 #    - name: Run unit tests
 #      run: |
 #
-#        python -m pytest standard -s --host  34.42.225.207 --port 5000 --with_latency
+#        python -m pytest standard/sync -s --host  34.42.225.207 --port 5000 --with_latency
 #      working-directory: tests
