@@ -143,8 +143,7 @@ class VectorDistanceMetric(enum.Enum):
 
 class User(object):
     """
-
-    PLACEHOLDER FOR TEXT
+    Representation
     Args:
         max_records (Optional[int], optional): Maximum number of records to fit in a batch. Defaults to 10000.
         interval (Optional[int], optional): The maximum amount of time in milliseconds to wait before finalizing a batch. Defaults to 10000.

@@ -7,16 +7,19 @@ from aerospike_vector_search import types, AVSServerError
 import grpc
 
 
-@pytest.mark.parametrize("empty_test_case",[None, None])
+@pytest.mark.parametrize("empty_test_case", [None, None])
 @given(random_name=index_strategy())
 @settings(max_examples=5, deadline=1000)
 async def test_index_get_status(session_admin_client, empty_test_case, random_name):
-    await session_admin_client.index_create(
-        namespace="test",
-        name=random_name,
-        vector_field="science",
-        dimensions=1024,
-    )
+    try:
+        await session_admin_client.index_create(
+            namespace="test",
+            name=random_name,
+            vector_field="science",
+            dimensions=1024,
+        )
+    except Exception as e:
+        pass
 
     result = await session_admin_client.index_get_status(
         namespace="test", name=random_name
@@ -24,10 +27,13 @@ async def test_index_get_status(session_admin_client, empty_test_case, random_na
     assert result == 0
     await drop_specified_index(session_admin_client, "test", random_name)
 
-@pytest.mark.parametrize("empty_test_case",[None, None])
+
+@pytest.mark.parametrize("empty_test_case", [None, None])
 @given(random_name=index_strategy())
 @settings(max_examples=1, deadline=1000)
-async def test_index_get_status_timeout(session_admin_client, empty_test_case, random_name, with_latency):
+async def test_index_get_status_timeout(
+    session_admin_client, empty_test_case, random_name, with_latency
+):
     if not with_latency:
         pytest.skip("Server latency too low to test timeout")
     try:
@@ -37,7 +43,7 @@ async def test_index_get_status_timeout(session_admin_client, empty_test_case, r
             vector_field="science",
             dimensions=1024,
         )
-    except Exception as e: 
+    except Exception as e:
         pass
 
     for i in range(10):

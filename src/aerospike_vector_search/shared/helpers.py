@@ -7,7 +7,7 @@ from .proto_generated import index_pb2_grpc
 def _prepare_seeds(seeds) -> None:
 
     if not seeds:
-        raise Exception("at least one seed host needed")
+        raise types.AVSClientError(message="at least one seed host needed")
 
     if isinstance(seeds, types.HostPort):
         seeds = (seeds,)

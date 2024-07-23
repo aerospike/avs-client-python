@@ -3,16 +3,11 @@ from ...utils import random_int
 
 
 class update_credentials_test_case:
-    def __init__(
-        self,
-        *,
-        username,
-        old_password,
-        new_password
-    ):
+    def __init__(self, *, username, old_password, new_password):
         self.username = username
         self.old_password = old_password
         self.new_password = new_password
+
 
 @pytest.mark.parametrize(
     "test_case",
@@ -26,10 +21,7 @@ class update_credentials_test_case:
 )
 def test_update_credentials(session_rbac_admin_client, test_case):
     session_rbac_admin_client.add_user(
-        username=test_case.username,
-        password=test_case.old_password,
-        roles=None
-
+        username=test_case.username, password=test_case.old_password, roles=None
     )
 
     session_rbac_admin_client.update_credentials(
@@ -37,11 +29,8 @@ def test_update_credentials(session_rbac_admin_client, test_case):
         password=test_case.new_password,
     )
 
-    result = session_rbac_admin_client.get_user(
-        username=test_case.username
-    )
+    result = session_rbac_admin_client.get_user(username=test_case.username)
 
     assert result.username == test_case.username
 
     assert result.roles == []
-

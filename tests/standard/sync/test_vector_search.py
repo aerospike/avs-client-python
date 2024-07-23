@@ -70,12 +70,16 @@ def query_numpy():
 
 def put_vector(client, vector, j, set_name):
     client.upsert(
-        namespace="test", key=str(j), record_data={"unit_test": vector}, set_name=set_name
+        namespace="test",
+        key=str(j),
+        record_data={"unit_test": vector},
+        set_name=set_name,
     )
 
 
 def get_vector(client, j, set_name):
     result = client.get(namespace="test", key=str(j), set_name=set_name)
+
 
 def vector_search(client, vector, name):
     result = client.vector_search(
@@ -95,13 +99,12 @@ def vector_search_ef_80(client, vector, name):
         query=vector,
         limit=100,
         field_names=["unit_test"],
-        search_params=types.HnswSearchParams(ef=80)
+        search_params=types.HnswSearchParams(ef=80),
     )
     return result
 
 
 def grade_results(
-
     base_numpy,
     truth_numpy,
     query_numpy,
@@ -109,8 +112,6 @@ def grade_results(
     session_admin_client,
     name,
 ):
-
-
 
     # Vector search all query vectors
     results = []
@@ -159,13 +160,11 @@ def test_vector_search(
     query_numpy,
     session_vector_client,
     session_admin_client,
-    extensive_vector_search
+    extensive_vector_search,
 ):
 
-
-
     if not extensive_vector_search:
-        pytest.skip("Extensive vector tests disabled") 
+        pytest.skip("Extensive vector tests disabled")
 
     session_admin_client.index_create(
         namespace="test",
@@ -174,22 +173,20 @@ def test_vector_search(
         dimensions=128,
     )
 
-    
-    
-
     for j, vector in enumerate(base_numpy):
         put_vector(session_vector_client, vector, j, None)
 
-    session_vector_client.wait_for_index_completion(namespace='test', name='demo1')
-    
+    session_vector_client.wait_for_index_completion(namespace="test", name="demo1")
+
     grade_results(
         base_numpy,
         truth_numpy,
         query_numpy,
         session_vector_client,
         session_admin_client,
-        name='demo1'
+        name="demo1",
     )
+
 
 def test_vector_search_with_set_same_as_index(
     base_numpy,
@@ -198,7 +195,6 @@ def test_vector_search_with_set_same_as_index(
     session_vector_client,
     session_admin_client,
 ):
-  
 
     session_admin_client.index_create(
         namespace="test",
@@ -206,9 +202,8 @@ def test_vector_search_with_set_same_as_index(
         sets="demo2",
         vector_field="unit_test",
         dimensions=128,
-        index_storage=types.IndexStorage(namespace="test", set_name="demo2")
+        index_storage=types.IndexStorage(namespace="test", set_name="demo2"),
     )
-
 
     for j, vector in enumerate(base_numpy):
         put_vector(session_vector_client, vector, j, "demo2")
@@ -216,16 +211,17 @@ def test_vector_search_with_set_same_as_index(
     for j, vector in enumerate(base_numpy):
         get_vector(session_vector_client, j, "demo2")
 
-    session_vector_client.wait_for_index_completion(namespace='test', name='demo2')
-    
+    session_vector_client.wait_for_index_completion(namespace="test", name="demo2")
+
     grade_results(
         base_numpy,
         truth_numpy,
         query_numpy,
         session_vector_client,
         session_admin_client,
-        name='demo2'
+        name="demo2",
     )
+
 
 def test_vector_search_with_set_different_than_name(
     base_numpy,
@@ -233,12 +229,11 @@ def test_vector_search_with_set_different_than_name(
     query_numpy,
     session_vector_client,
     session_admin_client,
-    extensive_vector_search
+    extensive_vector_search,
 ):
 
     if not extensive_vector_search:
-        pytest.skip("Extensive vector tests disabled")   
-
+        pytest.skip("Extensive vector tests disabled")
 
     session_admin_client.index_create(
         namespace="test",
@@ -246,26 +241,23 @@ def test_vector_search_with_set_different_than_name(
         vector_field="unit_test",
         dimensions=128,
         sets="example1",
-        index_storage=types.IndexStorage(namespace="test", set_name="demo3")
-
+        index_storage=types.IndexStorage(namespace="test", set_name="demo3"),
     )
-
-    
-    
 
     for j, vector in enumerate(base_numpy):
         put_vector(session_vector_client, vector, j, "example1")
 
-    session_vector_client.wait_for_index_completion(namespace='test', name='demo3')
-    
+    session_vector_client.wait_for_index_completion(namespace="test", name="demo3")
+
     grade_results(
         base_numpy,
         truth_numpy,
         query_numpy,
         session_vector_client,
         session_admin_client,
-        name="demo3"
+        name="demo3",
     )
+
 
 def test_vector_search_with_index_storage_different_than_name(
     base_numpy,
@@ -273,11 +265,11 @@ def test_vector_search_with_index_storage_different_than_name(
     query_numpy,
     session_vector_client,
     session_admin_client,
-    extensive_vector_search
+    extensive_vector_search,
 ):
 
     if not extensive_vector_search:
-        pytest.skip("Extensive vector tests disabled")   
+        pytest.skip("Extensive vector tests disabled")
 
     session_admin_client.index_create(
         namespace="test",
@@ -285,27 +277,22 @@ def test_vector_search_with_index_storage_different_than_name(
         vector_field="unit_test",
         dimensions=128,
         sets="demo4",
-        index_storage=types.IndexStorage(namespace="test", set_name="example2")
-
+        index_storage=types.IndexStorage(namespace="test", set_name="example2"),
     )
 
-    
-    
-
     for j, vector in enumerate(base_numpy):
-        put_vector(session_vector_client, vector, j,  "demo4")
+        put_vector(session_vector_client, vector, j, "demo4")
 
-    session_vector_client.wait_for_index_completion(namespace='test', name='demo4')
-    
+    session_vector_client.wait_for_index_completion(namespace="test", name="demo4")
+
     grade_results(
         base_numpy,
         truth_numpy,
         query_numpy,
         session_vector_client,
         session_admin_client,
-        name="demo4"
+        name="demo4",
     )
-
 
 
 def test_vector_search_with_index_storage_different_location(
@@ -314,11 +301,11 @@ def test_vector_search_with_index_storage_different_location(
     query_numpy,
     session_vector_client,
     session_admin_client,
-    extensive_vector_search
+    extensive_vector_search,
 ):
 
     if not extensive_vector_search:
-        pytest.skip("Extensive vector tests disabled")   
+        pytest.skip("Extensive vector tests disabled")
 
     session_admin_client.index_create(
         namespace="test",
@@ -326,26 +313,23 @@ def test_vector_search_with_index_storage_different_location(
         vector_field="unit_test",
         dimensions=128,
         sets="example3",
-        index_storage=types.IndexStorage(namespace="test", set_name="example4")
-
+        index_storage=types.IndexStorage(namespace="test", set_name="example4"),
     )
-
-    
-    
 
     for j, vector in enumerate(base_numpy):
         put_vector(session_vector_client, vector, j, "example3")
 
-    session_vector_client.wait_for_index_completion(namespace='test', name='demo5')
-    
+    session_vector_client.wait_for_index_completion(namespace="test", name="demo5")
+
     grade_results(
         base_numpy,
         truth_numpy,
         query_numpy,
         session_vector_client,
         session_admin_client,
-        name='demo5'
+        name="demo5",
     )
+
 
 def test_vector_search_with_separate_namespace(
     base_numpy,
@@ -353,11 +337,11 @@ def test_vector_search_with_separate_namespace(
     query_numpy,
     session_vector_client,
     session_admin_client,
-    extensive_vector_search
+    extensive_vector_search,
 ):
 
     if not extensive_vector_search:
-        pytest.skip("Extensive vector tests disabled")   
+        pytest.skip("Extensive vector tests disabled")
 
     session_admin_client.index_create(
         namespace="test",
@@ -365,52 +349,46 @@ def test_vector_search_with_separate_namespace(
         vector_field="unit_test",
         dimensions=128,
         sets="demo6",
-        index_storage=types.IndexStorage(namespace="index_storage", set_name="demo6")
-
+        index_storage=types.IndexStorage(namespace="index_storage", set_name="demo6"),
     )
-
-    
-    
 
     for j, vector in enumerate(base_numpy):
         put_vector(session_vector_client, vector, j, "demo6")
 
-    session_vector_client.wait_for_index_completion(namespace='test', name='demo6')
-    
+    session_vector_client.wait_for_index_completion(namespace="test", name="demo6")
+
     grade_results(
         base_numpy,
         truth_numpy,
         query_numpy,
         session_vector_client,
         session_admin_client,
-        name='demo6'
+        name="demo6",
     )
 
 
 def test_vector_is_indexed(session_vector_client, session_admin_client):
 
-
     result = session_vector_client.is_indexed(
         namespace="test",
         key=str(random.randrange(10_000)),
         index_name="demo2",
-        set_name="demo2"
+        set_name="demo2",
     )
-
 
     assert result is True
 
-def test_vector_is_indexed_timeout(session_vector_client, session_admin_client, with_latency):
+
+def test_vector_is_indexed_timeout(
+    session_vector_client, session_admin_client, with_latency
+):
     if not with_latency:
-        pytest.skip("Server latency too low to test timeout")    
+        pytest.skip("Server latency too low to test timeout")
 
     for i in range(10):
         try:
             result = session_vector_client.is_indexed(
-                namespace="test",
-                key=500,
-                index_name="demo2",
-                timeout=0.0001
+                namespace="test", key=500, index_name="demo2", timeout=0.0001
             )
         except AVSServerError as se:
             if se.rpc_error.code() == grpc.StatusCode.DEADLINE_EXCEEDED:
@@ -418,9 +396,12 @@ def test_vector_is_indexed_timeout(session_vector_client, session_admin_client, 
                 return
     assert "In several attempts, the timeout did not happen" == "TEST FAIL"
 
-def test_vector_vector_search_timeout(session_vector_client, session_admin_client, with_latency):
+
+def test_vector_vector_search_timeout(
+    session_vector_client, session_admin_client, with_latency
+):
     if not with_latency:
-        pytest.skip("Server latency too low to test timeout")    
+        pytest.skip("Server latency too low to test timeout")
 
     for i in range(10):
         try:
@@ -430,7 +411,7 @@ def test_vector_vector_search_timeout(session_vector_client, session_admin_clien
                 query=[0, 1, 2],
                 limit=100,
                 field_names=["unit_test"],
-                timeout=0.0001
+                timeout=0.0001,
             )
         except AVSServerError as se:
             if se.rpc_error.code() == grpc.StatusCode.DEADLINE_EXCEEDED:

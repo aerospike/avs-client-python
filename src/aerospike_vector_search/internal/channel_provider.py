@@ -27,7 +27,7 @@ class ChannelProvider(base_channel_provider.BaseChannelProvider):
         is_loadbalancer: Optional[bool] = False,
         username: Optional[str] = None,
         password: Optional[str] = None,
-        root_certificate: Optional[str] = None,
+        root_certificate: Optional[Union[list[str], str]] = None,
         certificate_chain: Optional[str] = None,
         private_key: Optional[str] = None,
         service_config_path: Optional[str] = None,
@@ -63,7 +63,9 @@ class ChannelProvider(base_channel_provider.BaseChannelProvider):
 
     def _tend(self):
         try:
-            (temp_endpoints, update_endpoints_stub, channels, end_tend) = self.init_tend()
+            (temp_endpoints, update_endpoints_stub, channels, end_tend) = (
+                self.init_tend()
+            )
             if self._token:
                 if self._check_if_token_refresh_needed():
                     self._update_token_and_ttl()
@@ -118,10 +120,13 @@ class ChannelProvider(base_channel_provider.BaseChannelProvider):
                 try:
                     response = stub.GetClusterEndpoints(
                         vector_db_pb2.ClusterNodeEndpointsRequest(
-                            listenerName=self.listener_name, credentials=self._credentials
+                            listenerName=self.listener_name,
+                            credentials=self._credentials,
                         )
                     )
-                    temp_endpoints = self.update_temp_endpoints(response, temp_endpoints)
+                    temp_endpoints = self.update_temp_endpoints(
+                        response, temp_endpoints
+                    )
                 except Exception as e:
                     logger.debug(
                         "While tending, failed to get cluster endpoints with error: "
@@ -140,7 +145,8 @@ class ChannelProvider(base_channel_provider.BaseChannelProvider):
                             channel_endpoints.channel.close()
                         except Exception as e:
                             logger.debug(
-                                "While tending, failed to close GRPC channel while replacing up old endpoints:" + str(e)
+                                "While tending, failed to close GRPC channel while replacing up old endpoints:"
+                                + str(e)
                             )
 
                         self.add_new_channel_to_node_channels(node, newEndpoints)
@@ -154,20 +160,22 @@ class ChannelProvider(base_channel_provider.BaseChannelProvider):
 
                         except Exception as e:
                             logger.debug(
-                                "While tending, failed to close GRPC channel while removing unused endpoints: " + str(e)
+                                "While tending, failed to close GRPC channel while removing unused endpoints: "
+                                + str(e)
                             )
 
             if not self.client_server_compatible:
 
-                stub = vector_db_pb2_grpc.AboutServiceStub(self.get_channel())
-                about_request = vector_db_pb2.AboutRequest()
+                (stub, about_request) = self._prepare_about()
+
                 try:
                     self.current_server_version = stub.Get(
                         about_request, credentials=self._token
                     ).version
                 except Exception as e:
                     logger.debug(
-                        "While tending, failed to close GRPC channel while removing unused endpoints: " + str(e)
+                        "While tending, failed to close GRPC channel while removing unused endpoints: "
+                        + str(e)
                     )
                 self.client_server_compatible = self.verify_compatibile_server()
                 if not self.client_server_compatible:
@@ -191,25 +199,11 @@ class ChannelProvider(base_channel_provider.BaseChannelProvider):
             options = None
 
         if self._root_certificate:
-            with open(self._root_certificate, "rb") as f:
-                root_certificate = f.read()
-
-            if self._private_key:
-                with open(self._private_key, "rb") as f:
-                    private_key = f.read()
-            else:
-                private_key = None
-
-            if self._certificate_chain:
-                with open(self._certificate_chain, "rb") as f:
-                    certificate_chain = f.read()
-            else:
-                certificate_chain = None
 
             ssl_credentials = grpc.ssl_channel_credentials(
-                root_certificates=root_certificate,
-                certificate_chain=certificate_chain,
-                private_key=private_key,
+                root_certificates=self._root_certificate,
+                certificate_chain=self._certificate_chain,
+                private_key=self._private_key,
             )
 
             return grpc.secure_channel(
@@ -230,7 +224,7 @@ class ChannelProvider(base_channel_provider.BaseChannelProvider):
         try:
             response = auth_stub.Authenticate(auth_request)
         except grpc.RpcError as e:
-            print("Failed to refresh authentication token with error: %s", e)
+            logger.error("Failed to refresh authentication token with error: %s", e)
             raise types.AVSServerError(rpc_error=e)
 
         self._respond_authenticate(response.token)

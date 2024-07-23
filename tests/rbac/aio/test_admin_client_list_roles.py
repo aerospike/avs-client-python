@@ -14,25 +14,22 @@ class list_roles_test_case:
         self.password = password
         self.roles = roles
 
+
 @pytest.mark.parametrize(
     "test_case",
     [
         list_roles_test_case(
             username="aio-list-roles-" + str(random_int()),
             password="yeoldpassword",
-            roles=["admin", "read-write"]
+            roles=["admin", "read-write"],
         ),
     ],
 )
 async def test_list_roles(session_rbac_admin_client, test_case):
     await session_rbac_admin_client.add_user(
-        username=test_case.username,
-        password=test_case.password,
-        roles=test_case.roles
-
+        username=test_case.username, password=test_case.password, roles=test_case.roles
     )
 
     result = await session_rbac_admin_client.list_roles()
     for role in result:
         assert role.id in test_case.roles
-

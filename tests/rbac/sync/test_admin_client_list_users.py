@@ -3,14 +3,10 @@ from ...utils import random_int
 
 
 class list_users_test_case:
-    def __init__(
-        self,
-        *,
-        username,
-        password
-    ):
+    def __init__(self, *, username, password):
         self.username = username
         self.password = password
+
 
 @pytest.mark.parametrize(
     "test_case",
@@ -23,10 +19,7 @@ class list_users_test_case:
 )
 def test_list_users(session_rbac_admin_client, test_case):
     session_rbac_admin_client.add_user(
-        username=test_case.username,
-        password=test_case.password,
-        roles=None
-
+        username=test_case.username, password=test_case.password, roles=None
     )
 
     result = session_rbac_admin_client.list_users()
@@ -37,4 +30,3 @@ def test_list_users(session_rbac_admin_client, test_case):
             user_found = True
 
     assert user_found
-  

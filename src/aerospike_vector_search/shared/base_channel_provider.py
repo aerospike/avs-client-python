@@ -15,6 +15,7 @@ from . import helpers
 
 from .proto_generated import vector_db_pb2, auth_pb2
 from .proto_generated import auth_pb2_grpc
+from .proto_generated import vector_db_pb2_grpc
 
 logger = logging.getLogger(__name__)
 
@@ -75,6 +76,14 @@ class BaseChannelProvider(object):
         self.current_server_version = ""
         self.minimum_required_version = "0.9.0"
         self.client_server_compatible = False
+
+    def get_token(self) -> grpc.access_token_call_credentials:
+        return self._token
+
+    def _prepare_about(self) -> grpc.Channel:
+        stub = vector_db_pb2_grpc.AboutServiceStub(self.get_channel())
+        about_request = vector_db_pb2.AboutRequest()
+        return (stub, about_request)
 
     def get_channel(self) -> Union[grpc.aio.Channel, grpc.Channel]:
         if not self._is_loadbalancer:
@@ -192,7 +201,7 @@ class BaseChannelProvider(object):
             token, "", algorithms=["RS256"], options={"verify_signature": False}
         )
         self._ttl = self._get_ttl(payload)
-        self._ttl_start = payload["exp"]
+        self._ttl_start = payload["iat"]
 
         self._token = grpc.access_token_call_credentials(token)
 

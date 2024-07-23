@@ -31,7 +31,7 @@ class BaseClient(object):
         vector_distance_metric,
         sets,
         index_params,
-        index_meta_data,
+        index_labels,
         index_storage,
         timeout,
         logger,
@@ -39,7 +39,7 @@ class BaseClient(object):
 
         logger.debug(
             "Creating index: namespace=%s, name=%s, vector_field=%s, dimensions=%d, vector_distance_metric=%s, "
-            "sets=%s, index_params=%s, index_meta_data=%s, index_storage=%s, timeout=%s",
+            "sets=%s, index_params=%s, index_labels=%s, index_storage=%s, timeout=%s",
             namespace,
             name,
             vector_field,
@@ -47,10 +47,14 @@ class BaseClient(object):
             vector_distance_metric,
             sets,
             index_params,
-            index_meta_data,
+            index_labels,
             index_storage,
             timeout,
         )
+
+        kwargs = {}
+        if timeout is not None:
+            kwargs["timeout"] = timeout
 
         if sets and not sets.strip():
             sets = None
@@ -71,10 +75,10 @@ class BaseClient(object):
             hnswParams=index_params,
             field=vector_field,
             dimensions=dimensions,
-            labels=index_meta_data,
+            labels=index_labels,
             storage=index_storage,
         )
-        return (index_stub, index_create_request)
+        return (index_stub, index_create_request, kwargs)
 
     def _prepare_index_drop(self, namespace, name, timeout, logger) -> None:
 
@@ -85,19 +89,27 @@ class BaseClient(object):
             timeout,
         )
 
+        kwargs = {}
+        if timeout is not None:
+            kwargs["timeout"] = timeout
+
         index_stub = self._get_index_stub()
         index_drop_request = self._get_index_id(namespace, name)
 
-        return (index_stub, index_drop_request)
+        return (index_stub, index_drop_request, kwargs)
 
     def _prepare_index_list(self, timeout, logger) -> None:
 
         logger.debug("Getting index list: timeout=%s", timeout)
 
+        kwargs = {}
+        if timeout is not None:
+            kwargs["timeout"] = timeout
+
         index_stub = self._get_index_stub()
         index_list_request = empty
 
-        return (index_stub, index_list_request)
+        return (index_stub, index_list_request, kwargs)
 
     def _prepare_index_get(self, namespace, name, timeout, logger) -> None:
 
@@ -108,10 +120,14 @@ class BaseClient(object):
             timeout,
         )
 
+        kwargs = {}
+        if timeout is not None:
+            kwargs["timeout"] = timeout
+
         index_stub = self._get_index_stub()
         index_get_request = self._get_index_id(namespace, name)
 
-        return (index_stub, index_get_request)
+        return (index_stub, index_get_request, kwargs)
 
     def _prepare_index_get_status(self, namespace, name, timeout, logger) -> None:
 
@@ -122,10 +138,14 @@ class BaseClient(object):
             timeout,
         )
 
+        kwargs = {}
+        if timeout is not None:
+            kwargs["timeout"] = timeout
+
         index_stub = self._get_index_stub()
         index_get_status_request = self._get_index_id(namespace, name)
 
-        return (index_stub, index_get_status_request)
+        return (index_stub, index_get_status_request, kwargs)
 
     def _prepare_add_user(self, username, password, roles, timeout, logger) -> None:
         logger.debug(
@@ -136,13 +156,17 @@ class BaseClient(object):
             timeout,
         )
 
+        kwargs = {}
+        if timeout is not None:
+            kwargs["timeout"] = timeout
+
         user_admin_stub = self._get_user_admin_stub()
         credentials = helpers._get_credentials(username, password)
         add_user_request = user_admin_pb2.AddUserRequest(
             credentials=credentials, roles=roles
         )
 
-        return (user_admin_stub, add_user_request)
+        return (user_admin_stub, add_user_request, kwargs)
 
     def _prepare_update_credentials(self, username, password, timeout, logger) -> None:
         logger.debug(
@@ -152,37 +176,53 @@ class BaseClient(object):
             timeout,
         )
 
+        kwargs = {}
+        if timeout is not None:
+            kwargs["timeout"] = timeout
+
         user_admin_stub = self._get_user_admin_stub()
         credentials = helpers._get_credentials(username, password)
         update_user_request = user_admin_pb2.UpdateCredentialsRequest(
             credentials=credentials
         )
 
-        return (user_admin_stub, update_user_request)
+        return (user_admin_stub, update_user_request, kwargs)
 
     def _prepare_drop_user(self, username, timeout, logger) -> None:
         logger.debug("Getting index status: username=%s, timeout=%s", username, timeout)
 
+        kwargs = {}
+        if timeout is not None:
+            kwargs["timeout"] = timeout
+
         user_admin_stub = self._get_user_admin_stub()
         drop_user_request = user_admin_pb2.DropUserRequest(username=username)
 
-        return (user_admin_stub, drop_user_request)
+        return (user_admin_stub, drop_user_request, kwargs)
 
     def _prepare_get_user(self, username, timeout, logger) -> None:
         logger.debug("Getting index status: username=%s, timeout=%s", username, timeout)
 
+        kwargs = {}
+        if timeout is not None:
+            kwargs["timeout"] = timeout
+
         user_admin_stub = self._get_user_admin_stub()
         get_user_request = user_admin_pb2.GetUserRequest(username=username)
 
-        return (user_admin_stub, get_user_request)
+        return (user_admin_stub, get_user_request, kwargs)
 
     def _prepare_list_users(self, timeout, logger) -> None:
         logger.debug("Getting index status")
 
+        kwargs = {}
+        if timeout is not None:
+            kwargs["timeout"] = timeout
+
         user_admin_stub = self._get_user_admin_stub()
         list_users_request = empty
 
-        return (user_admin_stub, list_users_request)
+        return (user_admin_stub, list_users_request, kwargs)
 
     def _prepare_grant_roles(self, username, roles, timeout, logger) -> None:
         logger.debug(
@@ -192,12 +232,16 @@ class BaseClient(object):
             timeout,
         )
 
+        kwargs = {}
+        if timeout is not None:
+            kwargs["timeout"] = timeout
+
         user_admin_stub = self._get_user_admin_stub()
         grant_roles_request = user_admin_pb2.GrantRolesRequest(
             username=username, roles=roles
         )
 
-        return (user_admin_stub, grant_roles_request)
+        return (user_admin_stub, grant_roles_request, kwargs)
 
     def _prepare_revoke_roles(self, username, roles, timeout, logger) -> None:
         logger.debug(
@@ -207,20 +251,28 @@ class BaseClient(object):
             timeout,
         )
 
+        kwargs = {}
+        if timeout is not None:
+            kwargs["timeout"] = timeout
+
         user_admin_stub = self._get_user_admin_stub()
         revoke_roles_request = user_admin_pb2.RevokeRolesRequest(
             username=username, roles=roles
         )
 
-        return (user_admin_stub, revoke_roles_request)
+        return (user_admin_stub, revoke_roles_request, kwargs)
 
     def _prepare_list_roles(self, timeout, logger) -> None:
         logger.debug("Getting index status: timeout=%s", timeout)
 
+        kwargs = {}
+        if timeout is not None:
+            kwargs["timeout"] = timeout
+
         user_admin_stub = self._get_user_admin_stub()
         list_roles_request = empty
 
-        return (user_admin_stub, list_roles_request)
+        return (user_admin_stub, list_roles_request, kwargs)
 
     def _respond_index_list(self, response) -> None:
         response_list = []

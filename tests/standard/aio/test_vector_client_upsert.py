@@ -5,16 +5,10 @@ import numpy as np
 
 from aerospike_vector_search import AVSServerError
 import grpc
+
+
 class upsert_test_case:
-    def __init__(
-        self,
-        *,
-        namespace,
-        record_data,
-        set_name,
-        timeout,
-        key=None
-    ):
+    def __init__(self, *, namespace, record_data, set_name, timeout, key=None):
         self.namespace = namespace
         self.record_data = record_data
         self.set_name = set_name
@@ -22,6 +16,7 @@ class upsert_test_case:
 
         self.key = key
 
+
 @given(random_key=key_strategy())
 @settings(max_examples=5, deadline=1000)
 @pytest.mark.parametrize(
@@ -32,35 +27,38 @@ class upsert_test_case:
             namespace="test",
             record_data={"math": [i for i in range(1024)]},
             set_name=None,
-            timeout=None
+            timeout=None,
         ),
         upsert_test_case(
             namespace="test",
             record_data={"english": [float(i) for i in range(1024)]},
             set_name=None,
-            timeout=None
+            timeout=None,
         ),
         upsert_test_case(
             namespace="test",
             record_data={"english": [bool(i) for i in range(1024)]},
             set_name=None,
-            timeout=None
-        )
+            timeout=None,
+        ),
     ],
 )
-async def test_vector_upsert_without_existing_record(session_vector_client, test_case, random_key):
+async def test_vector_upsert_without_existing_record(
+    session_vector_client, test_case, random_key
+):
     await session_vector_client.upsert(
         namespace=test_case.namespace,
         key=random_key,
         record_data=test_case.record_data,
-        set_name=test_case.set_name
+        set_name=test_case.set_name,
     )
 
     await session_vector_client.delete(
         namespace=test_case.namespace,
         key=random_key,
     )
-    
+
+
 @given(random_key=key_strategy())
 @settings(max_examples=5, deadline=1000)
 @pytest.mark.parametrize(
@@ -71,16 +69,18 @@ async def test_vector_upsert_without_existing_record(session_vector_client, test
             namespace="test",
             record_data={"math": [i for i in range(1024)]},
             set_name=None,
-            timeout=None
-        )
+            timeout=None,
+        ),
     ],
 )
-async def test_vector_upsert_with_existing_record(session_vector_client, test_case, random_key):
+async def test_vector_upsert_with_existing_record(
+    session_vector_client, test_case, random_key
+):
     await session_vector_client.upsert(
         namespace=test_case.namespace,
         key=random_key,
         record_data=test_case.record_data,
-        set_name=test_case.set_name
+        set_name=test_case.set_name,
     )
 
     await session_vector_client.delete(
@@ -97,15 +97,15 @@ async def test_vector_upsert_with_existing_record(session_vector_client, test_ca
             record_data={"math": [i for i in range(1024)]},
             set_name=None,
             timeout=None,
-            key=np.int32(31)
+            key=np.int32(31),
         ),
         upsert_test_case(
             namespace="test",
             record_data={"math": [i for i in range(1024)]},
             set_name=None,
             timeout=None,
-            key=np.array([b'a', b'b', b'c'])
-        )
+            key=np.array([b"a", b"b", b"c"]),
+        ),
     ],
 )
 async def test_vector_upsert_with_numpy_key(session_vector_client, test_case):
@@ -113,7 +113,7 @@ async def test_vector_upsert_with_numpy_key(session_vector_client, test_case):
         namespace=test_case.namespace,
         key=test_case.key,
         record_data=test_case.record_data,
-        set_name=test_case.set_name
+        set_name=test_case.set_name,
     )
 
     await session_vector_client.delete(
@@ -132,16 +132,16 @@ async def test_vector_upsert_with_numpy_key(session_vector_client, test_case):
             namespace="test",
             record_data={"math": [i for i in range(1024)]},
             set_name=None,
-            timeout=0.0001
-        )
+            timeout=0.0001,
+        ),
     ],
 )
-async def test_vector_upsert_timeout(session_vector_client, test_case, random_key, with_latency):
+async def test_vector_upsert_timeout(
+    session_vector_client, test_case, random_key, with_latency
+):
     if not with_latency:
-        print("INSIDE")
-        pytest.skip("Server latency too low to test timeout")  
+        pytest.skip("Server latency too low to test timeout")
 
-    print(with_latency)  
     with pytest.raises(AVSServerError) as e_info:
         for i in range(10):
             await session_vector_client.upsert(
@@ -149,6 +149,6 @@ async def test_vector_upsert_timeout(session_vector_client, test_case, random_ke
                 key=random_key,
                 record_data=test_case.record_data,
                 set_name=test_case.set_name,
-                timeout=test_case.timeout
+                timeout=test_case.timeout,
             )
     assert e_info.value.rpc_error.code() == grpc.StatusCode.DEADLINE_EXCEEDED

@@ -1,32 +1,38 @@
-import random 
+import random
 import hypothesis.strategies as st
 from hypothesis import given
 import string
 
+
 def random_int():
     return str(random.randint(0, 50_000))
 
+
 allowed_chars = (
-    list(string.ascii_lowercase) +  # a-z
-    list(string.ascii_uppercase) +  # A-Z
-    list(string.digits) +           # 0-9
-    ['_', '-']                 # _, -, $
+    list(string.ascii_lowercase)  # a-z
+    + list(string.ascii_uppercase)  # A-Z
+    + list(string.digits)  # 0-9
+    + ["_", "-"]  # _, -, $
 )
 
+
 def key_strategy():
-    return st.text(
-        alphabet=allowed_chars, min_size=1, max_size=100_000
-    ).filter(lambda ns: ns not in ['0', '1', 'null'])
+    return st.text(alphabet=allowed_chars, min_size=1, max_size=100_000).filter(
+        lambda ns: ns not in ["0", "1", "null"]
+    )
+
 
 def bin_strategy():
-    return st.text(
-        alphabet=allowed_chars, min_size=1, max_size=15
-    ).filter(lambda ns: ns not in ['0', '1', 'null'])
+    return st.text(alphabet=allowed_chars, min_size=1, max_size=15).filter(
+        lambda ns: ns not in ["0", "1", "null"]
+    )
+
 
 def index_strategy():
-    return st.text(
-        alphabet=allowed_chars, min_size=1, max_size=63
-    ).filter(lambda ns: ns not in ['null'])
+    return st.text(alphabet=allowed_chars, min_size=1, max_size=63).filter(
+        lambda ns: ns not in ["null"]
+    )
+
 
 """
 TODO: Implement Hypothesis

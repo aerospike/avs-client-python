@@ -29,7 +29,7 @@ class ChannelProvider(base_channel_provider.BaseChannelProvider):
         is_loadbalancer: Optional[bool] = False,
         username: Optional[str] = None,
         password: Optional[str] = None,
-        root_certificate: Optional[str] = None,
+        root_certificate: Optional[Union[list[str], str]] = None,
         certificate_chain: Optional[str] = None,
         private_key: Optional[str] = None,
         service_config_path: Optional[str] = None,
@@ -68,13 +68,14 @@ class ChannelProvider(base_channel_provider.BaseChannelProvider):
             await self._task
 
     async def _is_ready(self):
-        await self._tend_initalized.wait()
-
         if not self.client_server_compatible:
-            raise types.AVSClientError(
-                message="This AVS Client version is only compatbile with AVS Servers above the following version number: "
-                + self.minimum_required_version
-            )
+            await self._tend_initalized.wait()
+
+            if not self.client_server_compatible:
+                raise types.AVSClientError(
+                    message="This AVS Client version is only compatbile with AVS Servers above the following version number: "
+                    + self.minimum_required_version
+                )
 
     async def _tend(self):
         try:
@@ -161,7 +162,8 @@ class ChannelProvider(base_channel_provider.BaseChannelProvider):
                             tasks.append(channel_endpoints.channel.close())
                         except Exception as e:
                             logger.debug(
-                                "While tending, failed to close GRPC channel while replacing up old endpoints: " + str(e)
+                                "While tending, failed to close GRPC channel while replacing up old endpoints: "
+                                + str(e)
                             )
                         self.add_new_channel_to_node_channels(node, newEndpoints)
 
@@ -174,21 +176,21 @@ class ChannelProvider(base_channel_provider.BaseChannelProvider):
 
                         except Exception as e:
                             logger.debug(
-                                "While tending, failed to close GRPC channel while removing unused endpoints: " + str(e)
+                                "While tending, failed to close GRPC channel while removing unused endpoints: "
+                                + str(e)
                             )
 
                 await asyncio.gather(*tasks)
 
             if not self.client_server_compatible:
 
-                stub = vector_db_pb2_grpc.AboutServiceStub(self.get_channel())
-                about_request = vector_db_pb2.AboutRequest()
+                (stub, about_request) = self._prepare_about()
 
                 self.current_server_version = (
                     await stub.Get(about_request, credentials=self._token)
                 ).version
-                self.client_server_compatible = self.verify_compatibile_server()
 
+                self.client_server_compatible = self.verify_compatibile_server()
                 self._tend_initalized.set()
 
             # TODO: check tend interval.
@@ -197,8 +199,6 @@ class ChannelProvider(base_channel_provider.BaseChannelProvider):
         except Exception as e:
             logger.error("Tending failed at unindentified location: %s", e)
             raise e
-
-
 
     def _create_channel(self, host: str, port: int, is_tls: bool) -> grpc.Channel:
         host = re.sub(r"%.*", "", host)
@@ -210,25 +210,11 @@ class ChannelProvider(base_channel_provider.BaseChannelProvider):
             options = None
 
         if self._root_certificate:
-            with open(self._root_certificate, "rb") as f:
-                root_certificate = f.read()
-
-            if self._private_key:
-                with open(self._private_key, "rb") as f:
-                    private_key = f.read()
-            else:
-                private_key = None
-
-            if self._certificate_chain:
-                with open(self._certificate_chain, "rb") as f:
-                    certificate_chain = f.read()
-            else:
-                certificate_chain = None
 
             ssl_credentials = grpc.ssl_channel_credentials(
-                root_certificates=root_certificate,
-                certificate_chain=certificate_chain,
-                private_key=private_key,
+                root_certificates=self._root_certificate,
+                certificate_chain=self._certificate_chain,
+                private_key=self._private_key,
             )
 
             return grpc.aio.secure_channel(
@@ -248,7 +234,7 @@ class ChannelProvider(base_channel_provider.BaseChannelProvider):
         try:
             response = await auth_stub.Authenticate(auth_request)
         except grpc.RpcError as e:
-            print("Failed to refresh authentication token with error: %s", e)
+            logger.error("Failed to refresh authentication token with error: %s", e)
             raise types.AVSServerError(rpc_error=e)
 
         self._respond_authenticate(response.token)

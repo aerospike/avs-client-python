@@ -7,11 +7,10 @@ from aerospike_vector_search import AVSServerError
 import grpc
 
 
-@pytest.mark.parametrize("empty_test_case",[None])
+@pytest.mark.parametrize("empty_test_case", [None])
 @given(random_name=index_strategy())
 @settings(max_examples=5, deadline=1000)
 def test_index_get(session_admin_client, empty_test_case, random_name):
-
 
     try:
         session_admin_client.index_create(
@@ -24,15 +23,12 @@ def test_index_get(session_admin_client, empty_test_case, random_name):
         if se.rpc_error.code() != grpc.StatusCode.ALREADY_EXISTS:
             raise se
 
+    result = session_admin_client.index_get(namespace="test", name=random_name)
 
-    result = session_admin_client.index_get(
-        namespace="test", name=random_name
-    )
-    
     assert result["id"]["name"] == random_name
     assert result["id"]["namespace"] == "test"
     assert result["dimensions"] == 1024
-    assert result['field'] == "science"
+    assert result["field"] == "science"
     assert result["hnsw_params"]["m"] == 16
     assert result["hnsw_params"]["ef_construction"] == 100
     assert result["hnsw_params"]["ef"] == 100
@@ -43,12 +39,15 @@ def test_index_get(session_admin_client, empty_test_case, random_name):
 
     drop_specified_index(session_admin_client, "test", random_name)
 
-@pytest.mark.parametrize("empty_test_case",[None])
+
+@pytest.mark.parametrize("empty_test_case", [None])
 @given(random_name=index_strategy())
 @settings(max_examples=1, deadline=1000)
-def test_index_get_timeout(session_admin_client, empty_test_case, random_name, with_latency):
+def test_index_get_timeout(
+    session_admin_client, empty_test_case, random_name, with_latency
+):
     if not with_latency:
-        pytest.skip("Server latency too low to test timeout")    
+        pytest.skip("Server latency too low to test timeout")
     try:
         session_admin_client.index_create(
             namespace="test",
@@ -59,8 +58,6 @@ def test_index_get_timeout(session_admin_client, empty_test_case, random_name, w
     except AVSServerError as se:
         if se.rpc_error.code() != grpc.StatusCode.ALREADY_EXISTS:
             raise se
-
-
 
     for i in range(10):
         try:

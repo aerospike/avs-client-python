@@ -5,5 +5,5 @@
         default:
           # List of externally accessible addresses and
           # ports for this Proximus instance.
-          - address: 127.0.0.1
+          - address: child
             port: 5000

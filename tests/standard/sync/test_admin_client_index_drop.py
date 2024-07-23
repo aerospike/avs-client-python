@@ -8,9 +8,7 @@ from ...utils import index_strategy
 from hypothesis import given, settings, Verbosity
 
 
-
-
-@pytest.mark.parametrize("empty_test_case",[None])
+@pytest.mark.parametrize("empty_test_case", [None])
 @given(random_name=index_strategy())
 @settings(max_examples=5, deadline=1000)
 def test_index_drop(session_admin_client, empty_test_case, random_name):
@@ -34,12 +32,15 @@ def test_index_drop(session_admin_client, empty_test_case, random_name):
     for index in result:
         assert index["id"]["name"] != random_name
 
-@pytest.mark.parametrize("empty_test_case",[None])
+
+@pytest.mark.parametrize("empty_test_case", [None])
 @given(random_name=index_strategy())
 @settings(max_examples=1, deadline=1000)
-def test_index_drop_timeout(session_admin_client, empty_test_case, random_name, with_latency):
+def test_index_drop_timeout(
+    session_admin_client, empty_test_case, random_name, with_latency
+):
     if not with_latency:
-        pytest.skip("Server latency too low to test timeout")    
+        pytest.skip("Server latency too low to test timeout")
 
     try:
         session_admin_client.index_create(
@@ -52,9 +53,11 @@ def test_index_drop_timeout(session_admin_client, empty_test_case, random_name, 
         if se.rpc_error.code() != grpc.StatusCode.ALREADY_EXISTS:
             raise se
 
-    for i in range(10): 
+    for i in range(10):
         try:
-            session_admin_client.index_drop(namespace="test", name=random_name, timeout=0.0001)
+            session_admin_client.index_drop(
+                namespace="test", name=random_name, timeout=0.0001
+            )
         except AVSServerError as se:
             if se.rpc_error.code() == grpc.StatusCode.DEADLINE_EXCEEDED:
                 assert se.rpc_error.code() == grpc.StatusCode.DEADLINE_EXCEEDED
