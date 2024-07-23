@@ -581,7 +581,7 @@ class Client(BaseClient):
             logger.error("Failed to revoke roles with error: %s", e)
             raise types.AVSServerError(rpc_error=e)
 
-    async def list_roles(self, timeout: Optional[int] = None) -> int:
+    async def list_roles(self, timeout: Optional[int] = None) -> None:
         """
         grant roles to existing AVS Users.
 
