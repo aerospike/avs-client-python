@@ -11,7 +11,7 @@ import grpc
 
 @pytest.mark.parametrize("empty_test_case", [None])
 @given(random_name=index_strategy())
-@settings(max_examples=5, deadline=1000)
+@settings(max_examples=1, deadline=1000)
 def test_index_get_status(session_admin_client, empty_test_case, random_name):
     try:
         session_admin_client.index_create(

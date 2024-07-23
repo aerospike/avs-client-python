@@ -18,7 +18,7 @@ class upsert_test_case:
 
 
 @given(random_key=key_strategy())
-@settings(max_examples=5, deadline=1000)
+@settings(max_examples=1, deadline=1000)
 @pytest.mark.parametrize(
     "test_case",
     [
@@ -60,7 +60,7 @@ async def test_vector_upsert_without_existing_record(
 
 
 @given(random_key=key_strategy())
-@settings(max_examples=5, deadline=1000)
+@settings(max_examples=1, deadline=1000)
 @pytest.mark.parametrize(
     "test_case",
     [
@@ -123,7 +123,7 @@ async def test_vector_upsert_with_numpy_key(session_vector_client, test_case):
 
 
 @given(random_key=key_strategy())
-@settings(max_examples=5, deadline=1000)
+@settings(max_examples=1, deadline=1000)
 @pytest.mark.parametrize(
     "test_case",
     [

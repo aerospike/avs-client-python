@@ -115,7 +115,7 @@ class BaseChannelProvider(object):
                 continue
             try:
                 return self._create_channel(
-                    endpoint.address, endpoint.port, endpoint.isTls
+                    endpoint.address, endpoint.port
                 )
             except Exception as e:
                 logger.debug("failure creating channel: " + str(e))

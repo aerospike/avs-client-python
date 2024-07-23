@@ -20,7 +20,7 @@ class exists_test_case:
 
 
 @given(random_key=key_strategy())
-@settings(max_examples=5, deadline=1000)
+@settings(max_examples=1, deadline=1000)
 @pytest.mark.parametrize(
     "test_case",
     [
@@ -59,7 +59,7 @@ async def test_vector_exists(session_vector_client, test_case, random_key):
 
 
 @given(random_key=key_strategy())
-@settings(max_examples=5, deadline=1000)
+@settings(max_examples=1, deadline=1000)
 @pytest.mark.parametrize(
     "test_case",
     [

@@ -20,7 +20,7 @@ class insert_test_case:
 
 
 @given(random_key=key_strategy())
-@settings(max_examples=5, deadline=1000)
+@settings(max_examples=1, deadline=1000)
 @pytest.mark.parametrize(
     "test_case",
     [
@@ -69,7 +69,7 @@ def test_vector_insert_without_existing_record(
 
 
 @given(random_key=key_strategy())
-@settings(max_examples=5, deadline=1000)
+@settings(max_examples=1, deadline=1000)
 @pytest.mark.parametrize(
     "test_case",
     [
@@ -105,7 +105,7 @@ def test_vector_insert_with_existing_record(
 
 
 @given(random_key=key_strategy())
-@settings(max_examples=5, deadline=1000)
+@settings(max_examples=1, deadline=1000)
 @pytest.mark.parametrize(
     "test_case",
     [

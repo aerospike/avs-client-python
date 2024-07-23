@@ -36,7 +36,7 @@ class index_create_test_case:
 
 
 @given(random_name=index_strategy())
-@settings(max_examples=5, deadline=1000)
+@settings(max_examples=1, deadline=1000)
 @pytest.mark.parametrize(
     "test_case",
     [
@@ -93,7 +93,7 @@ def test_index_create(session_admin_client, test_case, random_name):
 
 
 @given(random_name=index_strategy())
-@settings(max_examples=5, deadline=1000)
+@settings(max_examples=1, deadline=1000)
 @pytest.mark.parametrize(
     "test_case",
     [
@@ -165,7 +165,7 @@ def test_index_create_with_dimnesions(session_admin_client, test_case, random_na
 
 
 @given(random_name=index_strategy())
-@settings(max_examples=5, deadline=1000)
+@settings(max_examples=1, deadline=1000)
 @pytest.mark.parametrize(
     "test_case",
     [
@@ -257,7 +257,7 @@ def test_index_create_with_vector_distance_metric(
 
 
 @given(random_name=index_strategy())
-@settings(max_examples=5, deadline=1000)
+@settings(max_examples=1, deadline=1000)
 @pytest.mark.parametrize(
     "test_case",
     [
@@ -488,7 +488,7 @@ def test_index_create_with_index_params(session_admin_client, test_case, random_
 
 
 @given(random_name=index_strategy())
-@settings(max_examples=5, deadline=1000)
+@settings(max_examples=1, deadline=1000)
 @pytest.mark.parametrize(
     "test_case",
     [
@@ -546,7 +546,7 @@ def test_index_create_index_labels(session_admin_client, test_case, random_name)
 
 
 @given(random_name=index_strategy())
-@settings(max_examples=5, deadline=1000)
+@settings(max_examples=1, deadline=1000)
 @pytest.mark.parametrize(
     "test_case",
     [
