@@ -650,7 +650,7 @@ jobs:
 
         sleep 5
 
-        python -m pytest standard -s --host 0.0.0.0 --port 5000 --exhaustive_vector_search -vs
+        python -m pytest standard -s --host 0.0.0.0 --port 5000 --extensive_vector_search -vs
       working-directory: tests
 
 #

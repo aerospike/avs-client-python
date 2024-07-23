@@ -200,7 +200,7 @@ class ChannelProvider(base_channel_provider.BaseChannelProvider):
             logger.error("Tending failed at unindentified location: %s", e)
             raise e
 
-    def _create_channel(self, host: str, port: int, is_tls: bool) -> grpc.Channel:
+    def _create_channel(self, host: str, port: int) -> grpc.Channel:
         host = re.sub(r"%.*", "", host)
 
         if self.service_config_json:

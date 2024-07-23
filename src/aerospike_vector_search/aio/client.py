@@ -107,8 +107,15 @@ class Client(BaseClient):
         :param set_name: The name of the set to which the record belongs. Defaults to None.
         :type set_name: Optional[str]
 
+        :param ignore_mem_queue_full: Ignore the in-memory queue full error. These records would be written to storage
+            and later, the index healer would pick for indexing. Defaults to False.
+        :type dimensions: int
+
+        :param timeout: Time in seconds this operation will wait before raising an :class:`AVSServerError <aerospike_vector_search.types.AVSServerError>`. Defaults to None.
+        :type dimensions: int
+
         Raises:
-            grpc.RpcError: Raised if an error occurs during the RPC communication with the server while attempting to insert a vector..
+            AVSServerError: Raised if an error occurs during the RPC communication with the server while attempting to insert a vector..
             This error could occur due to various reasons such as network issues, server-side failures, or invalid request parameters.
 
         """
@@ -161,8 +168,15 @@ class Client(BaseClient):
         :param set_name: The name of the set to which the record belongs. Defaults to None.
         :type set_name: Optional[str]
 
+        :param ignore_mem_queue_full: Ignore the in-memory queue full error. These records would be written to storage
+            and later, the index healer would pick for indexing. Defaults to False.
+        :type dimensions: int
+
+        :param timeout: Time in seconds this operation will wait before raising an :class:`AVSServerError <aerospike_vector_search.types.AVSServerError>`. Defaults to None.
+        :type dimensions: int
+
         Raises:
-            grpc.RpcError: Raised if an error occurs during the RPC communication with the server while attempting to update a vector..
+            AVSServerError: Raised if an error occurs during the RPC communication with the server while attempting to update a vector..
             This error could occur due to various reasons such as network issues, server-side failures, or invalid request parameters.
 
         """
@@ -215,8 +229,15 @@ class Client(BaseClient):
         :param set_name: The name of the set to which the record belongs. Defaults to None.
         :type set_name: Optional[str]
 
+        :param ignore_mem_queue_full: Ignore the in-memory queue full error. These records would be written to storage
+            and later, the index healer would pick for indexing. Defaults to False.
+        :type dimensions: int
+
+        :param timeout: Time in seconds this operation will wait before raising an :class:`AVSServerError <aerospike_vector_search.types.AVSServerError>`. Defaults to None.
+        :type dimensions: int
+
         Raises:
-            grpc.RpcError: Raised if an error occurs during the RPC communication with the server while attempting to upsert a vector..
+            AVSServerError: Raised if an error occurs during the RPC communication with the server while attempting to upsert a vector..
             This error could occur due to various reasons such as network issues, server-side failures, or invalid request parameters.
 
         """
@@ -266,12 +287,14 @@ class Client(BaseClient):
         :param set_name: The name of the set from which to read the record. Defaults to None.
         :type set_name: Optional[str]
 
+        :param timeout: Time in seconds this operation will wait before raising an :class:`AVSServerError <aerospike_vector_search.types.AVSServerError>`. Defaults to None.
+        :type dimensions: int
 
         Returns:
             types.RecordWithKey: A record with its associated key.
 
         Raises:
-            grpc.RpcError: Raised if an error occurs during the RPC communication with the server while attempting to get a vector..
+            AVSServerError: Raised if an error occurs during the RPC communication with the server while attempting to get a vector..
             This error could occur due to various reasons such as network issues, server-side failures, or invalid request parameters.
         
         """
@@ -312,11 +335,15 @@ class Client(BaseClient):
         :param set_name: The name of the set to which the record belongs. Defaults to None.
         :type set_name: str
 
+        :param timeout: Time in seconds this operation will wait before raising an :class:`AVSServerError <aerospike_vector_search.types.AVSServerError>`. Defaults to None.
+        :type dimensions: int
+
+
         Returns:
             bool: True if the record exists, False otherwise.
 
         Raises:
-            grpc.RpcError: Raised if an error occurs during the RPC communication with the server while attempting to see if a given vector exists..
+            AVSServerError: Raised if an error occurs during the RPC communication with the server while attempting to see if a given vector exists..
             This error could occur due to various reasons such as network issues, server-side failures, or invalid request parameters.
         """
 
@@ -357,9 +384,11 @@ class Client(BaseClient):
         :param set_name: The name of the set to which the record belongs. Defaults to None.
         :type set_name: Optional[str]
 
+        :param timeout: Time in seconds this operation will wait before raising an :class:`AVSServerError <aerospike_vector_search.types.AVSServerError>`. Defaults to None.
+        :type dimensions: int
 
         Raises:
-            grpc.RpcError: Raised if an error occurs during the RPC communication with the server while attempting to create the index.
+            AVSServerError: Raised if an error occurs during the RPC communication with the server while attempting to create the index.
             This error could occur due to various reasons such as network issues, server-side failures, or invalid request parameters.
         """
 
@@ -390,26 +419,29 @@ class Client(BaseClient):
         """
         Check if a record is indexed in the Vector DB.
 
-        :params namespace: The namespace for the record.
+        :param namespace: The namespace for the record.
         :type namespace: str
 
-        :params key: The key for the record.
+        :param key: The key for the record.
         :type key: Union[int, str, bytes, bytearray, np.generic, np.ndarray]
 
-        :params index_name: The name of the index.
+        :param index_name: The name of the index.
         :type index_name: str
 
-        :params index_namespace: The namespace of the index. If None, defaults to the namespace of the record. Defaults to None.
+        :param index_namespace: The namespace of the index. If None, defaults to the namespace of the record. Defaults to None.
         :type index_namespace: optional[str]
 
-        :params set_name: The name of the set to which the record belongs. Defaults to None.
+        :param set_name: The name of the set to which the record belongs. Defaults to None.
         :type set_name: optional[str]
+
+        :param timeout: Time in seconds this operation will wait before raising an :class:`AVSServerError <aerospike_vector_search.types.AVSServerError>`. Defaults to None.
+        :type dimensions: int
 
         Returns:
             bool: True if the record is indexed, False otherwise.
 
         Raises:
-            grpc.RpcError: Raised if an error occurs during the RPC communication with the server while attempting to create the index.
+            AVSServerError: Raised if an error occurs during the RPC communication with the server while attempting to create the index.
             This error could occur due to various reasons such as network issues, server-side failures, or invalid request parameters.
         """
 
@@ -444,32 +476,34 @@ class Client(BaseClient):
         """
         Perform a Hierarchical Navigable Small World (HNSW) vector search in Aerospike Vector Search.
 
-        :params namespace: The namespace for the records.
+        :param namespace: The namespace for the records.
         :type namespace: str
 
-        :params index_name: The name of the index.
+        :param index_name: The name of the index.
         :type index_name: str
 
-        :params query: The query vector for the search.
+        :param query: The query vector for the search.
         :type query: list[Union[bool, float]]
 
-        :params limit: The maximum number of neighbors to return. K value.
+        :param limit: The maximum number of neighbors to return. K value.
         :type limit: int
 
-        :params search_params: Parameters for the HNSW algorithm.
+        :param search_params: Parameters for the HNSW algorithm.
             If None, the default parameters for the index are used. Defaults to None.
         :type search_params: Optional[types_pb2.HnswSearchParams]
 
-        :params field_names: A list of field names to retrieve from the results.
+        :param field_names: A list of field names to retrieve from the results.
             If None, all fields are retrieved. Defaults to None.
         :type field_names: Optional[list[str]]
 
+        :param timeout: Time in seconds this operation will wait before raising an :class:`AVSServerError <aerospike_vector_search.types.AVSServerError>`. Defaults to None.
+        :type dimensions: int
 
         Returns:
             list[types.Neighbor]: A list of neighbors records found by the search.
 
         Raises:
-            grpc.RpcError: Raised if an error occurs during the RPC communication with the server while attempting to create the index.
+            AVSServerError: Raised if an error occurs during the RPC communication with the server while attempting to create the index.
             This error could occur due to various reasons such as network issues, server-side failures, or invalid request parameters.
         """
         await self._channel_provider._is_ready()
@@ -526,7 +560,7 @@ class Client(BaseClient):
 
         Raises:
             Exception: Raised when the timeout occurs while waiting for index completion.
-            grpc.RpcError: Raised if an error occurs during the RPC communication with the server while attempting to create the index.
+            AVSServerError: Raised if an error occurs during the RPC communication with the server while attempting to create the index.
             This error could occur due to various reasons such as network issues, server-side failures, or invalid request parameters.
 
         Note:

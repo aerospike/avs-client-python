@@ -103,7 +103,7 @@ class BaseChannelProvider(object):
     def _create_channel_from_host_port(
         self, host: types.HostPort
     ) -> Union[grpc.aio.Channel, grpc.Channel]:
-        return self._create_channel(host.host, host.port, host.is_tls)
+        return self._create_channel(host.host, host.port)
 
     def _create_channel_from_server_endpoint_list(
         self, endpoints: vector_db_pb2.ServerEndpointList

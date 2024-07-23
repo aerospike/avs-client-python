@@ -9,16 +9,17 @@ class HostPort(object):
     represents host, port and TLS usage information.
     Used primarily when intializing client.
 
-    Args:
-        host (str): The host address.
-        port (int): The port number.
-        is_tls (Optional[bool], optional): Indicates if TLS is enabled. Defaults to False.
+    :param host: The host address.
+    :type host: str
+
+    :param port: The port number.
+    :type port: int
+
     """
 
-    def __init__(self, *, host: str, port: int, is_tls: Optional[bool] = False) -> None:
+    def __init__(self, *, host: str, port: int) -> None:
         self.host = host
         self.port = port
-        self.is_tls = is_tls
 
 
 class Key(object):
@@ -26,12 +27,16 @@ class Key(object):
     Represents a record key.
     Used in RecordWithKey.
 
-    Args:
-        namespace (str): The namespace for the key.
-        set (str): The set for the key.
-        key (Any): The key itself.
-    """
+    :param namespace (str): The namespace for the key.
+    :type namespace: str
 
+    :param set: (optional[str]): The set for the key.
+    :type set: optional[str]
+
+    :param key: (Any): The key itself.
+    :type key: Union[int, str, bytes, bytearray, np.ndarray, np.generic]
+
+    """
     def __init__(self, *, namespace: str, set: str, key: Any) -> None:
         self.namespace = namespace
         self.set = set
@@ -49,9 +54,11 @@ class RecordWithKey(object):
     Represents a record, including a key and fields.
     Return value for VectorDbClient.get.
 
-    Args:
-        key (Key): The key of the record.
-        fields (dict[str, Any]): The fields associated with the record.
+    :param key: (Key): The key of the record.
+    :type key: Key
+
+    :param fields: : The fields associated with the record.
+    :type fields: dict[str, Any]
     """
 
     def __init__(self, *, key: Key, fields: dict[str, Any]) -> None:
@@ -83,12 +90,19 @@ class Neighbor(object):
     """
     Represents a neighboring record in the context of approximate nearest neighbor search.
 
-    This class represents a neighboring record in relation to a query record. It includes information such as the key, fields, and distance from the query record.
+    This class represents a neighboring record in relation to a query record. It includes information such as the key, fields,
+        and distance from the query record.
 
-    Args:
-        key (Key): The Key instance identifying the neighboring record.
-        fields (dict[str, Any]): A dictionary representing fields associated with the neighboring record.
-        distance (float): The distance between the neighboring record and the query record, calculated based on the chosen VectorDistanceMetric.
+    
+    :param key: The Key instance identifying the neighboring record.
+    :type distance: Key
+
+    :param fields: A dictionary representing fields associated with the neighboring record.
+    :type distance: dict[str, Any]
+
+    :param distance: The distance between the neighboring record and the query record, calculated based on the chosen
+        VectorDistanceMetric.
+    :type distance: float
 
     Notes:
         - The distance metric used to calculate the distance between records is determined by the chosen VectorDistanceMetric.
@@ -127,9 +141,18 @@ class Neighbor(object):
 
 class VectorDistanceMetric(enum.Enum):
     """
-    Enumeration of vector distance metrics.
-    """
+    Enumeration of vector distance metrics used for comparing vectors.
 
+    This enumeration defines various metrics for calculating the distance or similarity between vectors:
+
+    - **SQUARED_EUCLIDEAN**: Represents the squared Euclidean distance metric.
+    - **COSINE**: Represents the cosine similarity metric.
+    - **DOT_PRODUCT**: Represents the dot product similarity metric.
+    - **MANHATTAN**: Represents the Manhattan distance (L1 norm) metric.
+    - **HAMMING**: Represents the Hamming distance metric.
+
+    Each metric provides a different method for comparing vectors, affecting how distances and similarities are computed in vector-based operations.
+    """
     SQUARED_EUCLIDEAN: types_pb2.VectorDistanceMetric = (
         types_pb2.VectorDistanceMetric.SQUARED_EUCLIDEAN
     )
@@ -143,11 +166,14 @@ class VectorDistanceMetric(enum.Enum):
 
 class User(object):
     """
-    Representation
-    Args:
-        max_records (Optional[int], optional): Maximum number of records to fit in a batch. Defaults to 10000.
-        interval (Optional[int], optional): The maximum amount of time in milliseconds to wait before finalizing a batch. Defaults to 10000.
-        disabled (Optional[bool], optional): Disables batching for index updates. Default is False.
+    AVS User Object used mainly for role-based authentication.
+
+    :param username: Username associated with user.
+    :type username: str
+
+    :param roles: roles associated with user.
+    :type roles: list[str]
+
     """
 
     def __init__(
@@ -164,10 +190,8 @@ class HnswBatchingParams(object):
     """
     Parameters for configuring batching behaviour for batch based index update.
 
-    Args:
-        max_records (Optional[int], optional): Maximum number of records to fit in a batch. Defaults to 10000.
-        interval (Optional[int], optional): The maximum amount of time in milliseconds to wait before finalizing a batch. Defaults to 10000.
-        disabled (Optional[bool], optional): Disables batching for index updates. Default is False.
+    :param max_records: Maximum number of records to fit in a batch. Defaults to 10000.
+    :param interva: The maximum amount of time in milliseconds to wait before finalizing a batch. Defaults to 10000.
     """
 
     def __init__(
@@ -187,6 +211,29 @@ class HnswBatchingParams(object):
 
 
 class HnswHealerParams(object):
+    """
+    Parameters to configure the HNSW healer
+
+    :param max_scan_rate_per_node: Maximum allowed record scan rate per vector db node.  Default is the global healer config, which is configured in the AVS Server. 
+    :type max_scan_rate_per_node: Optional[int]
+
+    :param max_scan_page_size: Maximum number of records in a single scanned page.
+        Default is the global healer config, which is configured in the AVS Server. 
+    :type max_scan_page_size: Optional[int]
+
+    :param re_index_percent: Percentage of good records randomly selected for reindexing in a healer cycle.
+        Default is the global healer config, which is configured in the AVS Server. 
+    :type re_index_percent: Optional[int]
+
+    :param schedule_delay: The time delay, in milliseconds, between the termination of a healer run and the commencement
+        of the next one for an index. It only guarantees that the next index healer run for an index will not be scheduled before
+        this time delay. Default is the global healer config, which is configured in the AVS Server. 
+    :type schedule_delay: Optional[int]
+
+    :param parallelism: Maximum number of records to heal in parallel.
+        Default is the global healer config, which is configured in the AVS Server. 
+    :type parallelism: Optional[int]
+    """
     def __init__(
         self,
         *,
@@ -227,6 +274,17 @@ class HnswHealerParams(object):
 
 
 class HnswCachingParams(object):
+    """
+    Parameters to configure the HNSW index cache
+
+    :param max_entries: maximum number of entries to cache.  Default is the global cache config, which is configured in the AVS Server. 
+    :type max_entries: Optional[int]
+
+    :param expiry: Cache entries will expire after this time in millseconds has expired after the entry was add to the cache.
+        Default is the global cache config, which is configured in the AVS Server. 
+    :type expiry: Optional[int]
+
+    """
     def __init__(
         self, *, max_entries: Optional[int] = None, expiry: Optional[int] = None
     ) -> None:
@@ -243,6 +301,13 @@ class HnswCachingParams(object):
 
 
 class HnswIndexMergeParams(object):
+    """
+    Parameters to configure the HNSW index merge behavior.
+
+    :param parallelism: The number of vectors merged in parallel from a batch index to main index.
+        Default is the global healer config, which is configured in the AVS Server. 
+    :type parallelism: Optional[int]
+    """
     def __init__(self, *, parallelism: Optional[int] = None) -> None:
         self.parallelism = parallelism
 
@@ -257,11 +322,17 @@ class HnswParams(object):
     """
     Parameters for the Hierarchical Navigable Small World (HNSW) algorithm, used for approximate nearest neighbor search.
 
-    Args:
-        m (Optional[int], optional): The number of bi-directional links created per level during construction. Larger 'm' values lead to higher recall but slower construction. Defaults to 16.
-        ef_construction (Optional[int], optional): The size of the dynamic list for the nearest neighbors (candidates) during the index construction. Larger 'ef_construction' values lead to higher recall but slower construction. Defaults to 100.
-        ef (Optional[int], optional): The size of the dynamic list for the nearest neighbors (candidates) during the search phase. Larger 'ef' values lead to higher recall but slower search. Defaults to 100.
-        batching_params (Optional[HnswBatchingParams], optional): Parameters related to configuring batch processing, such as the maximum number of records per batch and batching interval. Defaults to HnswBatchingParams().
+    :param m: The number of bi-directional links created per level during construction. Larger 'm' values lead to higher recall but slower construction. Defaults to 16.
+    :type m: Optional[int]
+
+    :param ef_construction: The size of the dynamic list for the nearest neighbors (candidates) during the index construction. Larger 'ef_construction' values lead to higher recall but slower construction. Defaults to 100.
+    :type ef_construction: Optional[int]
+
+    :param ef: The size of the dynamic list for the nearest neighbors (candidates) during the search phase. Larger 'ef' values lead to higher recall but slower search. Defaults to 100.
+    :type ef: Optional[int]
+
+    :param batching_params: Parameters related to configuring batch processing, such as the maximum number of records per batch and batching interval. Defaults to HnswBatchingParams().
+    :type batching_params: Optional[HnswBatchingParams]    
     """
 
     def __init__(
@@ -304,20 +375,24 @@ class HnswParams(object):
 
 
 class HnswSearchParams(object):
+    """
+    Parameters for Hierarchical Navigable Small World (HNSW) search.
+
+    HNSW is an algorithm used for approximate nearest neighbor search.
+
+    :param ef: The parameter 'ef' controls the trade-off between search quality and search efficiency.
+        It determines the size of the dynamic list of nearest neighbors (candidates) examined during the
+        search phase. Larger values of 'ef' typically yield higher recall but slower search times. 
+        Defaults to None, meaning the algorithm uses a library-defined default value.
+    :type ef: Optional[int]
+
+    Notes:
+        - 'ef' stands for "exploration factor."
+        - Setting 'ef' to a higher value increases the recall (i.e., the likelihood of finding the true nearest neighbors) at the cost of increased computational overhead during the search process.
+
+    """
     def __init__(self, *, ef: Optional[int] = None) -> None:
-        """
-        Parameters for Hierarchical Navigable Small World (HNSW) search.
 
-        HNSW is an algorithm used for approximate nearest neighbor search.
-
-        Args:
-            ef (Optional[int], optional): The parameter 'ef' controls the trade-off between search quality and search efficiency. It determines the size of the dynamic list of nearest neighbors (candidates) examined during the search phase. Larger values of 'ef' typically yield higher recall but slower search times. Defaults to None, meaning the algorithm uses a library-defined default value.
-
-        Notes:
-            - 'ef' stands for "exploration factor."
-            - Setting 'ef' to a higher value increases the recall (i.e., the likelihood of finding the true nearest neighbors) at the cost of increased computational overhead during the search process.
-
-        """
         self.ef = ef
 
     def _to_pb2(self):
@@ -327,6 +402,16 @@ class HnswSearchParams(object):
 
 
 class IndexStorage(object):
+    """
+    Helper class primarily used to specify which namespace and set to build the index on.
+
+    :param namespace: The name of the namespace to build the index on..
+    :type namespace: str
+
+    :param set_name: The name of the set to build the index on. Defaults to None.
+    :type set_name: Optional[str]
+
+    """
     def __init__(
         self, *, namespace: Optional[str] = None, set_name: Optional[str] = None
     ) -> None:
@@ -355,14 +440,9 @@ class AVSServerError(AVSError):
     """
     Custom exception raised for errors related to the AVS server.
 
-    Attributes:
-        status (int): The status code associated with the error.
-        details (str): Details about the error.
-        debug_error_string (str): Debug error string providing additional error information.
+    :param rpc_error: exception thrown by the grpc Python library on server calls. Defaults to None.
+    :type set_name: grpc.RpcError
 
-    Args:
-        rpc_error (Exception): The original gRPC error object from which AVSError is derived.
-            This error object is used to extract status, details, and debug information.
     """
 
     def __init__(self, *, rpc_error) -> None:
@@ -373,6 +453,13 @@ class AVSServerError(AVSError):
 
 
 class AVSClientError(AVSError):
+    """
+    Custom exception raised for errors related to AVS client-side failures..
+
+    :param message: error messaging raised by the AVS Client. Defaults to None.
+    :type set_name: str
+
+    """
     def __init__(self, *, message) -> None:
         self.message = message
 
