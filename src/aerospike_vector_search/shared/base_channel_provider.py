@@ -207,7 +207,8 @@ class BaseChannelProvider(object):
 
     def verify_compatibile_server(self) -> bool:
         def parse_version(v: str):
-            return tuple(map(int, v.split(".")))
+            return tuple(int(part) if part.isdigit() else part for part in v.split("."))
+
 
         return parse_version(self.current_server_version) >= parse_version(
             self.minimum_required_version
