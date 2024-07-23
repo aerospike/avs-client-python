@@ -189,5 +189,4 @@ Consider the following configuration:
 For this configuration, `client.index_create` will have a 3 second timeout, all Transact Service methods will have a 2 second timeout, and all other methods will have a 1 second timeout
 
 
-### Behaviors
 
