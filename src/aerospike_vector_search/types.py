@@ -163,10 +163,40 @@ class VectorDistanceMetric(enum.Enum):
     MANHATTAN: types_pb2.VectorDistanceMetric = types_pb2.VectorDistanceMetric.MANHATTAN
     HAMMING: types_pb2.VectorDistanceMetric = types_pb2.VectorDistanceMetric.HAMMING
 
+class Role(object):
+    """
+    AVS Role Object used in role-based authentication.
+
+    :param id: Unique id to identify role
+    :type id: str
+
+    """
+
+    def __init__(
+        self,
+        *,
+        id: str,
+    ) -> None:
+        self.id = id
+
+    def __repr__(self) -> str:
+        return f"Role(id={self.id!r})"
+
+    def __str__(self) -> str:
+        return f"Role {{\n  id: {self.id}\n}}"
+
+    def __getitem__(self, key):
+        key = str(key)  # Ensure key is a string
+        if not hasattr(self, key):
+            raise AttributeError(f"'Role' object has no attribute '{key}'")
+        return getattr(self, key)
+
+    def __setitem__(self, key, value):
+        setattr(self, key, value)
 
 class User(object):
     """
-    AVS User Object used mainly for role-based authentication.
+    AVS User Object used in role-based authentication.
 
     :param username: Username associated with user.
     :type username: str
@@ -180,11 +210,10 @@ class User(object):
         self,
         *,
         username: str,
-        roles: Optional[list[int]] = 10000,
+        roles: Optional[list[Role]],
     ) -> None:
         self.username = username
         self.roles = roles
-
 
 class HnswBatchingParams(object):
     """
@@ -209,6 +238,24 @@ class HnswBatchingParams(object):
         params.interval = self.interval
         return params
 
+    def __repr__(self) -> str:
+        return (f"batchingParams(max_records={self.max_records}, "
+                f"interval={self.interval})")
+
+    def __str__(self) -> str:
+        return (f"batchingParams {{\n"
+                f"  maxRecords: {self.max_records}\n"
+                f"  interval: {self.interval}\n"
+                f"}}")
+
+    def __getitem__(self, key):
+        key = str(key)  # Ensure key is a string
+        if not hasattr(self, key):
+            raise AttributeError(f"'HnswBatchingParams' object has no attribute '{key}'")
+        return getattr(self, key)
+
+    def __setitem__(self, key, value):
+        return setattr(self, key, value)
 
 class HnswHealerParams(object):
     """
@@ -373,6 +420,28 @@ class HnswParams(object):
 
         return params
 
+    def __repr__(self) -> str:
+        batching_repr = repr(self.batching_params)
+        return (f"HnswParams(m={self.m}, ef_construction={self.ef_construction}, "
+                f"ef={self.ef}, {batching_repr})")
+
+    def __str__(self) -> str:
+        batching_str = str(self.batching_params)
+        return (f"hnswParams {{\n"
+                f"  m: {self.m}\n"
+                f"  efConstruction: {self.ef_construction}\n"
+                f"  ef: {self.ef}\n"
+                f"  {batching_str}\n"
+                f"}}")
+
+    def __getitem__(self, key):
+        key = str(key)  # Ensure key is a string
+        if not hasattr(self, key):
+            raise AttributeError(f"'IndexDefinition' object has no attribute '{key}'")
+        return getattr(self, key)
+
+    def __setitem__(self, key, value):
+        return setattr(self, key, value)
 
 class HnswSearchParams(object):
     """
@@ -405,7 +474,7 @@ class IndexStorage(object):
     """
     Helper class primarily used to specify which namespace and set to build the index on.
 
-    :param namespace: The name of the namespace to build the index on..
+    :param namespace: The name of the namespace to build the index on.
     :type namespace: str
 
     :param set_name: The name of the set to build the index on. Defaults to None.
@@ -413,7 +482,7 @@ class IndexStorage(object):
 
     """
     def __init__(
-        self, *, namespace: Optional[str] = None, set_name: Optional[str] = None
+        self, *, namespace: Optional[str], set_name: Optional[str] = None
     ) -> None:
         self.namespace = namespace
         self.set_name = set_name
@@ -426,6 +495,117 @@ class IndexStorage(object):
         if self.set_name:
             index_storage.set = self.set_name
         return index_storage
+
+    def __repr__(self) -> str:
+        return (f"IndexStorage(namespace={self.namespace!r}, "
+                f"set_name={self.set_name!r})")
+
+    def __str__(self) -> str:
+        return (f"IndexStorage {{\n"
+                f"  namespace: {self.namespace}\n"
+                f"  set_name: {self.set_name}\n"
+                f"}}")
+
+    def __getitem__(self, key):
+        key = str(key)  # Ensure key is a string
+        if not hasattr(self, key):
+            raise AttributeError(f"'IndexDefinition' object has no attribute '{key}'")
+        return getattr(self, key)
+
+    def __setitem__(self, key, value):
+        return setattr(self, key, value)
+
+class IndexId(object):
+    """
+    AVS IndexId used in :class:`IndexDefintion`
+
+    :param namespace: The name of the namespace in which to index records.
+    :type namespace: str
+
+    :param set_name: The name of the index.
+    :type set_name: Optional[str]
+
+    """
+    def __init__(
+        self, *, namespace: str, name: str
+    ) -> None:
+        self.namespace = namespace
+        self.name = name
+
+    def __repr__(self) -> str:
+        return f"IndexId(namespace={self.namespace!r}, name={self.name!r})"
+
+    def __str__(self) -> str:
+        return f"IndexId(namespace={self.namespace}, name={self.name})"
+
+    def __eq__(self, other) -> bool:
+        if not isinstance(other, IndexId):
+            return NotImplemented
+        return self.namespace == other.namespace and self.name == other.name
+
+    def __getitem__(self, key):
+        key = str(key)  # Ensure key is a string
+        if not hasattr(self, key):
+            raise AttributeError(f"'IndexId' object has no attribute '{key}'")
+        return getattr(self, key)
+
+    def __setitem__(self, key, value):
+        return setattr(self, key, value)
+
+class IndexDefinition(object):
+    """
+    AVS Index Defintion
+
+    :param username: Username associated with user.
+    :type username: str
+
+    :param roles: roles associated with user.
+    :type roles: list[str]
+
+    """
+
+    def __init__(
+        self,
+        *,
+        id: str,
+        dimensions: int,
+        field: str,
+        hnsw_params: HnswParams,
+        storage: IndexStorage
+
+    ) -> None:
+        self.id = id
+        self.dimensions = dimensions
+        self.field = field
+        self.hnsw_params = hnsw_params
+        self.storage = storage
+
+
+    def __repr__(self) -> str:
+        return (f"IndexDefinition(id={self.id!r}, dimensions={self.dimensions}, field={self.field!r}, "
+                f"hnsw_params={self.hnsw_params!r}, storage={self.storage!r})")
+
+    def __str__(self) -> str:
+        return (f"IndexDefinition(id={self.id}, dimensions={self.dimensions}, field={self.field}, "
+                f"hnsw_params={self.hnsw_params}, storage={self.storage})")
+
+    def __eq__(self, other) -> bool:
+        if not isinstance(other, IndexDefinition):
+            return NotImplemented
+        return (self.id == other.id and
+                self.dimensions == other.dimensions and
+                self.field == other.field and
+                self.hnsw_params == other.hnsw_params and
+                self.storage == other.storage)
+
+    def __getitem__(self, key):
+        key = str(key)  # Ensure key is a string
+        if not hasattr(self, key):
+            raise AttributeError(f"'IndexDefinition' object has no attribute '{key}'")
+        return getattr(self, key)
+
+    def __setitem__(self, key, value):
+        return setattr(self, key, value)
 
 
 class AVSError(Exception):

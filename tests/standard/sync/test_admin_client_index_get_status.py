@@ -1,7 +1,8 @@
 import pytest
 import grpc
 
-from ...utils import index_strategy
+from ...utils import random_name
+
 from .sync_utils import drop_specified_index
 from hypothesis import given, settings, Verbosity
 
@@ -10,8 +11,8 @@ import grpc
 
 
 @pytest.mark.parametrize("empty_test_case", [None])
-@given(random_name=index_strategy())
-@settings(max_examples=1, deadline=1000)
+#@given(random_name=index_strategy())
+#@settings(max_examples=1, deadline=1000)
 def test_index_get_status(session_admin_client, empty_test_case, random_name):
     try:
         session_admin_client.index_create(
@@ -30,8 +31,8 @@ def test_index_get_status(session_admin_client, empty_test_case, random_name):
 
 
 @pytest.mark.parametrize("empty_test_case", [None])
-@given(random_name=index_strategy())
-@settings(max_examples=1, deadline=1000)
+#@given(random_name=index_strategy())
+#@settings(max_examples=1, deadline=1000)
 def test_index_get_status_timeout(
     session_admin_client, empty_test_case, random_name, with_latency
 ):

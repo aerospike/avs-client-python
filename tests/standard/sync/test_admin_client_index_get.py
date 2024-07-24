@@ -1,5 +1,6 @@
 import pytest
-from ...utils import index_strategy
+from ...utils import random_name
+
 from .sync_utils import drop_specified_index
 from hypothesis import given, settings, Verbosity
 
@@ -8,8 +9,8 @@ import grpc
 
 
 @pytest.mark.parametrize("empty_test_case", [None])
-@given(random_name=index_strategy())
-@settings(max_examples=1, deadline=1000)
+#@given(random_name=index_strategy())
+#@settings(max_examples=1, deadline=1000)
 def test_index_get(session_admin_client, empty_test_case, random_name):
 
     try:
@@ -35,14 +36,14 @@ def test_index_get(session_admin_client, empty_test_case, random_name):
     assert result["hnsw_params"]["batching_params"]["max_records"] == 100000
     assert result["hnsw_params"]["batching_params"]["interval"] == 30000
     assert result["storage"]["namespace"] == "test"
-    assert result["storage"]["set"] == random_name
+    assert result["storage"]["set_name"] == random_name
 
     drop_specified_index(session_admin_client, "test", random_name)
 
 
 @pytest.mark.parametrize("empty_test_case", [None])
-@given(random_name=index_strategy())
-@settings(max_examples=1, deadline=1000)
+#@given(random_name=index_strategy())
+#@settings(max_examples=1, deadline=1000)
 def test_index_get_timeout(
     session_admin_client, empty_test_case, random_name, with_latency
 ):

@@ -11,6 +11,7 @@ from . import helpers
 from .proto_generated import index_pb2_grpc, user_admin_pb2_grpc
 from .proto_generated import types_pb2, user_admin_pb2
 from .. import types
+from . import conversions
 
 logger = logging.getLogger(__name__)
 
@@ -277,79 +278,13 @@ class BaseClient(object):
     def _respond_index_list(self, response) -> None:
         response_list = []
         for index in response.indices:
-            response_dict = MessageToDict(index)
-
-            # Modifying dict to adhere to PEP-8 naming
-            hnsw_params_dict = response_dict.pop("hnswParams", None)
-
-            hnsw_params_dict["ef_construction"] = hnsw_params_dict.pop(
-                "efConstruction", None
-            )
-
-            batching_params_dict = hnsw_params_dict.pop("batchingParams", None)
-            batching_params_dict["max_records"] = batching_params_dict.pop(
-                "maxRecords", None
-            )
-            hnsw_params_dict["batching_params"] = batching_params_dict
-
-            caching_params_dict = hnsw_params_dict.pop("cachingParams", None)
-            if caching_params_dict:
-                caching_params_dict["max_entries"] = caching_params_dict.pop(
-                    "maxEntries", None
-                )
-                caching_params_dict["expiry"] = caching_params_dict.pop("expiry", None)
-                hnsw_params_dict["caching_params"] = caching_params_dict
-
-            healer_params_dict = hnsw_params_dict.pop("healerParams", None)
-
-            if healer_params_dict:
-
-                healer_params_dict["max_scan_rate_per_node"] = healer_params_dict.pop(
-                    "maxScanRatePerNode", None
-                )
-                healer_params_dict["max_scan_page_size"] = healer_params_dict.pop(
-                    "maxScanPageSize", None
-                )
-                healer_params_dict["re_index_percent"] = healer_params_dict.pop(
-                    "reindexPercent", None
-                )
-                healer_params_dict["schedule_delay"] = healer_params_dict.pop(
-                    "scheduleDelay", None
-                )
-                healer_params_dict["parallelism"] = healer_params_dict.pop(
-                    "parallelism", None
-                )
-                hnsw_params_dict["healer_params"] = healer_params_dict
-
-            merge_params_dict = hnsw_params_dict.pop("mergeParams", None)
-            if merge_params_dict:
-                merge_params_dict["parallelism"] = merge_params_dict.pop(
-                    "parallelism", None
-                )
-                hnsw_params_dict["merge_params"] = merge_params_dict
-
-            response_dict["hnsw_params"] = hnsw_params_dict
-            response_list.append(response_dict)
+            response_list.append(conversions.fromIndexDefintion(index))
         return response_list
 
     def _respond_index_get(self, response) -> None:
-        response_dict = MessageToDict(response)
 
-        # Modifying dict to adhere to PEP-8 naming
-        hnsw_params_dict = response_dict.pop("hnswParams", None)
 
-        hnsw_params_dict["ef_construction"] = hnsw_params_dict.pop(
-            "efConstruction", None
-        )
-
-        batching_params_dict = hnsw_params_dict.pop("batchingParams", None)
-        batching_params_dict["max_records"] = batching_params_dict.pop(
-            "maxRecords", None
-        )
-        hnsw_params_dict["batching_params"] = batching_params_dict
-
-        response_dict["hnsw_params"] = hnsw_params_dict
-        return response_dict
+        return conversions.fromIndexDefintion(response)
 
     def _respond_get_user(self, response) -> None:
 
@@ -362,7 +297,12 @@ class BaseClient(object):
         return user_list
 
     def _respond_list_roles(self, response) -> None:
-        return list(response.roles)
+        role_list = []
+        for role in response.roles:
+            print(role)
+            print(role.id)
+            role_list.append(types.Role(id=role.id))
+        return role_list
 
     def _respond_index_get_status(self, response) -> None:
         return response.unmergedRecordCount

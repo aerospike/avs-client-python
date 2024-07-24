@@ -2,7 +2,8 @@ import pytest
 from aerospike_vector_search import AVSServerError
 import grpc
 
-from ...utils import key_strategy
+from ...utils import random_key
+
 from hypothesis import given, settings, Verbosity
 
 from hypothesis import given, settings
@@ -19,8 +20,8 @@ class insert_test_case:
         self.timeout = timeout
 
 
-@given(random_key=key_strategy())
-@settings(max_examples=1, deadline=1000)
+#@given(random_key=key_strategy())
+#@settings(max_examples=1, deadline=1000)
 @pytest.mark.parametrize(
     "test_case",
     [
@@ -68,8 +69,8 @@ def test_vector_insert_without_existing_record(
     )
 
 
-@given(random_key=key_strategy())
-@settings(max_examples=1, deadline=1000)
+#@given(random_key=key_strategy())
+#@settings(max_examples=1, deadline=1000)
 @pytest.mark.parametrize(
     "test_case",
     [
@@ -104,8 +105,8 @@ def test_vector_insert_with_existing_record(
     )
 
 
-@given(random_key=key_strategy())
-@settings(max_examples=1, deadline=1000)
+#@given(random_key=key_strategy())
+#@settings(max_examples=1, deadline=1000)
 @pytest.mark.parametrize(
     "test_case",
     [
@@ -140,8 +141,8 @@ def test_vector_insert_without_existing_record_ignore_mem_queue_full(
     )
 
 
-@given(random_key=key_strategy())
-@settings(max_examples=1, deadline=1000)
+#@given(random_key=key_strategy())
+#@settings(max_examples=1, deadline=1000)
 @pytest.mark.parametrize(
     "test_case",
     [

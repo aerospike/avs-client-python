@@ -1,5 +1,6 @@
 import pytest
-from ...utils import key_strategy
+from ...utils import random_key
+
 from hypothesis import given, settings, Verbosity
 
 import numpy as np
@@ -17,8 +18,8 @@ class upsert_test_case:
         self.key = key
 
 
-@given(random_key=key_strategy())
-@settings(max_examples=1, deadline=1000)
+#@given(random_key=key_strategy())
+#@settings(max_examples=1, deadline=1000)
 @pytest.mark.parametrize(
     "test_case",
     [
@@ -58,8 +59,8 @@ def test_vector_upsert_without_existing_record(
     )
 
 
-@given(random_key=key_strategy())
-@settings(max_examples=1, deadline=1000)
+#@given(random_key=key_strategy())
+#@settings(max_examples=1, deadline=1000)
 @pytest.mark.parametrize(
     "test_case",
     [
@@ -120,8 +121,8 @@ def test_vector_upsert_with_numpy_key(session_vector_client, test_case):
     )
 
 
-@given(random_key=key_strategy())
-@settings(max_examples=1, deadline=1000)
+#@given(random_key=key_strategy())
+#@settings(max_examples=1, deadline=1000)
 @pytest.mark.parametrize(
     "test_case",
     [
