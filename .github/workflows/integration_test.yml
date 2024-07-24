@@ -1,0 +1,691 @@
+name: Run Unit Tests
+
+on:
+  pull_request:
+    branches:
+      - dev
+
+jobs:
+  test-normal:
+    runs-on: ubuntu-24.04
+    continue-on-error: true
+    
+
+    strategy:
+      matrix:
+        python-version: ["3.9", "3.10", "3.11", "3.12"]
+
+        
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    - name: Set up Python
+      uses: actions/setup-python@v2
+      with:
+        python-version: ${{ matrix.python-version }}
+
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        python setup.py
+        pip install -r requirements.txt
+
+      working-directory: tests
+
+
+    - name: Retrieve the secret and decode it to a file
+      env:
+        FEATURE_FILE: ${{ secrets.FEATURE_FILE }}
+      run: |
+        echo $FEATURE_FILE | base64 --decode > features.conf 
+      working-directory: tests
+
+    - name: Docker Login
+      uses: docker/login-action@v2
+      with:
+        registry: aerospike.jfrog.io
+        username: ${{ secrets.JFROG_USERNAME }}
+        password: ${{ secrets.JFROG_PASSWORD }}
+
+    - name: create config
+      run: |
+        assets/call_gen.sh
+        cat aerospike-vector-search.yml
+        cat aerospike.conf
+        cat /etc/hosts
+
+      working-directory: tests
+
+    - name: Run unit tests
+      run: |
+        docker run -d  --network=host -p 5000:5000 --name aerospike-vector-search -v ./aerospike-vector-search.yml:/etc/aerospike-vector-search/aerospike-vector-search.yml -v ./features.conf:/etc/aerospike-vector-search/features.conf aerospike/aerospike-vector-search:0.9.0
+    
+        docker run -d --name aerospike -p 3000:3000 -v .:/etc/aerospike aerospike/aerospike-server-enterprise:latest 
+
+
+        sleep 5
+
+        docker ps
+        python -m pytest standard/aio -s --host 0.0.0.0 --port 5000 
+      working-directory: tests
+
+  test-tls:
+    runs-on: ubuntu-24.04
+    continue-on-error: true
+
+
+
+    strategy:
+      matrix:
+        python-version: ["3.12"]
+
+        
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    - name: Set up Python
+      uses: actions/setup-python@v2
+      with:
+        python-version: ${{ matrix.python-version }}
+
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        python setup.py
+        pip install -r requirements.txt
+      working-directory: tests
+
+
+    - name: Retrieve the secret and decode it to a file
+      env:
+        FEATURE_FILE: ${{ secrets.FEATURE_FILE }}
+      run: |
+        echo $FEATURE_FILE | base64 --decode > features.conf 
+      working-directory: tests
+
+    - name: Docker Login
+      uses: docker/login-action@v2
+      with:
+        registry: aerospike.jfrog.io
+        username: ${{ secrets.JFROG_USERNAME }}
+        password: ${{ secrets.JFROG_PASSWORD }}
+
+
+    - name: Set up RANDFILE environment variable
+      run: echo "RANDFILE=$HOME/.rnd" >> $GITHUB_ENV
+
+    - name: Create .rnd file if it doesn't exist
+      run: touch $HOME/.rnd
+
+    - name: create config
+      run: |
+        assets/call_gen_tls.sh
+        cat aerospike-vector-search.yml
+        cat aerospike.conf
+        cat /etc/hosts
+      working-directory: tests
+
+    - name: Add hosts to /etc/hosts
+      run: |
+        sudo echo "0.0.0.0 child" | sudo tee -a /etc/hosts
+
+    - name: Run unit tests
+      run: |
+
+        docker run -d --name aerospike-vector-search --network=host -p 5000:5000   -v $(pwd):/etc/aerospike-vector-search aerospike/aerospike-vector-search:0.9.0
+        docker run -d --name aerospike -p 3000:3000 -v .:/etc/aerospike aerospike/aerospike-server-enterprise:latest 
+
+        sleep 5
+
+
+
+        docker ps
+        python -m pytest standard/aio -s --host child --port 5000 --root_certificate tls/root.crt   -vs
+
+        docker logs aerospike-vector-search
+        docker logs aerospike
+      working-directory: tests
+
+  test-tls-auth:
+    runs-on: ubuntu-24.04
+    continue-on-error: true
+
+
+
+    strategy:
+      matrix:
+        python-version: ["3.12"]
+
+        
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    - name: Set up Python
+      uses: actions/setup-python@v2
+      with:
+        python-version: ${{ matrix.python-version }}
+
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        python setup.py
+        pip install -r requirements.txt
+      working-directory: tests
+
+
+    - name: Retrieve the secret and decode it to a file
+      env:
+        FEATURE_FILE: ${{ secrets.FEATURE_FILE }}
+      run: |
+        echo $FEATURE_FILE | base64 --decode > features.conf 
+      working-directory: tests
+
+    - name: Docker Login
+      uses: docker/login-action@v2
+      with:
+        registry: aerospike.jfrog.io
+        username: ${{ secrets.JFROG_USERNAME }}
+        password: ${{ secrets.JFROG_PASSWORD }}
+
+
+    - name: Set up RANDFILE environment variable
+      run: echo "RANDFILE=$HOME/.rnd" >> $GITHUB_ENV
+
+    - name: Create .rnd file if it doesn't exist
+      run: touch $HOME/.rnd
+
+    - name: create config
+      run: |
+        assets/call_gen_tls_auth.sh
+      working-directory: tests
+
+    - name: Add hosts to /etc/hosts
+      run: |
+        sudo echo "0.0.0.0 child" | sudo tee -a /etc/hosts
+
+    - name: Run unit tests
+      run: |
+
+        docker run -d --name aerospike-vector-search --network=host -p 5000:5000   -v $(pwd):/etc/aerospike-vector-search aerospike/aerospike-vector-search:0.9.0
+        docker run -d --name aerospike -p 3000:3000 -v .:/etc/aerospike aerospike/aerospike-server-enterprise:latest 
+
+        sleep 5
+
+        python -m pytest standard/aio -s -vv --host child --port 5000 --root_certificate tls/root.crt --username admin --password admin  
+
+      working-directory: tests
+
+
+  test-tls-auth-rbac:
+    runs-on: ubuntu-24.04
+    continue-on-error: true
+
+
+
+    strategy:
+      matrix:
+        python-version: ["3.12"]
+
+        
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    - name: Set up Python
+      uses: actions/setup-python@v2
+      with:
+        python-version: ${{ matrix.python-version }}
+
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        python setup.py
+        pip install -r requirements.txt
+      working-directory: tests
+
+
+    - name: Retrieve the secret and decode it to a file
+      env:
+        FEATURE_FILE: ${{ secrets.FEATURE_FILE }}
+      run: |
+        echo $FEATURE_FILE | base64 --decode > features.conf 
+      working-directory: tests
+
+    - name: Docker Login
+      uses: docker/login-action@v2
+      with:
+        registry: aerospike.jfrog.io
+        username: ${{ secrets.JFROG_USERNAME }}
+        password: ${{ secrets.JFROG_PASSWORD }}
+
+
+    - name: Set up RANDFILE environment variable
+      run: echo "RANDFILE=$HOME/.rnd" >> $GITHUB_ENV
+
+    - name: Create .rnd file if it doesn't exist
+      run: touch $HOME/.rnd
+
+    - name: create config
+      run: |
+        assets/call_gen_tls_auth.sh
+        cat aerospike-vector-search.yml
+        cat aerospike.conf
+        cat /etc/hosts
+      working-directory: tests
+
+    - name: Add hosts to /etc/hosts
+      run: |
+        sudo echo "0.0.0.0 child" | sudo tee -a /etc/hosts
+        cat /etc/hosts
+
+    - name: Run unit tests
+      run: |
+
+        docker run -d --name aerospike-vector-search --network=host -p 5000:5000   -v $(pwd):/etc/aerospike-vector-search aerospike/aerospike-vector-search:0.9.0
+        docker run -d --name aerospike -p 3000:3000 -v .:/etc/aerospike aerospike/aerospike-server-enterprise:latest 
+
+        sleep 5
+
+
+
+        docker ps
+        python -m pytest rbac -s -vv --host child --port 5000 --root_certificate tls/root.crt 
+
+        docker logs aerospike-vector-search
+        docker logs aerospike
+      working-directory: tests
+
+
+  test-mtls:
+    runs-on: ubuntu-24.04
+    continue-on-error: true
+
+
+    strategy:
+      matrix:
+        python-version: ["3.12"]
+
+        
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    - name: Set up Python
+      uses: actions/setup-python@v2
+      with:
+        python-version: ${{ matrix.python-version }}
+
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        python setup.py
+        pip install -r requirements.txt
+      working-directory: tests
+
+
+    - name: Retrieve the secret and decode it to a file
+      env:
+        FEATURE_FILE: ${{ secrets.FEATURE_FILE }}
+      run: |
+        echo $FEATURE_FILE | base64 --decode > features.conf 
+      working-directory: tests
+
+    - name: Docker Login
+      uses: docker/login-action@v2
+      with:
+        registry: aerospike.jfrog.io
+        username: ${{ secrets.JFROG_USERNAME }}
+        password: ${{ secrets.JFROG_PASSWORD }}
+
+
+    - name: Set up RANDFILE environment variable
+      run: echo "RANDFILE=$HOME/.rnd" >> $GITHUB_ENV
+
+    - name: Create .rnd file if it doesn't exist
+      run: touch $HOME/.rnd
+
+    - name: Add hosts to /etc/hosts
+      run: |
+        sudo echo "0.0.0.0 brawn" | sudo tee -a /etc/hosts
+
+    - name: create config
+      run: |
+        assets/call_gen_mtls.sh
+        cat /etc/hosts
+      working-directory: tests
+
+    - name: Run unit tests
+      run: |
+
+        docker run -d --name aerospike-vector-search --network=host -p 5000:5000  -v $(pwd):/etc/aerospike-vector-search aerospike/aerospike-vector-search:0.9.0
+        docker run -d --name aerospike -p 3000:3000 -v .:/etc/aerospike aerospike/aerospike-server-enterprise:latest 
+
+        sleep 5
+
+        python -m pytest standard/aio -s --host brawn --port 5000 --root_certificate tls/root.crt --private_key tls/brawn.key.pem --certificate_chain tls/brawn.crt   -vs
+
+
+
+      working-directory: tests
+
+
+  test-mtls-auth:
+    runs-on: ubuntu-24.04
+    continue-on-error: true
+
+
+    strategy:
+      matrix:
+        python-version: ["3.9", "3.10", "3.11", "3.12"]
+
+        
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    - name: Set up Python
+      uses: actions/setup-python@v2
+      with:
+        python-version: ${{ matrix.python-version }}
+
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        python setup.py
+        pip install -r requirements.txt
+      working-directory: tests
+
+
+    - name: Retrieve the secret and decode it to a file
+      env:
+        FEATURE_FILE: ${{ secrets.FEATURE_FILE }}
+      run: |
+        echo $FEATURE_FILE | base64 --decode > features.conf 
+      working-directory: tests
+
+    - name: Docker Login
+      uses: docker/login-action@v2
+      with:
+        registry: aerospike.jfrog.io
+        username: ${{ secrets.JFROG_USERNAME }}
+        password: ${{ secrets.JFROG_PASSWORD }}
+
+
+    - name: Set up RANDFILE environment variable
+      run: echo "RANDFILE=$HOME/.rnd" >> $GITHUB_ENV
+
+    - name: Create .rnd file if it doesn't exist
+      run: touch $HOME/.rnd
+
+    - name: Add hosts to /etc/hosts
+      run: |
+        sudo echo "0.0.0.0 brawn" | sudo tee -a /etc/hosts
+
+    - name: create config
+      run: |
+        assets/call_gen_mtls_auth.sh
+        cat /etc/hosts
+      working-directory: tests
+
+    - name: Run unit tests
+      run: |
+
+        docker run -d --name aerospike-vector-search --network=host -p 5000:5000  -v $(pwd):/etc/aerospike-vector-search aerospike/aerospike-vector-search:0.9.0
+        docker run -d --name aerospike -p 3000:3000 -v .:/etc/aerospike aerospike/aerospike-server-enterprise:latest 
+
+        sleep 5
+
+        python -m pytest standard/aio -s --host brawn --port 5000 --root_certificate tls/root.crt --private_key tls/brawn.key.pem --certificate_chain tls/brawn.crt --username admin --password admin  -vs
+
+
+
+      working-directory: tests
+
+
+  test-mtls-auth-rbac:
+    runs-on: ubuntu-24.04
+    continue-on-error: true
+
+
+    strategy:
+      matrix:
+        python-version: ["3.9", "3.10", "3.11", "3.12"]
+
+        
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    - name: Set up Python
+      uses: actions/setup-python@v2
+      with:
+        python-version: ${{ matrix.python-version }}
+
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        python setup.py
+        pip install -r requirements.txt
+      working-directory: tests
+
+
+    - name: Retrieve the secret and decode it to a file
+      env:
+        FEATURE_FILE: ${{ secrets.FEATURE_FILE }}
+      run: |
+        echo $FEATURE_FILE | base64 --decode > features.conf 
+      working-directory: tests
+
+    - name: Docker Login
+      uses: docker/login-action@v2
+      with:
+        registry: aerospike.jfrog.io
+        username: ${{ secrets.JFROG_USERNAME }}
+        password: ${{ secrets.JFROG_PASSWORD }}
+
+
+    - name: Set up RANDFILE environment variable
+      run: echo "RANDFILE=$HOME/.rnd" >> $GITHUB_ENV
+
+    - name: Create .rnd file if it doesn't exist
+      run: touch $HOME/.rnd
+
+    - name: Add hosts to /etc/hosts
+      run: |
+        sudo echo "0.0.0.0 brawn" | sudo tee -a /etc/hosts
+
+    - name: create config
+      run: |
+        assets/call_gen_mtls_auth.sh
+        cat /etc/hosts
+      working-directory: tests
+
+    - name: Run unit tests
+      run: |
+
+        docker run -d --name aerospike-vector-search --network=host -p 5000:5000  -v $(pwd):/etc/aerospike-vector-search aerospike/aerospike-vector-search:0.9.0
+        docker run -d --name aerospike -p 3000:3000 -v .:/etc/aerospike aerospike/aerospike-server-enterprise:latest 
+
+        sleep 5
+
+        python -m pytest rbac -s --host brawn --port 5000 --root_certificate tls/root.crt --private_key tls/brawn.key.pem --certificate_chain tls/brawn.crt -vs
+      working-directory: tests
+
+  test-is-loadbalancer:
+    runs-on: ubuntu-24.04
+    continue-on-error: true
+
+
+    strategy:
+      matrix:
+        python-version: ["3.12"]
+
+        
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    - name: Set up Python
+      uses: actions/setup-python@v2
+      with:
+        python-version: ${{ matrix.python-version }}
+
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        python setup.py
+        pip install -r requirements.txt
+      working-directory: tests
+
+
+    - name: Retrieve the secret and decode it to a file
+      env:
+        FEATURE_FILE: ${{ secrets.FEATURE_FILE }}
+      run: |
+        echo $FEATURE_FILE | base64 --decode > features.conf 
+      working-directory: tests
+
+    - name: Docker Login
+      uses: docker/login-action@v2
+      with:
+        registry: aerospike.jfrog.io
+        username: ${{ secrets.JFROG_USERNAME }}
+        password: ${{ secrets.JFROG_PASSWORD }}
+
+
+    - name: Set up RANDFILE environment variable
+      run: echo "RANDFILE=$HOME/.rnd" >> $GITHUB_ENV
+
+    - name: Create .rnd file if it doesn't exist
+      run: touch $HOME/.rnd
+
+    - name: create config
+      run: |
+        assets/call_gen.sh
+        cat /etc/hosts
+      working-directory: tests
+
+    - name: Run unit tests
+      run: |
+
+        docker run -d --name aerospike-vector-search --network=host -p 5000:5000  -v $(pwd):/etc/aerospike-vector-search aerospike/aerospike-vector-search:0.9.0
+        docker run -d --name aerospike -p 3000:3000 -v .:/etc/aerospike aerospike/aerospike-server-enterprise:latest 
+
+        sleep 5
+
+        python -m pytest standard/aio -s --host 0.0.0.0 --port 5000 --is_loadbalancer -vs
+      working-directory: tests
+
+  test-exhaustive-vector-search:
+    runs-on: ubuntu-24.04
+    continue-on-error: true
+
+
+    strategy:
+      matrix:
+        python-version: ["3.12"]
+
+        
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    - name: Set up Python
+      uses: actions/setup-python@v2
+      with:
+        python-version: ${{ matrix.python-version }}
+
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        python setup.py
+        pip install -r requirements.txt
+      working-directory: tests
+
+
+    - name: Retrieve the secret and decode it to a file
+      env:
+        FEATURE_FILE: ${{ secrets.FEATURE_FILE }}
+      run: |
+        echo $FEATURE_FILE | base64 --decode > features.conf 
+      working-directory: tests
+
+    - name: Docker Login
+      uses: docker/login-action@v2
+      with:
+        registry: aerospike.jfrog.io
+        username: ${{ secrets.JFROG_USERNAME }}
+        password: ${{ secrets.JFROG_PASSWORD }}
+
+
+    - name: Set up RANDFILE environment variable
+      run: echo "RANDFILE=$HOME/.rnd" >> $GITHUB_ENV
+
+    - name: Create .rnd file if it doesn't exist
+      run: touch $HOME/.rnd
+
+    - name: create config
+      run: |
+        assets/call_gen.sh
+        cat /etc/hosts
+      working-directory: tests
+
+    - name: Run unit tests
+      run: |
+
+        docker run -d --name aerospike-vector-search --network=host -p 5000:5000  -v $(pwd):/etc/aerospike-vector-search aerospike/aerospike-vector-search:0.9.0
+        docker run -d --name aerospike -p 3000:3000 -v .:/etc/aerospike aerospike/aerospike-server-enterprise:latest 
+
+        sleep 5
+
+        python -m pytest standard/aio -s --host 0.0.0.0 --port 5000 --extensive_vector_search -vs
+      working-directory: tests
+
+#
+#  test-timeout-on-sandbox:
+#    runs-on: ubuntu-24.04
+#    continue-on-error: true
+#    
+#
+#    strategy:
+#      matrix:
+#        python-version: ["3.12"]
+#
+#        
+#    steps:
+#    - name: Checkout code
+#      uses: actions/checkout@v3
+#
+#    - name: Set up Python
+#      uses: actions/setup-python@v2
+#      with:
+#        python-version: ${{ matrix.python-version }}
+#
+#
+#    - name: Install dependencies
+#      run: |
+#        python -m pip install --upgrade pip
+#        python setup.py
+#        pip install -r requirements.txt
+#
+#      working-directory: tests
+#
+#
+#
+#    - name: Run unit tests
+#      run: |
+#
+#        python -m pytest standard/aio -s --host  34.42.225.207 --port 5000 --with_latency
+#      working-directory: tests

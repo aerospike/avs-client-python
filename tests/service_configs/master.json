@@ -1,0 +1,27 @@
+{
+  "methodConfig": [
+
+    {
+      "name": [{}],
+      "timeout": "11s"
+    },
+    {
+      "name": [
+        {
+          "service": "Transact"
+        }
+      ],
+      "timeout": "12s"
+    },
+    {
+      "name": [
+        {
+          "service": "IndexService",
+          "method": "Create"
+        }
+      ],
+      "timeout": "13s"
+    }
+
+  ]
+}

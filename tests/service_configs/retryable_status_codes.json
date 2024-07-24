@@ -1,0 +1,21 @@
+{
+    "methodConfig": [
+        {
+            "name": [
+                {
+                  "service": "aerospike.vector.IndexService",
+                  "method": "GetStatus"
+                }
+            ],
+            "retryPolicy": {
+                "maxAttempts": 2,
+                "initialBackoff": "5s",
+                "maxBackoff": "1s",
+                "backoffMultiplier": 1,
+                "retryableStatusCodes": [
+                    "NOT_FOUND", "UNAVAILABLE"
+                ]
+            }
+        }
+    ]
+}

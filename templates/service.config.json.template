@@ -1,0 +1,192 @@
+# Service Configs for the AVS Client
+
+The AVS Client leverages the gRPC framework for client-server communications.
+
+gRPC uses a service config to specify how gRPC clients should behave when interacting with a gRPC server.
+
+The following document provides several JSON examples detailing how to create
+service configs for various situations.
+
+For more detailed info on Servivce Configs see [the gRPC documentation](https://grpc.io/docs/guides/service-config/)
+
+## Method Configs
+
+Service configs use a list of method configs.
+
+Method configs contain expected behaviors for client-server interactions as well as a scope which determines which methods the behaviors will apply to.
+
+### Scoping
+
+Method configs can have one of three scopes:
+
+#### Client-level
+Client-level configurations apply to all methods.
+
+The following specifies a 1 second timeout for all methods:
+
+```JSON
+{
+  "methodConfig": [
+
+    {
+      "name": [{}],
+      "timeout": "1s"
+    },
+  ]
+}
+```
+#### Service-Level
+Service-level configuration apply to a group of methods defined by the service.
+
+AVS Clients contain 5 different services.
+
+Publicly exposed services and their associated methods are list below
+
+- IndexService
+  - index_create
+  - index_drop
+  - index_list
+  - index_get
+  - index_get_status
+- Transact
+  - get
+  - insert
+  - update
+  - upsert
+  - exists
+  - delete
+  - is_indexed
+  - vector_serach
+- UserAdminService
+  - add_user
+  - update_credentials
+  - drop_user
+  - get_user
+  - list_users
+  - grant_roles
+  - revoke_roles
+  - list_roles
+
+Private services include:
+
+- AuthService
+  - Used internally to faciliate role-based access control (RBAC) authentication.
+- About
+  - Used internally to discover the server version.
+- ClusterInfo
+  - Used internally to gather information about the cluster in order to tend to the connection.
+
+The following specifies a 2 second timeout for all `Transact` methods:
+
+```JSON
+{
+  "methodConfig": [
+    {
+      "name": [
+        {
+          "service": "Transact"
+        }
+      ],
+      "timeout": "2s"
+    },
+  ]
+}
+```
+
+#### Method-Level
+
+Method level configurations only apply the behavior to one gRPC method (ex. put, vector_search, index_create).
+
+While AVS Python Client methods follow the lowercase_underscore convention, gRPC methods use UpperCamelCase convention.
+
+For example, `client.vector_search` use the gRPC method `VectorSearch`.
+
+However, the AVS Python Client method name and the gRPC method name may not be consistent. Please consult this chart determine which gRPC methods correspond with a given AVS Client method.
+
+| Methods               |                       |
+|-----------------------|-----------------------|
+| - index_create        | - Create              |
+| - index_drop          | - Drop                |
+| - index_list          | - List                |
+| - index_get           | - Get                 |
+| - index_get_status    | - GetStatus           |
+| - insert              | - Put                 |
+| - update              | - Put                 |
+| - upsert              | - Put                 |
+| - get                 | - Get                 |
+| - exists              | - Exists              |
+| - delete              | - Delete              |
+| - is_indexed          | - IsIndexed           |
+| - vector_search       | - VectorSearch        |
+| - add_user            | - AddUser             |
+| - update_credentials  | - UpdateCredentials   |
+| - drop_user           | - DropUser            |
+| - get_user            | - GetUser             |
+| - list_users          | - ListUsers           |
+| - grant_roles         | - GrantRoles          |
+| - revoke_roles        | - RevokeRoles         |
+| - list_roles          | - ListRoles           |
+
+The following specifies a 2 second timeout for `client.get` and `client.exists`:
+
+```JSON
+{
+  "methodConfig": [
+    {
+      "name": [
+        {
+          "service": "Transact",
+          "method" : "Get",
+        },        
+        {
+          "service": "Transact",
+          "method" : "Exists",
+        }
+      ],
+      "timeout": "2s"
+    },
+  ]
+}
+```
+
+### Specificity over Generality
+
+When deciding which service config to use, gRPC will select the configuration which is most specific to the stub call
+being made.
+
+Consider the following configuration:
+
+```JSON
+{
+  "methodConfig": [
+
+    {
+      "name": [{}],
+      "timeout": "1s"
+    },
+    {
+      "name": [
+        {
+          "service": "Transact"
+        }
+      ],
+      "timeout": "2s"
+    },
+    {
+      "name": [
+        {
+          "service": "IndexService",
+          "method": "Create"
+        }
+      ],
+      "timeout": "3s",
+    },
+
+  ]
+}
+```
+
+For this configuration, `client.index_create` will have a 3 second timeout, all Transact Service methods will have a 2 second timeout, and all other methods will have a 1 second timeout
+
+
+
