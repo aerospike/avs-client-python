@@ -1,6 +1,7 @@
 import pytest
 import grpc
-from ...utils import key_strategy
+from ...utils import random_key
+
 from hypothesis import given, settings, Verbosity
 
 
@@ -19,12 +20,11 @@ class exists_test_case:
         self.timeout = timeout
 
 
-@given(random_key=key_strategy())
-@settings(max_examples=1, deadline=1000)
+#@given(random_key=key_strategy())
+#@settings(max_examples=1, deadline=1000)
 @pytest.mark.parametrize(
     "test_case",
     [
-        None,
         exists_test_case(
             namespace="test",
             set_name=None,
@@ -58,12 +58,11 @@ async def test_vector_exists(session_vector_client, test_case, random_key):
     )
 
 
-@given(random_key=key_strategy())
-@settings(max_examples=1, deadline=1000)
+#@given(random_key=key_strategy())
+#@settings(max_examples=1, deadline=1000)
 @pytest.mark.parametrize(
     "test_case",
     [
-        None,
         exists_test_case(
             namespace="test", set_name=None, record_data=None, timeout=0.0001
         ),

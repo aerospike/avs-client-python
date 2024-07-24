@@ -3,6 +3,7 @@ import hypothesis.strategies as st
 from hypothesis import given
 import string
 
+import pytest
 
 def random_int():
     return str(random.randint(0, 50_000))
@@ -15,7 +16,32 @@ allowed_chars = (
     + ["_", "-"]  # _, -, $
 )
 
+allowed_chars = (
+    list(string.ascii_lowercase)  # a-z
+    + list(string.ascii_uppercase)  # A-Z
+    + list(string.digits)  # 0-9
+    + ["_", "-"]  # _, -, $
+)
 
+
+@pytest.fixture
+def random_name():
+    while True:
+        size = random.randint(1, 63)
+        key = ''.join(random.choices(allowed_chars, k=size))
+        if key not in ["null"]:
+            return key
+
+@pytest.fixture
+def random_key():
+    while True:
+        size = random.randint(1, 100_000)
+        key = ''.join(random.choices(allowed_chars, k=size))
+        if key not in ["0", "1", "null"]:
+            return key
+
+
+"""
 def key_strategy():
     return st.text(alphabet=allowed_chars, min_size=1, max_size=100_000).filter(
         lambda ns: ns not in ["0", "1", "null"]
@@ -34,7 +60,7 @@ def index_strategy():
     )
 
 
-"""
+
 TODO: Implement Hypothesis
 # Define the allowed characters
 

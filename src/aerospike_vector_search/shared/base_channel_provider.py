@@ -114,9 +114,7 @@ class BaseChannelProvider(object):
                 # TODO: Ignoring IPv6 for now. Needs fix
                 continue
             try:
-                return self._create_channel(
-                    endpoint.address, endpoint.port
-                )
+                return self._create_channel(endpoint.address, endpoint.port)
             except Exception as e:
                 logger.debug("failure creating channel: " + str(e))
 
@@ -208,7 +206,6 @@ class BaseChannelProvider(object):
     def verify_compatibile_server(self) -> bool:
         def parse_version(v: str):
             return tuple(int(part) if part.isdigit() else part for part in v.split("."))
-
 
         return parse_version(self.current_server_version) >= parse_version(
             self.minimum_required_version

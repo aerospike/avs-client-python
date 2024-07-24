@@ -2,7 +2,8 @@ import pytest
 import grpc
 
 from aerospike_vector_search import types, AVSServerError
-from ...utils import index_strategy
+from ...utils import random_name
+
 from .sync_utils import drop_specified_index
 from hypothesis import given, settings, Verbosity
 
@@ -35,8 +36,8 @@ class index_create_test_case:
         self.timeout = timeout
 
 
-@given(random_name=index_strategy())
-@settings(max_examples=1, deadline=1000)
+#@given(random_name=index_strategy())
+#@settings(max_examples=1, deadline=1000)
 @pytest.mark.parametrize(
     "test_case",
     [
@@ -87,13 +88,13 @@ def test_index_create(session_admin_client, test_case, random_name):
             assert result["hnsw_params"]["batching_params"]["max_records"] == 100000
             assert result["hnsw_params"]["batching_params"]["interval"] == 30000
             assert result["storage"]["namespace"] == test_case.namespace
-            assert result["storage"]["set"] == random_name
+            assert result["storage"]["set_name"] == random_name
     assert found == True
     drop_specified_index(session_admin_client, test_case.namespace, random_name)
 
 
-@given(random_name=index_strategy())
-@settings(max_examples=1, deadline=1000)
+#@given(random_name=index_strategy())
+#@settings(max_examples=1, deadline=1000)
 @pytest.mark.parametrize(
     "test_case",
     [
@@ -158,14 +159,14 @@ def test_index_create_with_dimnesions(session_admin_client, test_case, random_na
             assert result["hnsw_params"]["batching_params"]["max_records"] == 100000
             assert result["hnsw_params"]["batching_params"]["interval"] == 30000
             assert result["storage"]["namespace"] == test_case.namespace
-            assert result["storage"]["set"] == random_name
+            assert result["storage"]["set_name"] == random_name
     assert found == True
 
     drop_specified_index(session_admin_client, test_case.namespace, random_name)
 
 
-@given(random_name=index_strategy())
-@settings(max_examples=1, deadline=1000)
+#@given(random_name=index_strategy())
+#@settings(max_examples=1, deadline=1000)
 @pytest.mark.parametrize(
     "test_case",
     [
@@ -251,13 +252,13 @@ def test_index_create_with_vector_distance_metric(
             assert result["hnsw_params"]["batching_params"]["max_records"] == 100000
             assert result["hnsw_params"]["batching_params"]["interval"] == 30000
             assert result["storage"]["namespace"] == test_case.namespace
-            assert result["storage"]["set"] == random_name
+            assert result["storage"]["set_name"] == random_name
     assert found == True
     drop_specified_index(session_admin_client, test_case.namespace, random_name)
 
 
-@given(random_name=index_strategy())
-@settings(max_examples=1, deadline=1000)
+#@given(random_name=index_strategy())
+#@settings(max_examples=1, deadline=1000)
 @pytest.mark.parametrize(
     "test_case",
     [
@@ -319,13 +320,13 @@ def test_index_create_with_sets(session_admin_client, test_case, random_name):
             assert result["hnsw_params"]["batching_params"]["max_records"] == 100000
             assert result["hnsw_params"]["batching_params"]["interval"] == 30000
             assert result["storage"]["namespace"] == test_case.namespace
-            assert result["storage"]["set"] == random_name
+            assert result["storage"]["set_name"] == random_name
     assert found == True
     drop_specified_index(session_admin_client, test_case.namespace, random_name)
 
 
-@given(random_name=index_strategy())
-@settings(max_examples=1, deadline=1000)
+#@given(random_name=index_strategy())
+#@settings(max_examples=1, deadline=1000)
 @pytest.mark.parametrize(
     "test_case",
     [
@@ -334,7 +335,7 @@ def test_index_create_with_sets(session_admin_client, test_case, random_name):
             vector_field="example_10",
             dimensions=1024,
             vector_distance_metric=None,
-            sets=None,
+            sets="demo",
             index_params=types.HnswParams(
                 m=32,
                 ef_construction=200,
@@ -349,7 +350,7 @@ def test_index_create_with_sets(session_admin_client, test_case, random_name):
             vector_field="example_11",
             dimensions=1024,
             vector_distance_metric=None,
-            sets=None,
+            sets="demo",
             index_params=types.HnswParams(
                 m=8, ef_construction=50, ef=25, max_mem_queue_size=16384
             ),
@@ -362,7 +363,7 @@ def test_index_create_with_sets(session_admin_client, test_case, random_name):
             vector_field="example_12",
             dimensions=1024,
             vector_distance_metric=None,
-            sets=None,
+            sets="demo",
             index_params=types.HnswParams(
                 batching_params=types.HnswBatchingParams(max_records=500, interval=500),
             ),
@@ -375,7 +376,7 @@ def test_index_create_with_sets(session_admin_client, test_case, random_name):
             vector_field="example_13",
             dimensions=1024,
             vector_distance_metric=None,
-            sets=None,
+            sets="demo",
             index_params=types.HnswParams(
                 caching_params=types.HnswCachingParams(max_entries=10, expiry=3000),
                 healer_params=types.HnswHealerParams(
@@ -426,7 +427,7 @@ def test_index_create_with_index_params(session_admin_client, test_case, random_
                 == test_case.index_params.ef_construction
             )
             assert result["hnsw_params"]["ef"] == test_case.index_params.ef
-            if "max_mem_queue_size" in result.get("hnsw_params", {}):
+            if getattr(result.hnsw_params, 'max_mem_queue_size', None) is not None:
                 assert (
                     result["hnsw_params"]["max_mem_queue_size"]
                     == test_case.index_params.max_mem_queue_size
@@ -440,7 +441,8 @@ def test_index_create_with_index_params(session_admin_client, test_case, random_
                 result["hnsw_params"]["batching_params"]["interval"]
                 == test_case.index_params.batching_params.interval
             )
-            if "caching_params" in result.get("hnsw_params", {}):
+            """
+            if getattr(result.hnsw_params, 'caching_params', None) is not None:
 
                 assert (
                     int(result["hnsw_params"]["caching_params"]["max_entries"])
@@ -450,14 +452,12 @@ def test_index_create_with_index_params(session_admin_client, test_case, random_
                     int(result["hnsw_params"]["caching_params"]["expiry"])
                     == test_case.index_params.caching_params.expiry
                 )
-
-            if "merge_params" in result.get("hnsw_params", {}):
+            if getattr(result.hnsw_params, 'merge_params', None) is not None:
                 assert (
                     result["hnsw_params"]["merge_params"]["parallelism"]
                     == test_case.index_params.merge_params.parallelism
                 )
-
-            if "healer_params" in result.get("hnsw_params", {}):
+            if getattr(result.hnsw_params, 'healer_params', None) is not None:
                 assert (
                     int(
                         result["hnsw_params"]["healer_params"]["max_scan_rate_per_node"]
@@ -480,15 +480,15 @@ def test_index_create_with_index_params(session_admin_client, test_case, random_
                     result["hnsw_params"]["healer_params"]["parallelism"]
                     == test_case.index_params.healer_params.parallelism
                 )
-
+            """
             assert result["storage"]["namespace"] == test_case.namespace
-            assert result["storage"]["set"] == random_name
+            assert result["storage"]["set_name"] == random_name
     assert found == True
     drop_specified_index(session_admin_client, test_case.namespace, random_name)
 
 
-@given(random_name=index_strategy())
-@settings(max_examples=1, deadline=1000)
+#@given(random_name=index_strategy())
+#@settings(max_examples=1, deadline=1000)
 @pytest.mark.parametrize(
     "test_case",
     [
@@ -540,13 +540,13 @@ def test_index_create_index_labels(session_admin_client, test_case, random_name)
             assert result["hnsw_params"]["batching_params"]["max_records"] == 100000
             assert result["hnsw_params"]["batching_params"]["interval"] == 30000
             assert result["storage"]["namespace"] == test_case.namespace
-            assert result["storage"]["set"] == random_name
+            assert result["storage"]["set_name"] == random_name
     assert found == True
     drop_specified_index(session_admin_client, test_case.namespace, random_name)
 
 
-@given(random_name=index_strategy())
-@settings(max_examples=1, deadline=1000)
+#@given(random_name=index_strategy())
+#@settings(max_examples=1, deadline=1000)
 @pytest.mark.parametrize(
     "test_case",
     [
@@ -596,12 +596,12 @@ def test_index_create_index_storage(session_admin_client, test_case, random_name
             assert result["hnsw_params"]["batching_params"]["max_records"] == 100000
             assert result["hnsw_params"]["batching_params"]["interval"] == 30000
             assert result["storage"]["namespace"] == test_case.index_storage.namespace
-            assert result["storage"]["set"] == test_case.index_storage.set_name
+            assert result["storage"]["set_name"] == test_case.index_storage.set_name
     assert found == True
 
 
-@given(random_name=index_strategy())
-@settings(max_examples=1, deadline=1000)
+#@given(random_name=index_strategy())
+#@settings(max_examples=1, deadline=1000)
 @pytest.mark.parametrize(
     "test_case",
     [

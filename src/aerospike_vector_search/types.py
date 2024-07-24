@@ -37,6 +37,7 @@ class Key(object):
     :type key: Union[int, str, bytes, bytearray, np.ndarray, np.generic]
 
     """
+
     def __init__(self, *, namespace: str, set: str, key: Any) -> None:
         self.namespace = namespace
         self.set = set
@@ -93,7 +94,7 @@ class Neighbor(object):
     This class represents a neighboring record in relation to a query record. It includes information such as the key, fields,
         and distance from the query record.
 
-    
+
     :param key: The Key instance identifying the neighboring record.
     :type distance: Key
 
@@ -153,6 +154,7 @@ class VectorDistanceMetric(enum.Enum):
 
     Each metric provides a different method for comparing vectors, affecting how distances and similarities are computed in vector-based operations.
     """
+
     SQUARED_EUCLIDEAN: types_pb2.VectorDistanceMetric = (
         types_pb2.VectorDistanceMetric.SQUARED_EUCLIDEAN
     )
@@ -164,9 +166,41 @@ class VectorDistanceMetric(enum.Enum):
     HAMMING: types_pb2.VectorDistanceMetric = types_pb2.VectorDistanceMetric.HAMMING
 
 
+class Role(object):
+    """
+    AVS Role Object used in role-based authentication.
+
+    :param id: Unique id to identify role
+    :type id: str
+
+    """
+
+    def __init__(
+        self,
+        *,
+        id: str,
+    ) -> None:
+        self.id = id
+
+    def __repr__(self) -> str:
+        return f"Role(id={self.id!r})"
+
+    def __str__(self) -> str:
+        return f"Role {{\n  id: {self.id}\n}}"
+
+    def __getitem__(self, key):
+        key = str(key)  # Ensure key is a string
+        if not hasattr(self, key):
+            raise AttributeError(f"'Role' object has no attribute '{key}'")
+        return getattr(self, key)
+
+    def __setitem__(self, key, value):
+        setattr(self, key, value)
+
+
 class User(object):
     """
-    AVS User Object used mainly for role-based authentication.
+    AVS User Object used in role-based authentication.
 
     :param username: Username associated with user.
     :type username: str
@@ -180,7 +214,7 @@ class User(object):
         self,
         *,
         username: str,
-        roles: Optional[list[int]] = 10000,
+        roles: Optional[list[Role]],
     ) -> None:
         self.username = username
         self.roles = roles
@@ -209,31 +243,57 @@ class HnswBatchingParams(object):
         params.interval = self.interval
         return params
 
+    def __repr__(self) -> str:
+        return (
+            f"batchingParams(max_records={self.max_records}, "
+            f"interval={self.interval})"
+        )
+
+    def __str__(self) -> str:
+        return (
+            f"batchingParams {{\n"
+            f"  maxRecords: {self.max_records}\n"
+            f"  interval: {self.interval}\n"
+            f"}}"
+        )
+
+    def __getitem__(self, key):
+        key = str(key)  # Ensure key is a string
+        if not hasattr(self, key):
+            raise AttributeError(
+                f"'HnswBatchingParams' object has no attribute '{key}'"
+            )
+        return getattr(self, key)
+
+    def __setitem__(self, key, value):
+        return setattr(self, key, value)
+
 
 class HnswHealerParams(object):
     """
     Parameters to configure the HNSW healer
 
-    :param max_scan_rate_per_node: Maximum allowed record scan rate per vector db node.  Default is the global healer config, which is configured in the AVS Server. 
+    :param max_scan_rate_per_node: Maximum allowed record scan rate per vector db node.  Default is the global healer config, which is configured in the AVS Server.
     :type max_scan_rate_per_node: Optional[int]
 
     :param max_scan_page_size: Maximum number of records in a single scanned page.
-        Default is the global healer config, which is configured in the AVS Server. 
+        Default is the global healer config, which is configured in the AVS Server.
     :type max_scan_page_size: Optional[int]
 
     :param re_index_percent: Percentage of good records randomly selected for reindexing in a healer cycle.
-        Default is the global healer config, which is configured in the AVS Server. 
+        Default is the global healer config, which is configured in the AVS Server.
     :type re_index_percent: Optional[int]
 
     :param schedule_delay: The time delay, in milliseconds, between the termination of a healer run and the commencement
         of the next one for an index. It only guarantees that the next index healer run for an index will not be scheduled before
-        this time delay. Default is the global healer config, which is configured in the AVS Server. 
+        this time delay. Default is the global healer config, which is configured in the AVS Server.
     :type schedule_delay: Optional[int]
 
     :param parallelism: Maximum number of records to heal in parallel.
-        Default is the global healer config, which is configured in the AVS Server. 
+        Default is the global healer config, which is configured in the AVS Server.
     :type parallelism: Optional[int]
     """
+
     def __init__(
         self,
         *,
@@ -277,14 +337,15 @@ class HnswCachingParams(object):
     """
     Parameters to configure the HNSW index cache
 
-    :param max_entries: maximum number of entries to cache.  Default is the global cache config, which is configured in the AVS Server. 
+    :param max_entries: maximum number of entries to cache.  Default is the global cache config, which is configured in the AVS Server.
     :type max_entries: Optional[int]
 
     :param expiry: Cache entries will expire after this time in millseconds has expired after the entry was add to the cache.
-        Default is the global cache config, which is configured in the AVS Server. 
+        Default is the global cache config, which is configured in the AVS Server.
     :type expiry: Optional[int]
 
     """
+
     def __init__(
         self, *, max_entries: Optional[int] = None, expiry: Optional[int] = None
     ) -> None:
@@ -305,9 +366,10 @@ class HnswIndexMergeParams(object):
     Parameters to configure the HNSW index merge behavior.
 
     :param parallelism: The number of vectors merged in parallel from a batch index to main index.
-        Default is the global healer config, which is configured in the AVS Server. 
+        Default is the global healer config, which is configured in the AVS Server.
     :type parallelism: Optional[int]
     """
+
     def __init__(self, *, parallelism: Optional[int] = None) -> None:
         self.parallelism = parallelism
 
@@ -332,7 +394,7 @@ class HnswParams(object):
     :type ef: Optional[int]
 
     :param batching_params: Parameters related to configuring batch processing, such as the maximum number of records per batch and batching interval. Defaults to HnswBatchingParams().
-    :type batching_params: Optional[HnswBatchingParams]    
+    :type batching_params: Optional[HnswBatchingParams]
     """
 
     def __init__(
@@ -373,6 +435,33 @@ class HnswParams(object):
 
         return params
 
+    def __repr__(self) -> str:
+        batching_repr = repr(self.batching_params)
+        return (
+            f"HnswParams(m={self.m}, ef_construction={self.ef_construction}, "
+            f"ef={self.ef}, {batching_repr})"
+        )
+
+    def __str__(self) -> str:
+        batching_str = str(self.batching_params)
+        return (
+            f"hnswParams {{\n"
+            f"  m: {self.m}\n"
+            f"  efConstruction: {self.ef_construction}\n"
+            f"  ef: {self.ef}\n"
+            f"  {batching_str}\n"
+            f"}}"
+        )
+
+    def __getitem__(self, key):
+        key = str(key)  # Ensure key is a string
+        if not hasattr(self, key):
+            raise AttributeError(f"'IndexDefinition' object has no attribute '{key}'")
+        return getattr(self, key)
+
+    def __setitem__(self, key, value):
+        return setattr(self, key, value)
+
 
 class HnswSearchParams(object):
     """
@@ -382,7 +471,7 @@ class HnswSearchParams(object):
 
     :param ef: The parameter 'ef' controls the trade-off between search quality and search efficiency.
         It determines the size of the dynamic list of nearest neighbors (candidates) examined during the
-        search phase. Larger values of 'ef' typically yield higher recall but slower search times. 
+        search phase. Larger values of 'ef' typically yield higher recall but slower search times.
         Defaults to None, meaning the algorithm uses a library-defined default value.
     :type ef: Optional[int]
 
@@ -391,6 +480,7 @@ class HnswSearchParams(object):
         - Setting 'ef' to a higher value increases the recall (i.e., the likelihood of finding the true nearest neighbors) at the cost of increased computational overhead during the search process.
 
     """
+
     def __init__(self, *, ef: Optional[int] = None) -> None:
 
         self.ef = ef
@@ -405,15 +495,16 @@ class IndexStorage(object):
     """
     Helper class primarily used to specify which namespace and set to build the index on.
 
-    :param namespace: The name of the namespace to build the index on..
+    :param namespace: The name of the namespace to build the index on.
     :type namespace: str
 
     :param set_name: The name of the set to build the index on. Defaults to None.
     :type set_name: Optional[str]
 
     """
+
     def __init__(
-        self, *, namespace: Optional[str] = None, set_name: Optional[str] = None
+        self, *, namespace: Optional[str], set_name: Optional[str] = None
     ) -> None:
         self.namespace = namespace
         self.set_name = set_name
@@ -426,6 +517,126 @@ class IndexStorage(object):
         if self.set_name:
             index_storage.set = self.set_name
         return index_storage
+
+    def __repr__(self) -> str:
+        return (
+            f"IndexStorage(namespace={self.namespace!r}, "
+            f"set_name={self.set_name!r})"
+        )
+
+    def __str__(self) -> str:
+        return (
+            f"IndexStorage {{\n"
+            f"  namespace: {self.namespace}\n"
+            f"  set_name: {self.set_name}\n"
+            f"}}"
+        )
+
+    def __getitem__(self, key):
+        key = str(key)  # Ensure key is a string
+        if not hasattr(self, key):
+            raise AttributeError(f"'IndexDefinition' object has no attribute '{key}'")
+        return getattr(self, key)
+
+    def __setitem__(self, key, value):
+        return setattr(self, key, value)
+
+
+class IndexId(object):
+    """
+    AVS IndexId used in :class:`IndexDefintion`
+
+    :param namespace: The name of the namespace in which to index records.
+    :type namespace: str
+
+    :param set_name: The name of the index.
+    :type set_name: Optional[str]
+
+    """
+
+    def __init__(self, *, namespace: str, name: str) -> None:
+        self.namespace = namespace
+        self.name = name
+
+    def __repr__(self) -> str:
+        return f"IndexId(namespace={self.namespace!r}, name={self.name!r})"
+
+    def __str__(self) -> str:
+        return f"IndexId(namespace={self.namespace}, name={self.name})"
+
+    def __eq__(self, other) -> bool:
+        if not isinstance(other, IndexId):
+            return NotImplemented
+        return self.namespace == other.namespace and self.name == other.name
+
+    def __getitem__(self, key):
+        key = str(key)  # Ensure key is a string
+        if not hasattr(self, key):
+            raise AttributeError(f"'IndexId' object has no attribute '{key}'")
+        return getattr(self, key)
+
+    def __setitem__(self, key, value):
+        return setattr(self, key, value)
+
+
+class IndexDefinition(object):
+    """
+    AVS Index Defintion
+
+    :param username: Username associated with user.
+    :type username: str
+
+    :param roles: roles associated with user.
+    :type roles: list[str]
+
+    """
+
+    def __init__(
+        self,
+        *,
+        id: str,
+        dimensions: int,
+        field: str,
+        hnsw_params: HnswParams,
+        storage: IndexStorage,
+    ) -> None:
+        self.id = id
+        self.dimensions = dimensions
+        self.field = field
+        self.hnsw_params = hnsw_params
+        self.storage = storage
+
+    def __repr__(self) -> str:
+        return (
+            f"IndexDefinition(id={self.id!r}, dimensions={self.dimensions}, field={self.field!r}, "
+            f"hnsw_params={self.hnsw_params!r}, storage={self.storage!r})"
+        )
+
+    def __str__(self) -> str:
+        return (
+            f"IndexDefinition(id={self.id}, dimensions={self.dimensions}, field={self.field}, "
+            f"hnsw_params={self.hnsw_params}, storage={self.storage})"
+        )
+
+    def __eq__(self, other) -> bool:
+        if not isinstance(other, IndexDefinition):
+            return NotImplemented
+        return (
+            self.id == other.id
+            and self.dimensions == other.dimensions
+            and self.field == other.field
+            and self.hnsw_params == other.hnsw_params
+            and self.storage == other.storage
+        )
+
+    def __getitem__(self, key):
+        key = str(key)  # Ensure key is a string
+        if not hasattr(self, key):
+            raise AttributeError(f"'IndexDefinition' object has no attribute '{key}'")
+        return getattr(self, key)
+
+    def __setitem__(self, key, value):
+        return setattr(self, key, value)
 
 
 class AVSError(Exception):
@@ -460,6 +671,7 @@ class AVSClientError(AVSError):
     :type set_name: str
 
     """
+
     def __init__(self, *, message) -> None:
         self.message = message
 

@@ -1,6 +1,7 @@
 import pytest
 from aerospike_vector_search import AVSServerError
-from ...utils import key_strategy
+from ...utils import random_key
+
 from hypothesis import given, settings, Verbosity
 import asyncio
 from hypothesis import given, settings
@@ -23,12 +24,11 @@ class insert_test_case:
         self.timeout = timeout
 
 
-@given(random_key=key_strategy())
-@settings(max_examples=1, deadline=1000)
+#@given(random_key=key_strategy())
+#@settings(max_examples=1, deadline=1000)
 @pytest.mark.parametrize(
     "test_case",
     [
-        None,
         insert_test_case(
             namespace="test",
             record_data={"math": [i for i in range(1024)]},
@@ -64,12 +64,11 @@ async def test_vector_insert_without_existing_record(
     )
 
 
-@given(random_key=key_strategy())
-@settings(max_examples=1, deadline=1000)
+#@given(random_key=key_strategy())
+#@settings(max_examples=1, deadline=1000)
 @pytest.mark.parametrize(
     "test_case",
     [
-        None,
         insert_test_case(
             namespace="test",
             record_data={"math": [i for i in range(1024)]},
@@ -104,12 +103,11 @@ async def test_vector_insert_with_existing_record(
     )
 
 
-@given(random_key=key_strategy())
-@settings(max_examples=1, deadline=1000)
+#@given(random_key=key_strategy())
+#@settings(max_examples=1, deadline=1000)
 @pytest.mark.parametrize(
     "test_case",
     [
-        None,
         insert_test_case(
             namespace="test",
             record_data={"math": [i for i in range(1024)]},
