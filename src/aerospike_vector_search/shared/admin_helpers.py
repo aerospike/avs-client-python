@@ -283,7 +283,6 @@ class BaseClient(object):
 
     def _respond_index_get(self, response) -> None:
 
-
         return conversions.fromIndexDefintion(response)
 
     def _respond_get_user(self, response) -> None:
@@ -299,8 +298,6 @@ class BaseClient(object):
     def _respond_list_roles(self, response) -> None:
         role_list = []
         for role in response.roles:
-            print(role)
-            print(role.id)
             role_list.append(types.Role(id=role.id))
         return role_list
 

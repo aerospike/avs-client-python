@@ -296,7 +296,7 @@ class Client(BaseClient):
         Raises:
             AVSServerError: Raised if an error occurs during the RPC communication with the server while attempting to get a vector..
             This error could occur due to various reasons such as network issues, server-side failures, or invalid request parameters.
-        
+
         """
 
         await self._channel_provider._is_ready()
