@@ -9,16 +9,17 @@ class HostPort(object):
     represents host, port and TLS usage information.
     Used primarily when intializing client.
 
-    Args:
-        host (str): The host address.
-        port (int): The port number.
-        is_tls (Optional[bool], optional): Indicates if TLS is enabled. Defaults to False.
+    :param host: The host address.
+    :type host: str
+
+    :param port: The port number.
+    :type port: int
+
     """
 
-    def __init__(self, *, host: str, port: int, is_tls: Optional[bool] = False) -> None:
+    def __init__(self, *, host: str, port: int) -> None:
         self.host = host
         self.port = port
-        self.is_tls = is_tls
 
 
 class Key(object):
@@ -26,10 +27,15 @@ class Key(object):
     Represents a record key.
     Used in RecordWithKey.
 
-    Args:
-        namespace (str): The namespace for the key.
-        set (str): The set for the key.
-        key (Any): The key itself.
+    :param namespace (str): The namespace for the key.
+    :type namespace: str
+
+    :param set: (optional[str]): The set for the key.
+    :type set: optional[str]
+
+    :param key: (Any): The key itself.
+    :type key: Union[int, str, bytes, bytearray, np.ndarray, np.generic]
+
     """
 
     def __init__(self, *, namespace: str, set: str, key: Any) -> None:
@@ -49,9 +55,11 @@ class RecordWithKey(object):
     Represents a record, including a key and fields.
     Return value for VectorDbClient.get.
 
-    Args:
-        key (Key): The key of the record.
-        fields (dict[str, Any]): The fields associated with the record.
+    :param key: (Key): The key of the record.
+    :type key: Key
+
+    :param fields: : The fields associated with the record.
+    :type fields: dict[str, Any]
     """
 
     def __init__(self, *, key: Key, fields: dict[str, Any]) -> None:
@@ -83,12 +91,19 @@ class Neighbor(object):
     """
     Represents a neighboring record in the context of approximate nearest neighbor search.
 
-    This class represents a neighboring record in relation to a query record. It includes information such as the key, fields, and distance from the query record.
+    This class represents a neighboring record in relation to a query record. It includes information such as the key, fields,
+        and distance from the query record.
 
-    Args:
-        key (Key): The Key instance identifying the neighboring record.
-        fields (dict[str, Any]): A dictionary representing fields associated with the neighboring record.
-        distance (float): The distance between the neighboring record and the query record, calculated based on the chosen VectorDistanceMetric.
+
+    :param key: The Key instance identifying the neighboring record.
+    :type distance: Key
+
+    :param fields: A dictionary representing fields associated with the neighboring record.
+    :type distance: dict[str, Any]
+
+    :param distance: The distance between the neighboring record and the query record, calculated based on the chosen
+        VectorDistanceMetric.
+    :type distance: float
 
     Notes:
         - The distance metric used to calculate the distance between records is determined by the chosen VectorDistanceMetric.
@@ -127,7 +142,17 @@ class Neighbor(object):
 
 class VectorDistanceMetric(enum.Enum):
     """
-    Enumeration of vector distance metrics.
+    Enumeration of vector distance metrics used for comparing vectors.
+
+    This enumeration defines various metrics for calculating the distance or similarity between vectors:
+
+    - **SQUARED_EUCLIDEAN**: Represents the squared Euclidean distance metric.
+    - **COSINE**: Represents the cosine similarity metric.
+    - **DOT_PRODUCT**: Represents the dot product similarity metric.
+    - **MANHATTAN**: Represents the Manhattan distance (L1 norm) metric.
+    - **HAMMING**: Represents the Hamming distance metric.
+
+    Each metric provides a different method for comparing vectors, affecting how distances and similarities are computed in vector-based operations.
     """
 
     SQUARED_EUCLIDEAN: types_pb2.VectorDistanceMetric = (
@@ -141,14 +166,66 @@ class VectorDistanceMetric(enum.Enum):
     HAMMING: types_pb2.VectorDistanceMetric = types_pb2.VectorDistanceMetric.HAMMING
 
 
+class Role(object):
+    """
+    AVS Role Object used in role-based authentication.
+
+    :param id: Unique id to identify role
+    :type id: str
+
+    """
+
+    def __init__(
+        self,
+        *,
+        id: str,
+    ) -> None:
+        self.id = id
+
+    def __repr__(self) -> str:
+        return f"Role(id={self.id!r})"
+
+    def __str__(self) -> str:
+        return f"Role {{\n  id: {self.id}\n}}"
+
+    def __getitem__(self, key):
+        key = str(key)  # Ensure key is a string
+        if not hasattr(self, key):
+            raise AttributeError(f"'Role' object has no attribute '{key}'")
+        return getattr(self, key)
+
+    def __setitem__(self, key, value):
+        setattr(self, key, value)
+
+
+class User(object):
+    """
+    AVS User Object used in role-based authentication.
+
+    :param username: Username associated with user.
+    :type username: str
+
+    :param roles: roles associated with user.
+    :type roles: list[str]
+
+    """
+
+    def __init__(
+        self,
+        *,
+        username: str,
+        roles: Optional[list[Role]],
+    ) -> None:
+        self.username = username
+        self.roles = roles
+
+
 class HnswBatchingParams(object):
     """
     Parameters for configuring batching behaviour for batch based index update.
 
-    Args:
-        max_records (Optional[int], optional): Maximum number of records to fit in a batch. Defaults to 10000.
-        interval (Optional[int], optional): The maximum amount of time in milliseconds to wait before finalizing a batch. Defaults to 10000.
-        disabled (Optional[bool], optional): Disables batching for index updates. Default is False.
+    :param max_records: Maximum number of records to fit in a batch. Defaults to 10000.
+    :param interva: The maximum amount of time in milliseconds to wait before finalizing a batch. Defaults to 10000.
     """
 
     def __init__(
@@ -156,17 +233,150 @@ class HnswBatchingParams(object):
         *,
         max_records: Optional[int] = 10000,
         interval: Optional[int] = 10000,
-        disabled: Optional[bool] = False,
     ) -> None:
         self.max_records = max_records
         self.interval = interval
-        self.disabled = disabled
 
     def _to_pb2(self):
         params = types_pb2.HnswBatchingParams()
         params.maxRecords = self.max_records
         params.interval = self.interval
-        params.disabled = self.disabled
+        return params
+
+    def __repr__(self) -> str:
+        return (
+            f"batchingParams(max_records={self.max_records}, "
+            f"interval={self.interval})"
+        )
+
+    def __str__(self) -> str:
+        return (
+            f"batchingParams {{\n"
+            f"  maxRecords: {self.max_records}\n"
+            f"  interval: {self.interval}\n"
+            f"}}"
+        )
+
+    def __getitem__(self, key):
+        key = str(key)  # Ensure key is a string
+        if not hasattr(self, key):
+            raise AttributeError(
+                f"'HnswBatchingParams' object has no attribute '{key}'"
+            )
+        return getattr(self, key)
+
+    def __setitem__(self, key, value):
+        return setattr(self, key, value)
+
+
+class HnswHealerParams(object):
+    """
+    Parameters to configure the HNSW healer
+
+    :param max_scan_rate_per_node: Maximum allowed record scan rate per vector db node.  Default is the global healer config, which is configured in the AVS Server.
+    :type max_scan_rate_per_node: Optional[int]
+
+    :param max_scan_page_size: Maximum number of records in a single scanned page.
+        Default is the global healer config, which is configured in the AVS Server.
+    :type max_scan_page_size: Optional[int]
+
+    :param re_index_percent: Percentage of good records randomly selected for reindexing in a healer cycle.
+        Default is the global healer config, which is configured in the AVS Server.
+    :type re_index_percent: Optional[int]
+
+    :param schedule_delay: The time delay, in milliseconds, between the termination of a healer run and the commencement
+        of the next one for an index. It only guarantees that the next index healer run for an index will not be scheduled before
+        this time delay. Default is the global healer config, which is configured in the AVS Server.
+    :type schedule_delay: Optional[int]
+
+    :param parallelism: Maximum number of records to heal in parallel.
+        Default is the global healer config, which is configured in the AVS Server.
+    :type parallelism: Optional[int]
+    """
+
+    def __init__(
+        self,
+        *,
+        max_scan_rate_per_node: Optional[int] = None,
+        max_scan_page_size: Optional[int] = None,
+        re_index_percent: Optional[int] = None,
+        schedule_delay: Optional[int] = None,
+        parallelism: Optional[int] = None,
+    ) -> None:
+        self.max_scan_rate_per_node = max_scan_rate_per_node
+        self.max_scan_page_size = max_scan_page_size
+        self.re_index_percent = re_index_percent
+        self.schedule_delay = schedule_delay
+        self.parallelism = parallelism
+
+    def _to_pb2(self):
+        params = types_pb2.HnswHealerParams()
+        if self.max_scan_rate_per_node:
+            params.maxScanRatePerNode = self.max_scan_rate_per_node
+
+        if self.max_scan_page_size:
+
+            params.maxScanPageSize = self.max_scan_page_size
+
+        if self.re_index_percent:
+
+            params.reindexPercent = self.re_index_percent
+
+        if self.schedule_delay:
+
+            params.scheduleDelay = self.schedule_delay
+
+        if self.parallelism:
+
+            params.parallelism = self.parallelism
+
+        return params
+
+
+class HnswCachingParams(object):
+    """
+    Parameters to configure the HNSW index cache
+
+    :param max_entries: maximum number of entries to cache.  Default is the global cache config, which is configured in the AVS Server.
+    :type max_entries: Optional[int]
+
+    :param expiry: Cache entries will expire after this time in millseconds has expired after the entry was add to the cache.
+        Default is the global cache config, which is configured in the AVS Server.
+    :type expiry: Optional[int]
+
+    """
+
+    def __init__(
+        self, *, max_entries: Optional[int] = None, expiry: Optional[int] = None
+    ) -> None:
+        self.max_entries = max_entries
+        self.expiry = expiry
+
+    def _to_pb2(self):
+        params = types_pb2.HnswCachingParams()
+        if self.max_entries:
+            params.maxEntries = self.max_entries
+        if self.expiry:
+            params.expiry = self.expiry
+        return params
+
+
+class HnswIndexMergeParams(object):
+    """
+    Parameters to configure the HNSW index merge behavior.
+
+    :param parallelism: The number of vectors merged in parallel from a batch index to main index.
+        Default is the global healer config, which is configured in the AVS Server.
+    :type parallelism: Optional[int]
+    """
+
+    def __init__(self, *, parallelism: Optional[int] = None) -> None:
+        self.parallelism = parallelism
+
+    def _to_pb2(self):
+        params = types_pb2.HnswIndexMergeParams()
+        if self.parallelism:
+            params.parallelism = self.parallelism
         return params
 
 
@@ -174,11 +384,17 @@ class HnswParams(object):
     """
     Parameters for the Hierarchical Navigable Small World (HNSW) algorithm, used for approximate nearest neighbor search.
 
-    Args:
-        m (Optional[int], optional): The number of bi-directional links created per level during construction. Larger 'm' values lead to higher recall but slower construction. Defaults to 16.
-        ef_construction (Optional[int], optional): The size of the dynamic list for the nearest neighbors (candidates) during the index construction. Larger 'ef_construction' values lead to higher recall but slower construction. Defaults to 100.
-        ef (Optional[int], optional): The size of the dynamic list for the nearest neighbors (candidates) during the search phase. Larger 'ef' values lead to higher recall but slower search. Defaults to 100.
-        batching_params (Optional[HnswBatchingParams], optional): Parameters related to configuring batch processing, such as the maximum number of records per batch and batching interval. Defaults to HnswBatchingParams().
+    :param m: The number of bi-directional links created per level during construction. Larger 'm' values lead to higher recall but slower construction. Defaults to 16.
+    :type m: Optional[int]
+
+    :param ef_construction: The size of the dynamic list for the nearest neighbors (candidates) during the index construction. Larger 'ef_construction' values lead to higher recall but slower construction. Defaults to 100.
+    :type ef_construction: Optional[int]
+
+    :param ef: The size of the dynamic list for the nearest neighbors (candidates) during the search phase. Larger 'ef' values lead to higher recall but slower search. Defaults to 100.
+    :type ef: Optional[int]
+
+    :param batching_params: Parameters related to configuring batch processing, such as the maximum number of records per batch and batching interval. Defaults to HnswBatchingParams().
+    :type batching_params: Optional[HnswBatchingParams]
     """
 
     def __init__(
@@ -188,43 +404,239 @@ class HnswParams(object):
         ef_construction: Optional[int] = 100,
         ef: Optional[int] = 100,
         batching_params: Optional[HnswBatchingParams] = HnswBatchingParams(),
+        max_mem_queue_size: Optional[int] = None,
+        caching_params: Optional[HnswCachingParams] = HnswCachingParams(),
+        healer_params: Optional[HnswHealerParams] = HnswHealerParams(),
+        merge_params: Optional[HnswIndexMergeParams] = HnswIndexMergeParams(),
     ) -> None:
         self.m = m
         self.ef_construction = ef_construction
         self.ef = ef
         self.batching_params = batching_params
+        self.max_mem_queue_size = max_mem_queue_size
+        self.caching_params = caching_params
+        self.healer_params = healer_params
+        self.merge_params = merge_params
 
     def _to_pb2(self):
         params = types_pb2.HnswParams()
         params.m = self.m
         params.efConstruction = self.ef_construction
         params.ef = self.ef
+        if self.max_mem_queue_size:
+            params.maxMemQueueSize = self.max_mem_queue_size
 
         params.batchingParams.CopyFrom(self.batching_params._to_pb2())
+        params.cachingParams.CopyFrom(self.caching_params._to_pb2())
+
+        params.healerParams.CopyFrom(self.healer_params._to_pb2())
+
+        params.mergeParams.CopyFrom(self.merge_params._to_pb2())
+
         return params
+
+    def __repr__(self) -> str:
+        batching_repr = repr(self.batching_params)
+        return (
+            f"HnswParams(m={self.m}, ef_construction={self.ef_construction}, "
+            f"ef={self.ef}, {batching_repr})"
+        )
+
+    def __str__(self) -> str:
+        batching_str = str(self.batching_params)
+        return (
+            f"hnswParams {{\n"
+            f"  m: {self.m}\n"
+            f"  efConstruction: {self.ef_construction}\n"
+            f"  ef: {self.ef}\n"
+            f"  {batching_str}\n"
+            f"}}"
+        )
+
+    def __getitem__(self, key):
+        key = str(key)  # Ensure key is a string
+        if not hasattr(self, key):
+            raise AttributeError(f"'IndexDefinition' object has no attribute '{key}'")
+        return getattr(self, key)
+
+    def __setitem__(self, key, value):
+        return setattr(self, key, value)
 
 
 class HnswSearchParams(object):
+    """
+    Parameters for Hierarchical Navigable Small World (HNSW) search.
+
+    HNSW is an algorithm used for approximate nearest neighbor search.
+
+    :param ef: The parameter 'ef' controls the trade-off between search quality and search efficiency.
+        It determines the size of the dynamic list of nearest neighbors (candidates) examined during the
+        search phase. Larger values of 'ef' typically yield higher recall but slower search times.
+        Defaults to None, meaning the algorithm uses a library-defined default value.
+    :type ef: Optional[int]
+
+    Notes:
+        - 'ef' stands for "exploration factor."
+        - Setting 'ef' to a higher value increases the recall (i.e., the likelihood of finding the true nearest neighbors) at the cost of increased computational overhead during the search process.
+
+    """
+
     def __init__(self, *, ef: Optional[int] = None) -> None:
-        """
-        Parameters for Hierarchical Navigable Small World (HNSW) search.
 
-        HNSW is an algorithm used for approximate nearest neighbor search.
-
-        Args:
-            ef (Optional[int], optional): The parameter 'ef' controls the trade-off between search quality and search efficiency. It determines the size of the dynamic list of nearest neighbors (candidates) examined during the search phase. Larger values of 'ef' typically yield higher recall but slower search times. Defaults to None, meaning the algorithm uses a library-defined default value.
-
-        Notes:
-            - 'ef' stands for "exploration factor."
-            - Setting 'ef' to a higher value increases the recall (i.e., the likelihood of finding the true nearest neighbors) at the cost of increased computational overhead during the search process.
-
-        """
         self.ef = ef
 
     def _to_pb2(self):
         params = types_pb2.HnswSearchParams()
         params.ef = self.ef
         return params
+
+
+class IndexStorage(object):
+    """
+    Helper class primarily used to specify which namespace and set to build the index on.
+
+    :param namespace: The name of the namespace to build the index on.
+    :type namespace: str
+
+    :param set_name: The name of the set to build the index on. Defaults to None.
+    :type set_name: Optional[str]
+
+    """
+
+    def __init__(
+        self, *, namespace: Optional[str], set_name: Optional[str] = None
+    ) -> None:
+        self.namespace = namespace
+        self.set_name = set_name
+
+    def _to_pb2(self):
+        index_storage = types_pb2.IndexStorage()
+        if self.namespace:
+
+            index_storage.namespace = self.namespace
+        if self.set_name:
+            index_storage.set = self.set_name
+        return index_storage
+
+    def __repr__(self) -> str:
+        return (
+            f"IndexStorage(namespace={self.namespace!r}, "
+            f"set_name={self.set_name!r})"
+        )
+
+    def __str__(self) -> str:
+        return (
+            f"IndexStorage {{\n"
+            f"  namespace: {self.namespace}\n"
+            f"  set_name: {self.set_name}\n"
+            f"}}"
+        )
+
+    def __getitem__(self, key):
+        key = str(key)  # Ensure key is a string
+        if not hasattr(self, key):
+            raise AttributeError(f"'IndexDefinition' object has no attribute '{key}'")
+        return getattr(self, key)
+
+    def __setitem__(self, key, value):
+        return setattr(self, key, value)
+
+
+class IndexId(object):
+    """
+    AVS IndexId used in :class:`IndexDefintion`
+
+    :param namespace: The name of the namespace in which to index records.
+    :type namespace: str
+
+    :param set_name: The name of the index.
+    :type set_name: Optional[str]
+
+    """
+
+    def __init__(self, *, namespace: str, name: str) -> None:
+        self.namespace = namespace
+        self.name = name
+
+    def __repr__(self) -> str:
+        return f"IndexId(namespace={self.namespace!r}, name={self.name!r})"
+
+    def __str__(self) -> str:
+        return f"IndexId(namespace={self.namespace}, name={self.name})"
+
+    def __eq__(self, other) -> bool:
+        if not isinstance(other, IndexId):
+            return NotImplemented
+        return self.namespace == other.namespace and self.name == other.name
+
+    def __getitem__(self, key):
+        key = str(key)  # Ensure key is a string
+        if not hasattr(self, key):
+            raise AttributeError(f"'IndexId' object has no attribute '{key}'")
+        return getattr(self, key)
+
+    def __setitem__(self, key, value):
+        return setattr(self, key, value)
+
+
+class IndexDefinition(object):
+    """
+    AVS Index Defintion
+
+    :param username: Username associated with user.
+    :type username: str
+
+    :param roles: roles associated with user.
+    :type roles: list[str]
+
+    """
+
+    def __init__(
+        self,
+        *,
+        id: str,
+        dimensions: int,
+        field: str,
+        hnsw_params: HnswParams,
+        storage: IndexStorage,
+    ) -> None:
+        self.id = id
+        self.dimensions = dimensions
+        self.field = field
+        self.hnsw_params = hnsw_params
+        self.storage = storage
+
+    def __repr__(self) -> str:
+        return (
+            f"IndexDefinition(id={self.id!r}, dimensions={self.dimensions}, field={self.field!r}, "
+            f"hnsw_params={self.hnsw_params!r}, storage={self.storage!r})"
+        )
+
+    def __str__(self) -> str:
+        return (
+            f"IndexDefinition(id={self.id}, dimensions={self.dimensions}, field={self.field}, "
+            f"hnsw_params={self.hnsw_params}, storage={self.storage})"
+        )
+
+    def __eq__(self, other) -> bool:
+        if not isinstance(other, IndexDefinition):
+            return NotImplemented
+        return (
+            self.id == other.id
+            and self.dimensions == other.dimensions
+            and self.field == other.field
+            and self.hnsw_params == other.hnsw_params
+            and self.storage == other.storage
+        )
+
+    def __getitem__(self, key):
+        key = str(key)  # Ensure key is a string
+        if not hasattr(self, key):
+            raise AttributeError(f"'IndexDefinition' object has no attribute '{key}'")
+        return getattr(self, key)
+
+    def __setitem__(self, key, value):
+        return setattr(self, key, value)
 
 
 class AVSError(Exception):
@@ -239,15 +651,29 @@ class AVSServerError(AVSError):
     """
     Custom exception raised for errors related to the AVS server.
 
-    Attributes:
-        status (int): The status code associated with the error.
-        details (str): Details about the error.
-        debug_error_string (str): Debug error string providing additional error information.
+    :param rpc_error: exception thrown by the grpc Python library on server calls. Defaults to None.
+    :type set_name: grpc.RpcError
 
-    Args:
-        rpc_error (Exception): The original gRPC error object from which AVSError is derived.
-            This error object is used to extract status, details, and debug information.
     """
 
     def __init__(self, *, rpc_error) -> None:
         self.rpc_error = rpc_error
+
+    def __str__(self):
+        return f"AVSServerError(rpc_error={self.rpc_error})"
+
+
+class AVSClientError(AVSError):
+    """
+    Custom exception raised for errors related to AVS client-side failures..
+
+    :param message: error messaging raised by the AVS Client. Defaults to None.
+    :type set_name: str
+
+    """
+
+    def __init__(self, *, message) -> None:
+        self.message = message
+
+    def __str__(self):
+        return f"AVSClientError(message={self.message})"

@@ -1,3 +1,0 @@
-grpcio
-protobuf
-sphinx_rtd_theme

@@ -1,0 +1,13 @@
+tls:
+  service-tls:
+    trust-store:
+      store-file: /etc/aerospike-vector-search/tls/root.truststore.jks 
+      store-password-file: /etc/aerospike-vector-search/tls/storepass
+    key-store:
+      store-file: /etc/aerospike-vector-search/tls/child.keystore.jks
+      store-password-file: /etc/aerospike-vector-search/tls/storepass
+      key-password-file: /etc/aerospike-vector-search/tls/keypass
+    #mutual-auth: true
+    # Client certificate subject names that are allowed
+    #allowed-peer-names:
+    #  - child

@@ -1,5 +1,5 @@
-aio Module
-=====================
+Asynchronous Clients leveraging Asyncio
+========================================
 
 This module contains clients with coroutine methods used for asynchronous programming.
 

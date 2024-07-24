@@ -23,8 +23,7 @@ Please explore the modules below for more information on API usage and details.
    :caption: Contents:
 
    aio
-   admin
-   client
+   sync
    types
 
 

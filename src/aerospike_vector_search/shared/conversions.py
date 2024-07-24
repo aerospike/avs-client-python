@@ -90,6 +90,46 @@ def fromVectorDbNeighbor(input: types_pb2.Neighbor) -> types.Neighbor:
     )
 
 
+def fromIndexDefintion(input: types_pb2.IndexDefinition) -> types.IndexDefinition:
+    return types.IndexDefinition(
+        id=types.IndexId(
+            namespace=input.id.namespace,
+            name=input.id.name,
+        ),
+        dimensions=input.dimensions,
+        # vector_distance_metric=input.vectorDistanceMetric,
+        field=input.field,
+        # sets=input.setFilter
+        hnsw_params=types.HnswParams(
+            m=input.hnswParams.m,
+            ef_construction=input.hnswParams.efConstruction,
+            ef=input.hnswParams.ef,
+            batching_params=types.HnswBatchingParams(
+                max_records=input.hnswParams.batchingParams.maxRecords,
+                interval=input.hnswParams.batchingParams.interval,
+            ),
+            # caching_params=types.HnswCachingParams(
+            #    max_entries=input.hnswParams.cachingParams.maxEntries,
+            #    expiry=input.hnswParams.cachingParams.expiry,
+            # ),
+            # healer_params=types.HnswHealerParams(
+            #    max_scan_rate_per_node=input.hnswParams.healerParams.maxScanRatePerNode,
+            #    max_scan_page_ize=input.hnswParams.healerParams.maxScanPageSize,
+            #    re_index_percent=input.hnswParams.healerParams.reindexPercent,
+            #    schedule_delay=input.hnswParams.healerParams.scheduleDelay,
+            #    parallelism=input.hnswParams.healerParams.parallelism
+            # ),
+            # merge_params=types.HnswMergeParams(
+            #    parallelism=input.hnswParams.mergeParams.parallelism
+            # )
+        ),
+        # labels=input.labels,
+        storage=types.IndexStorage(
+            namespace=input.storage.namespace, set_name=input.storage.set
+        ),
+    )
+
+
 def fromVectorDbValue(input: types_pb2.Value) -> Any:
     if input.HasField("stringValue"):
         return input.stringValue

@@ -158,8 +158,11 @@ cython_debug/
 # Vector search test files
 tests/siftsmall/*
 tests/siftsmall.tar.gz
+tests/features.conf
+tests/assets/features.conf
 
 # Notes
 notes.txt
 
 public-key.asc
+

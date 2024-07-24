@@ -1,6 +1,6 @@
 from typing import Any, Optional, Union
 import time
-import numpy
+import numpy as np
 from . import conversions
 
 from .proto_generated import transact_pb2
@@ -16,22 +16,36 @@ class BaseClient(object):
         return helpers._prepare_seeds(seeds)
 
     def _prepare_put(
-        self, namespace, key, record_data, set_name, write_type, logger
+        self,
+        namespace,
+        key,
+        record_data,
+        set_name,
+        write_type,
+        ignore_mem_queue_full,
+        timeout,
+        logger,
     ) -> None:
 
         logger.debug(
-            "Putting record: namespace=%s, key=%s, record_data:%s, set_name:%s",
+            "Putting record: namespace=%s, key=%s, record_data:%s, set_name:%s, ignore_mem_queue_full %s, timeout:%s",
             namespace,
             key,
             record_data,
             set_name,
+            ignore_mem_queue_full,
+            timeout,
         )
+
+        kwargs = {}
+        if timeout is not None:
+            kwargs["timeout"] = timeout
 
         key = self._get_key(namespace, set_name, key)
         field_list = []
 
         for k, v in record_data.items():
-            if isinstance(v, numpy.ndarray):
+            if isinstance(v, np.ndarray):
                 field_list.append(
                     types_pb2.Field(
                         name=k, value=conversions.toVectorDbValue(v.tolist())
@@ -45,97 +59,160 @@ class BaseClient(object):
 
         transact_stub = self._get_transact_stub()
         put_request = transact_pb2.PutRequest(
-            key=key, writeType=write_type, fields=field_list
+            key=key,
+            writeType=write_type,
+            fields=field_list,
+            ignoreMemQueueFull=ignore_mem_queue_full,
         )
 
-        return (transact_stub, put_request)
+        return (transact_stub, put_request, kwargs)
 
-    def _prepare_insert(self, namespace, key, record_data, set_name, logger) -> None:
+    def _prepare_insert(
+        self,
+        namespace,
+        key,
+        record_data,
+        set_name,
+        ignore_mem_queue_full,
+        timeout,
+        logger,
+    ) -> None:
         return self._prepare_put(
             namespace,
             key,
             record_data,
             set_name,
             transact_pb2.WriteType.INSERT_ONLY,
+            ignore_mem_queue_full,
+            timeout,
             logger,
         )
 
-    def _prepare_update(self, namespace, key, record_data, set_name, logger) -> None:
+    def _prepare_update(
+        self,
+        namespace,
+        key,
+        record_data,
+        set_name,
+        ignore_mem_queue_full,
+        timeout,
+        logger,
+    ) -> None:
         return self._prepare_put(
             namespace,
             key,
             record_data,
             set_name,
             transact_pb2.WriteType.UPDATE_ONLY,
+            ignore_mem_queue_full,
+            timeout,
             logger,
         )
 
-    def _prepare_upsert(self, namespace, key, record_data, set_name, logger) -> None:
+    def _prepare_upsert(
+        self,
+        namespace,
+        key,
+        record_data,
+        set_name,
+        ignore_mem_queue_full,
+        timeout,
+        logger,
+    ) -> None:
         return self._prepare_put(
-            namespace, key, record_data, set_name, transact_pb2.WriteType.UPSERT, logger
+            namespace,
+            key,
+            record_data,
+            set_name,
+            transact_pb2.WriteType.UPSERT,
+            ignore_mem_queue_full,
+            timeout,
+            logger,
         )
 
-    def _prepare_get(self, namespace, key, field_names, set_name, logger) -> None:
+    def _prepare_get(
+        self, namespace, key, field_names, set_name, timeout, logger
+    ) -> None:
 
         logger.debug(
-            "Getting record: namespace=%s, key=%s, field_names:%s, set_name:%s",
+            "Getting record: namespace=%s, key=%s, field_names:%s, set_name:%s, timeout:%s",
             namespace,
             key,
             field_names,
             set_name,
+            timeout,
         )
+
+        kwargs = {}
+        if timeout is not None:
+            kwargs["timeout"] = timeout
 
         key = self._get_key(namespace, set_name, key)
         projection_spec = self._get_projection_spec(field_names=field_names)
 
         transact_stub = self._get_transact_stub()
-        get_request = transact_pb2.GetRequest(key=key, projectionSpec=projection_spec)
+        get_request = transact_pb2.GetRequest(key=key, projection=projection_spec)
 
-        return (transact_stub, key, get_request)
+        return (transact_stub, key, get_request, kwargs)
 
-    def _prepare_exists(self, namespace, key, set_name, logger) -> None:
+    def _prepare_exists(self, namespace, key, set_name, timeout, logger) -> None:
 
         logger.debug(
-            "Getting record existence: namespace=%s, key=%s, set_name:%s",
+            "Getting record existence: namespace=%s, key=%s, set_name:%s, timeout:%s",
             namespace,
             key,
             set_name,
+            timeout,
         )
+
+        kwargs = {}
+        if timeout is not None:
+            kwargs["timeout"] = timeout
 
         key = self._get_key(namespace, set_name, key)
 
         transact_stub = self._get_transact_stub()
         exists_request = transact_pb2.ExistsRequest(key=key)
 
-        return (transact_stub, exists_request)
+        return (transact_stub, exists_request, kwargs)
 
-    def _prepare_delete(self, namespace, key, set_name, logger) -> None:
+    def _prepare_delete(self, namespace, key, set_name, timeout, logger) -> None:
 
         logger.debug(
-            "Deleting record: key=%s",
+            "Deleting record: namespace=%s, key=%s, set_name=%s, timeout:%s",
             namespace,
             key,
             set_name,
+            timeout,
         )
+
+        kwargs = {}
+        if timeout is not None:
+            kwargs["timeout"] = timeout
 
         key = self._get_key(namespace, set_name, key)
 
         transact_stub = self._get_transact_stub()
         delete_request = transact_pb2.DeleteRequest(key=key)
 
-        return (transact_stub, delete_request)
+        return (transact_stub, delete_request, kwargs)
 
     def _prepare_is_indexed(
-        self, namespace, key, index_name, index_namespace, set_name, logger
+        self, namespace, key, index_name, index_namespace, set_name, timeout, logger
     ) -> None:
 
+        kwargs = {}
+        if timeout is not None:
+            kwargs["timeout"] = timeout
+
         logger.debug(
-            "Checking if index exists: namespace=%s, key=%s, index_name=%s, index_namespace=%s, set_name=%s",
+            "Checking if index exists: namespace=%s, key=%s, index_name=%s, index_namespace=%s, set_name=%s, timeout:%s",
             namespace,
             key,
             index_name,
             index_namespace,
             set_name,
+            timeout,
         )
 
         if not index_namespace:
@@ -146,20 +223,33 @@ class BaseClient(object):
         transact_stub = self._get_transact_stub()
         is_indexed_request = transact_pb2.IsIndexedRequest(key=key, indexId=index_id)
 
-        return (transact_stub, is_indexed_request)
+        return (transact_stub, is_indexed_request, kwargs)
 
     def _prepare_vector_search(
-        self, namespace, index_name, query, limit, search_params, field_names, logger
+        self,
+        namespace,
+        index_name,
+        query,
+        limit,
+        search_params,
+        field_names,
+        timeout,
+        logger,
     ) -> None:
 
+        kwargs = {}
+        if timeout is not None:
+            kwargs["timeout"] = timeout
+
         logger.debug(
-            "Performing vector search: namespace=%s, index_name=%s, query=%s, limit=%s, search_params=%s, field_names=%s",
+            "Performing vector search: namespace=%s, index_name=%s, query=%s, limit=%s, search_params=%s, field_names=%s, timeout:%s",
             namespace,
             index_name,
             query,
             limit,
             search_params,
             field_names,
+            timeout,
         )
 
         if search_params != None:
@@ -169,7 +259,7 @@ class BaseClient(object):
 
         index = types_pb2.IndexId(namespace=namespace, name=index_name)
 
-        if isinstance(query, numpy.ndarray):
+        if isinstance(query, np.ndarray):
             query_vector = conversions.toVectorDbValue(query.tolist()).vectorValue
         else:
             query_vector = conversions.toVectorDbValue(query).vectorValue
@@ -184,10 +274,12 @@ class BaseClient(object):
             projection=projection_spec,
         )
 
-        return (transact_stub, vector_search_request)
+        return (transact_stub, vector_search_request, kwargs)
 
     def _get_transact_stub(self):
-        return transact_pb2_grpc.TransactStub(self._channel_provider.get_channel())
+        return transact_pb2_grpc.TransactServiceStub(
+            self._channel_provider.get_channel()
+        )
 
     def _respond_get(self, response, key) -> None:
         return types.RecordWithKey(
@@ -240,6 +332,13 @@ class BaseClient(object):
     def _get_key(
         self, namespace: str, set: str, key: Union[int, str, bytes, bytearray]
     ):
+
+        if isinstance(key, np.ndarray):
+            key = key.tobytes()
+
+        if isinstance(key, np.generic):
+            key = key.item()
+
         if isinstance(key, str):
             key = types_pb2.Key(namespace=namespace, set=set, stringValue=key)
         elif isinstance(key, int):
@@ -247,7 +346,7 @@ class BaseClient(object):
         elif isinstance(key, (bytes, bytearray)):
             key = types_pb2.Key(namespace=namespace, set=set, bytesValue=key)
         else:
-            raise Exception("Invalid key type" + type(key))
+            raise Exception("Invalid key type" + str(type(key)))
         return key
 
     def _prepare_wait_for_index_waiting(self, namespace, name, wait_interval):
