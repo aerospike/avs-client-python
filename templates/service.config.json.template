@@ -48,7 +48,7 @@ Publicly exposed services and their associated methods are list below
   - index_list
   - index_get
   - index_get_status
-- Transact
+- TransactService
   - get
   - insert
   - update
@@ -71,9 +71,9 @@ Private services include:
 
 - AuthService
   - Used internally to faciliate role-based access control (RBAC) authentication.
-- About
+- AboutService
   - Used internally to discover the server version.
-- ClusterInfo
+- ClusterInfoService
   - Used internally to gather information about the cluster in order to tend to the connection.
 
 The following specifies a 2 second timeout for all `Transact` methods:

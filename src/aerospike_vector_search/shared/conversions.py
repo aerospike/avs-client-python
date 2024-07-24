@@ -90,7 +90,7 @@ def fromVectorDbNeighbor(input: types_pb2.Neighbor) -> types.Neighbor:
     )
 
 
-def fromIndexDefintion(input: types_pb2.IndexDefinition) -> types.Neighbor:
+def fromIndexDefintion(input: types_pb2.IndexDefinition) -> types.IndexDefinition:
     return types.IndexDefinition(
         id=types.IndexId(
             namespace=input.id.namespace,
