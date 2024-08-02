@@ -273,4 +273,7 @@ class ChannelProvider(base_channel_provider.BaseChannelProvider):
         async with self._auth_tending:
             self._auth_task.cancel()
 
-        await self._task
+        try:
+            await self._task
+        except asyncio.exceptions.CancelledError:
+            pass
