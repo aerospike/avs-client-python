@@ -224,23 +224,25 @@ class HnswBatchingParams(object):
     """
     Parameters for configuring batching behaviour for batch based index update.
 
-    :param max_records: Maximum number of records to fit in a batch. Defaults to 10000.
-    :param interva: The maximum amount of time in milliseconds to wait before finalizing a batch. Defaults to 10000.
+    :param max_records: Maximum number of records to fit in a batch. Defaults to server default..
+    :param interval: The maximum amount of time in milliseconds to wait before finalizing a batch. Defaults to server default..
     """
 
     def __init__(
         self,
         *,
-        max_records: Optional[int] = 10000,
-        interval: Optional[int] = 10000,
+        max_records: Optional[int] = None,
+        interval: Optional[int] = None,
     ) -> None:
         self.max_records = max_records
         self.interval = interval
 
     def _to_pb2(self):
         params = types_pb2.HnswBatchingParams()
-        params.maxRecords = self.max_records
-        params.interval = self.interval
+        if self.max_records:
+            params.maxRecords = self.max_records
+        if self.interval:
+            params.interval = self.interval
         return params
 
     def __repr__(self) -> str:
@@ -400,9 +402,9 @@ class HnswParams(object):
     def __init__(
         self,
         *,
-        m: Optional[int] = 16,
-        ef_construction: Optional[int] = 100,
-        ef: Optional[int] = 100,
+        m: Optional[int] = None,
+        ef_construction: Optional[int] = None,
+        ef: Optional[int] = None,
         batching_params: Optional[HnswBatchingParams] = HnswBatchingParams(),
         max_mem_queue_size: Optional[int] = None,
         caching_params: Optional[HnswCachingParams] = HnswCachingParams(),
@@ -420,9 +422,15 @@ class HnswParams(object):
 
     def _to_pb2(self):
         params = types_pb2.HnswParams()
-        params.m = self.m
-        params.efConstruction = self.ef_construction
-        params.ef = self.ef
+        if self.m:
+            params.m = self.m
+
+        if self.ef_construction:
+            params.efConstruction = self.ef_construction
+
+        if self.ef:
+            params.ef = self.ef
+
         if self.max_mem_queue_size:
             params.maxMemQueueSize = self.max_mem_queue_size
 
@@ -597,8 +605,8 @@ class IndexDefinition(object):
         id: str,
         dimensions: int,
         field: str,
-        hnsw_params: HnswParams,
-        storage: IndexStorage,
+        hnsw_params: Optional[HnswParams] = HnswParams(),
+        storage: IndexStorage, 
     ) -> None:
         self.id = id
         self.dimensions = dimensions
