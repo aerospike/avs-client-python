@@ -224,8 +224,8 @@ class HnswBatchingParams(object):
     """
     Parameters for configuring batching behaviour for batch based index update.
 
-    :param max_records: Maximum number of records to fit in a batch. Defaults to 10000.
-    :param interva: The maximum amount of time in milliseconds to wait before finalizing a batch. Defaults to 10000.
+    :param max_records: Maximum number of records to fit in a batch. Defaults to server default..
+    :param interval: The maximum amount of time in milliseconds to wait before finalizing a batch. Defaults to server default..
     """
 
     def __init__(
@@ -424,8 +424,10 @@ class HnswParams(object):
         params = types_pb2.HnswParams()
         if self.m:
             params.m = self.m
+
         if self.ef_construction:
             params.efConstruction = self.ef_construction
+
         if self.ef:
             params.ef = self.ef
 

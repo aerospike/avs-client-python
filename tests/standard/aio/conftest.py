@@ -4,6 +4,10 @@ from aerospike_vector_search.aio import Client
 from aerospike_vector_search.aio.admin import Client as AdminClient
 from aerospike_vector_search import types
 
+#import logging
+#logger = logging.getLogger(__name__)
+#logging.basicConfig(filename='example.log', encoding='utf-8', level=logging.DEBUG)
+
 
 @pytest.fixture(scope="module", autouse=True)
 async def drop_all_indexes(
@@ -36,13 +40,14 @@ async def drop_all_indexes(
         certificate_chain=certificate_chain,
         private_key=private_key,
     ) as client:
-        index_list = await client.index_list()
 
+        index_list = await client.index_list()
         tasks = []
         for item in index_list:
-            tasks.append(client.index_drop(namespace="test", name=item["id"]["name"]))
+            tasks.append(asyncio.create_task(client.index_drop(namespace="test", name=item["id"]["name"])))
 
         await asyncio.gather(*tasks)
+
 
 
 @pytest.fixture(scope="module")
@@ -56,7 +61,6 @@ async def session_admin_client(
     private_key,
     is_loadbalancer,
 ):
-
     if root_certificate:
         with open(root_certificate, "rb") as f:
             root_certificate = f.read()
@@ -77,6 +81,7 @@ async def session_admin_client(
         username=username,
         password=password,
     )
+
     yield client
     await client.close()
 
