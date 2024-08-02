@@ -108,10 +108,10 @@ class Client(BaseClient):
 
         :param ignore_mem_queue_full: Ignore the in-memory queue full error. These records would be written to storage
             and later, the index healer would pick for indexing. Defaults to False.
-        :type dimensions: int
+        :type ignore_mem_queue_full: int
 
         :param timeout: Time in seconds this operation will wait before raising an :class:`AVSServerError <aerospike_vector_search.types.AVSServerError>`. Defaults to None.
-        :type dimensions: int
+        :type timeout: int
 
 
         Raises:
@@ -165,10 +165,10 @@ class Client(BaseClient):
 
         :param ignore_mem_queue_full: Ignore the in-memory queue full error. These records would be written to storage
             and later, the index healer would pick for indexing. Defaults to False.
-        :type dimensions: int
+        :type ignore_mem_queue_full: int
 
         :param timeout: Time in seconds this operation will wait before raising an :class:`AVSServerError <aerospike_vector_search.types.AVSServerError>`. Defaults to None.
-        :type dimensions: int
+        :type timeout: int
 
         Raises:
             AVSServerError: Raised if an error occurs during the RPC communication with the server while attempting to update a vector..
@@ -223,10 +223,10 @@ class Client(BaseClient):
 
         :param ignore_mem_queue_full: Ignore the in-memory queue full error. These records would be written to storage
             and later, the index healer would pick for indexing. Defaults to False.
-        :type dimensions: int
+        :type ignore_mem_queue_full: int
 
         :param timeout: Time in seconds this operation will wait before raising an :class:`AVSServerError <aerospike_vector_search.types.AVSServerError>`. Defaults to None.
-        :type dimensions: int
+        :type timeout: int
 
         Raises:
             AVSServerError: Raised if an error occurs during the RPC communication with the server while attempting to upsert a vector..

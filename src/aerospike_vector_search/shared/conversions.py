@@ -116,7 +116,7 @@ def fromIndexDefintion(input: types_pb2.IndexDefinition) -> types.IndexDefinitio
             #    max_scan_rate_per_node=input.hnswParams.healerParams.maxScanRatePerNode,
             #    max_scan_page_ize=input.hnswParams.healerParams.maxScanPageSize,
             #    re_index_percent=input.hnswParams.healerParams.reindexPercent,
-            #    schedule_delay=input.hnswParams.healerParams.scheduleDelay,
+            #    schedule=input.hnswParams.healerParams.schedule,
             #    parallelism=input.hnswParams.healerParams.parallelism
             # ),
             # merge_params=types.HnswMergeParams(

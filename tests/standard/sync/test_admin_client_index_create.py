@@ -383,7 +383,7 @@ def test_index_create_with_sets(session_admin_client, test_case, random_name):
                     max_scan_rate_per_node=80,
                     max_scan_page_size=40,
                     re_index_percent=50,
-                    schedule_delay=5,
+                    schedule="* 0/5 * ? * * *",
                     parallelism=4,
                 ),
                 merge_params=types.HnswIndexMergeParams(parallelism=10),
@@ -473,8 +473,8 @@ def test_index_create_with_index_params(session_admin_client, test_case, random_
                     == test_case.index_params.healer_params.re_index_percent
                 )
                 assert (
-                    int(result["hnsw_params"]["healer_params"]["schedule_delay"])
-                    == test_case.index_params.healer_params.schedule_delay
+                    result["hnsw_params"]["healer_params"]["schedule"]
+                    == test_case.index_params.healer_params.schedule
                 )
                 assert (
                     result["hnsw_params"]["healer_params"]["parallelism"]

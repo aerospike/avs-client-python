@@ -245,12 +245,10 @@ message HnswHealerParams {
   // Defaults to the global healer config configured for the VectorDB.
   optional float reindexPercent = 3;
 
-  // The time delay, in milliseconds, between the termination of a healer run
-  // and the commencement of the next one for an index. It only guarantees
-  // that the next index healer run for an index will not be scheduled before
-  // this time delay.
+  // The quartz cron expression defining schedule at which the healer cycle is
+  // invoked.
   // Defaults to the global healer config configured for the VectorDB.
-  optional uint64 scheduleDelay = 4;
+  optional string schedule = 4;
 
   // Maximum number of records to heal in parallel.
   // Defaults to the global healer config configured for the VectorDB.

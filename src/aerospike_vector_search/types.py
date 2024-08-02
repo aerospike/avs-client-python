@@ -284,10 +284,9 @@ class HnswHealerParams(object):
         Default is the global healer config, which is configured in the AVS Server.
     :type re_index_percent: Optional[int]
 
-    :param schedule_delay: The time delay, in milliseconds, between the termination of a healer run and the commencement
-        of the next one for an index. It only guarantees that the next index healer run for an index will not be scheduled before
-        this time delay. Default is the global healer config, which is configured in the AVS Server.
-    :type schedule_delay: Optional[int]
+    :param schedule: The quartz cron expression defining schedule at which the healer cycle is invoked.
+        Default is the global healer config, which is configured in the AVS Server.
+    :type schedule: Optional[str]
 
     :param parallelism: Maximum number of records to heal in parallel.
         Default is the global healer config, which is configured in the AVS Server.
@@ -300,13 +299,13 @@ class HnswHealerParams(object):
         max_scan_rate_per_node: Optional[int] = None,
         max_scan_page_size: Optional[int] = None,
         re_index_percent: Optional[int] = None,
-        schedule_delay: Optional[int] = None,
+        schedule: Optional[str] = None,
         parallelism: Optional[int] = None,
     ) -> None:
         self.max_scan_rate_per_node = max_scan_rate_per_node
         self.max_scan_page_size = max_scan_page_size
         self.re_index_percent = re_index_percent
-        self.schedule_delay = schedule_delay
+        self.schedule = schedule
         self.parallelism = parallelism
 
     def _to_pb2(self):
@@ -322,9 +321,9 @@ class HnswHealerParams(object):
 
             params.reindexPercent = self.re_index_percent
 
-        if self.schedule_delay:
+        if self.schedule:
 
-            params.scheduleDelay = self.schedule_delay
+            params.schedule = self.schedule
 
         if self.parallelism:
 
