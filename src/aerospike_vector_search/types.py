@@ -589,14 +589,31 @@ class IndexId(object):
 
 class IndexDefinition(object):
     """
-    AVS Index Defintion
+    AVS Index Definition
+
+    :param id: Index ID.
+    :type id: str
+
+    :param dimensions: Number of dimensions.
+    :type dimensions: int
+
+    :param vector_distance_metric: Metric used to evaluate vector searches on the given index
+    :type vector_distance_metric: VectorDistanceMetric
+
+    :param field: Field name.
+    :type field: str
+
+    :param hnsw_params: HNSW parameters.
+    :type hnsw_params: HnswParams
+
+    :param storage: Index storage details.
+    :type storage: IndexStorage
 
     :param username: Username associated with user.
     :type username: str
 
-    :param roles: roles associated with user.
+    :param roles: Roles associated with user.
     :type roles: list[str]
-
     """
 
     def __init__(
@@ -604,26 +621,34 @@ class IndexDefinition(object):
         *,
         id: str,
         dimensions: int,
+        vector_distance_metric: types_pb2.VectorDistanceMetric,
         field: str,
-        hnsw_params: Optional[HnswParams] = HnswParams(),
-        storage: IndexStorage, 
+        sets: str,
+        hnsw_params: HnswParams,
+        storage: IndexStorage,
+        index_labels: dict[str, str]
     ) -> None:
         self.id = id
         self.dimensions = dimensions
+        self.vector_distance_metric = vector_distance_metric
         self.field = field
+        self.sets = sets
         self.hnsw_params = hnsw_params
         self.storage = storage
+        self.index_labels = index_labels
 
     def __repr__(self) -> str:
         return (
-            f"IndexDefinition(id={self.id!r}, dimensions={self.dimensions}, field={self.field!r}, "
-            f"hnsw_params={self.hnsw_params!r}, storage={self.storage!r})"
+            f"IndexDefinition(id={self.id!r}, dimensions={self.dimensions}, field={self.field!r}, sets={self.sets!r},"
+            f"vector_distance_metric={self.vector_distance_metric!r}, hnsw_params={self.hnsw_params!r}, storage={self.storage!r}, "
+            f"index_labels={self.index_labels}"
         )
 
     def __str__(self) -> str:
         return (
-            f"IndexDefinition(id={self.id}, dimensions={self.dimensions}, field={self.field}, "
-            f"hnsw_params={self.hnsw_params}, storage={self.storage})"
+            f"IndexDefinition(id={self.id}, dimensions={self.dimensions}, field={self.field}, sets={self.sets!r}, "
+            f"vector_distance_metric={self.vector_distance_metric}, hnsw_params={self.hnsw_params}, storage={self.storage}, "
+            f"index_labels={self.index_labels}"
         )
 
     def __eq__(self, other) -> bool:
@@ -632,9 +657,12 @@ class IndexDefinition(object):
         return (
             self.id == other.id
             and self.dimensions == other.dimensions
+            and self.vector_distance_metric == other.vector_distance_metric
             and self.field == other.field
+            and self.sets == other.sets
             and self.hnsw_params == other.hnsw_params
             and self.storage == other.storage
+            and self.index_labels == other.index_labels
         )
 
     def __getitem__(self, key):
