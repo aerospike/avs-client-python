@@ -603,17 +603,17 @@ class IndexDefinition(object):
     :param field: Field name.
     :type field: str
 
+    :param sets: Set name
+    :type sets: str
+    
     :param hnsw_params: HNSW parameters.
     :type hnsw_params: HnswParams
 
     :param storage: Index storage details.
     :type storage: IndexStorage
 
-    :param username: Username associated with user.
-    :type username: str
-
-    :param roles: Roles associated with user.
-    :type roles: list[str]
+    :param index_labels: Meta data associated with the index. Defaults to None.
+    :type index_labels: Optional[dict[str, str]]
     """
 
     def __init__(
