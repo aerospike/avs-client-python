@@ -16,6 +16,7 @@ empty = google.protobuf.empty_pb2.Empty()
 
 logger = logging.getLogger(__name__)
 
+TEND_INTERVAL = 1
 
 class ChannelProvider(base_channel_provider.BaseChannelProvider):
     """Proximus Channel Provider"""
@@ -47,10 +48,10 @@ class ChannelProvider(base_channel_provider.BaseChannelProvider):
         self._tend_ended = threading.Event()
 
         # When locked, new task is being assigned to _auth_task
-        self._auth_tending: threading.Lock = threading.Lock()
+        self._auth_tending_lock: threading.Lock = threading.Lock()
 
         # Timers assigned in various tending functions
-        self._timer = None
+        self._tend_timer = None
         self._auth_timer = None
 
         # initializes authentication tending
@@ -89,8 +90,8 @@ class ChannelProvider(base_channel_provider.BaseChannelProvider):
                 self._close_old_channels_from_node_channels(temp_endpoints)
 
 
-            self._timer = threading.Timer(1, self._tend_cluster)
-            self._timer.start()
+            self._tend_timer = threading.Timer(TEND_INTERVAL, self._tend_cluster)
+            self._tend_timer.start()
 
         except Exception as e:
             logger.error("Tending failed at unindentified location: %s", e)
@@ -136,7 +137,7 @@ class ChannelProvider(base_channel_provider.BaseChannelProvider):
 
         self._update_token_and_ttl()
 
-        with self._auth_tending:
+        with self._auth_tending_lock:
             self._auth_timer = threading.Timer((self._ttl * self._ttl_threshold), self._tend_token)
             self._auth_timer.start()
 
@@ -172,7 +173,7 @@ class ChannelProvider(base_channel_provider.BaseChannelProvider):
                 "Failed to retrieve server version: "
                 + str(e)
             )
-            self._tend_exception = AVSServerError(rpc_error=e)  
+            raise AVSServerError(rpc_error=e)  
         self.verify_compatibile_server()
 
 
@@ -212,9 +213,9 @@ class ChannelProvider(base_channel_provider.BaseChannelProvider):
             if channelEndpoints.channel:
                 channelEndpoints.channel.close()
 
-        if self._timer != None:
-            self._timer.join()
+        if self._tend_timer != None:
+            self._tend_timer.join()
 
-        with self._auth_tending:
+        with self._auth_tending_lock:
             if self._auth_timer != None:
                 self._auth_timer.cancel()

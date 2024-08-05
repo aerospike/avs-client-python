@@ -109,18 +109,21 @@ class Client(BaseClient):
         :param vector_distance_metric:
             The distance metric used to compare when performing a vector search.
             Defaults to :class:`VectorDistanceMetric.SQUARED_EUCLIDEAN`.
-        :type dimensions: Optional[types.VectorDistanceMetric]
+        :type vector_distance_metric: Optional[types.VectorDistanceMetric]
 
         :param sets: The set used for the index. Defaults to None.
-        :type dimensions: Optional[str]
+        :type sets: Optional[str]
 
         :param index_params: (Optional[types.HnswParams], optional): Parameters used for tuning
             vector search. Defaults to None. If index_params is None, then the default values
             specified for :class:`types.HnswParams` will be used.
-        :type dimensions: Optional[types.HnswParams]
+        :type index_params: Optional[types.HnswParams]
 
         :param index_labels: Meta data associated with the index. Defaults to None.
-        :type dimensions: Optional[dict[str, str]]
+        :type index_labels: Optional[dict[str, str]]
+
+        :param index_storage: Namespace and set where index overhead (non-vector data) is stored.
+        :type index_storage: Optional[types.IndexStorage]
 
         :param timeout: Time in seconds this operation will wait before raising an :class:`AVSServerError <aerospike_vector_search.types.AVSServerError>`. Defaults to None.
         :type dimensions: int

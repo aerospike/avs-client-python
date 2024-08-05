@@ -113,7 +113,6 @@ class Client(BaseClient):
         :param timeout: Time in seconds this operation will wait before raising an :class:`AVSServerError <aerospike_vector_search.types.AVSServerError>`. Defaults to None.
         :type dimensions: int
 
-
         Raises:
             AVSServerError: Raised if an error occurs during the RPC communication with the server while attempting to insert a vector..
             This error could occur due to various reasons such as network issues, server-side failures, or invalid request parameters.

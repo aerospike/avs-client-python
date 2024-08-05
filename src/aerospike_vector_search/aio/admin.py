@@ -122,6 +122,9 @@ class Client(BaseClient):
         :param index_labels: Meta data associated with the index. Defaults to None.
         :type dimensions: Optional[dict[str, str]]
 
+        :param index_storage: Namespace and set where index overhead (non-vector data) is stored.
+        :type index_storage: Optional[types.IndexStorage]
+        
         :param timeout: Time in seconds this operation will wait before raising an :class:`AVSServerError <aerospike_vector_search.types.AVSServerError>`. Defaults to None.
         :type dimensions: int
 

@@ -18,6 +18,7 @@ empty = google.protobuf.empty_pb2.Empty()
 
 logger = logging.getLogger(__name__)
 
+TEND_INTERVAL = 1
 
 class ChannelProvider(base_channel_provider.BaseChannelProvider):
     """AVS Channel Provider"""
@@ -50,7 +51,7 @@ class ChannelProvider(base_channel_provider.BaseChannelProvider):
         # When set, client has concluded cluster tending
         self._tend_ended: asyncio.Event = asyncio.Event()
 
-        # When set, client has completed a cluster tend cycle, initialized auth, and 
+        # When set, client has completed a cluster tend cycle, initialized auth, and verified client-server minimum compatibility
         self._ready: asyncio.Event = asyncio.Event()
 
         # When locked, new task is being assigned to _auth_task
@@ -77,11 +78,8 @@ class ChannelProvider(base_channel_provider.BaseChannelProvider):
     async def _tend(self):
 
         try:
-            try:
-                await self._auth_task
+            await self._auth_task
 
-            except asyncio.exceptions.CancelledError:
-                pass
 
             await self._tend_cluster()
 
@@ -126,7 +124,7 @@ class ChannelProvider(base_channel_provider.BaseChannelProvider):
 
                 await asyncio.gather(*tasks)
 
-            await asyncio.sleep(1)
+            await asyncio.sleep(TEND_INTERVAL)
 
             self._task = asyncio.create_task(self._tend_cluster())
 
@@ -177,7 +175,6 @@ class ChannelProvider(base_channel_provider.BaseChannelProvider):
     def _call_close_on_channel(self, channel_endpoints):
         return asyncio.create_task(self._close_on_channel_coroutine(channel_endpoints))
 
-
     async def _tend_token(self):
         try:
             if not self._token:
@@ -192,6 +189,7 @@ class ChannelProvider(base_channel_provider.BaseChannelProvider):
 
         except Exception as e: 
             self._tend_exception = e
+            logger.error("Failed to tend token with error: %s", e)            
             raise e
 
     async def _update_token_and_ttl(
@@ -229,6 +227,10 @@ class ChannelProvider(base_channel_provider.BaseChannelProvider):
             self.verify_compatibile_server()
 
         except Exception as e:
+            logger.debug(
+                "Failed to retrieve server version: "
+                + str(e)
+            )
             self._tend_exception = e
             raise e
 
