@@ -18,6 +18,7 @@ empty = google.protobuf.empty_pb2.Empty()
 
 logger = logging.getLogger(__name__)
 
+TEND_INTERVAL = 1
 
 class ChannelProvider(base_channel_provider.BaseChannelProvider):
     """AVS Channel Provider"""
@@ -47,157 +48,190 @@ class ChannelProvider(base_channel_provider.BaseChannelProvider):
             service_config_path,
         )
 
-        self._tend_initalized: asyncio.Event = asyncio.Event()
+        # When set, client has concluded cluster tending
         self._tend_ended: asyncio.Event = asyncio.Event()
-        self._task: Optional[asyncio.Task] = None
 
+        # When set, client has completed a cluster tend cycle, initialized auth, and verified client-server minimum compatibility
+        self._ready: asyncio.Event = asyncio.Event()
+
+        # When locked, new task is being assigned to _auth_task
+        self._auth_tending_lock: asyncio.Lock = asyncio.Lock()
+
+        # initializes authentication tending
+        self._auth_task: Optional[asyncio.Task] = asyncio.create_task(self._tend_token())
+
+        # initializes client tending processes
         asyncio.create_task(self._tend())
 
-    async def close(self):
-        self._closed = True
-        await self._tend_ended.wait()
-
-        for channel in self._seedChannels:
-            await channel.close()
-
-        for k, channelEndpoints in self._node_channels.items():
-            if channelEndpoints.channel:
-                await channelEndpoints.channel.close()
-
-        if self._task != None:
-            await self._task
+        # Exception to progotate to main control flow from errors generated during tending
+        self._tend_exception: Exception = None
 
     async def _is_ready(self):
-        if not self.client_server_compatible:
-            await self._tend_initalized.wait()
+        # Wait 1 round of cluster tending, auth token initialization, and server client compatiblity verfication
+        await self._ready.wait()
 
-            if not self.client_server_compatible:
-                raise types.AVSClientError(
-                    message="This AVS Client version is only compatbile with AVS Servers above the following version number: "
-                    + self.minimum_required_version
-                )
+        # This propogates any fatal/unexpected errors from client initialization/tending to the client. 
+        # Raising errors in a task does not deliver this error information to users
+        if self._tend_exception:
+            raise self._tend_exception
 
     async def _tend(self):
+
         try:
-            (temp_endpoints, update_endpoints_stub, channels, end_tend) = (
-                self.init_tend()
-            )
-            if self._token:
-                if self._check_if_token_refresh_needed():
-                    await self._update_token_and_ttl()
+            await self._auth_task
 
-            if end_tend:
+            # verfies server is minimally compatible with client
+            await self._check_server_version()
 
-                if not self.client_server_compatible:
+            await self._tend_cluster()
 
-                    stub = vector_db_pb2_grpc.AboutServiceStub(self.get_channel())
-                    about_request = vector_db_pb2.AboutRequest()
+            self._ready.set()
 
-                    self.current_server_version = (
-                        await stub.Get(about_request, credentials=self._token)
-                    ).version
-                    self.client_server_compatible = self.verify_compatibile_server()
+        except Exception as e:
+            # Set all event to prevent hanging if initial tend fails with error
+            self._tend_ended.set()
+            self._ready.set()
 
-                self._tend_initalized.set()
+    async def _tend_cluster(self):
+        try:
+            (channels, end_tend_cluster) = self.init_tend_cluster()
+            
 
+            if end_tend_cluster:
                 self._tend_ended.set()
                 return
 
-            stubs = []
-            tasks = []
-            update_endpoints_stubs = []
-            for channel in channels:
+            (cluster_info_stubs, tasks) = self._gather_new_cluster_ids_and_cluster_info_stubs(channels)
 
-                stub = vector_db_pb2_grpc.ClusterInfoServiceStub(channel)
-                stubs.append(stub)
-                try:
-                    tasks.append(
-                        await stub.GetClusterId(empty, credentials=self._token)
-                    )
-                except Exception as e:
-                    logger.debug(
-                        "While tending, failed to get cluster id with error: " + str(e)
-                    )
+            new_cluster_ids = await asyncio.gather(*tasks)
 
-            try:
-                new_cluster_ids = tasks
-            except Exception as e:
-                logger.debug(
-                    "While tending, failed to gather results from GetClusterId: "
-                    + str(e)
-                )
+            update_endpoints_stubs = self._gather_stubs_for_endpoint_updating(new_cluster_ids, cluster_info_stubs)
 
-            for index, value in enumerate(new_cluster_ids):
-                if self.check_cluster_id(value.id):
-                    update_endpoints_stubs.append(stubs[index])
+            tasks = self._gather_temp_endpoints(new_cluster_ids, update_endpoints_stubs)
 
-            for stub in update_endpoints_stubs:
-                try:
-                    response = await stub.GetClusterEndpoints(
-                        vector_db_pb2.ClusterNodeEndpointsRequest(
-                            listenerName=self.listener_name
-                        ),
-                        credentials=self._token,
-                    )
-                    temp_endpoints = self.update_temp_endpoints(
-                        response, temp_endpoints
-                    )
-                except Exception as e:
-                    logger.debug(
-                        "While tending, failed to get cluster endpoints with error: "
-                        + str(e)
-                    )
+            cluster_endpoints_list = await asyncio.gather(*tasks)
 
-                tasks = []
+            temp_endpoints = self._assign_temporary_endpoints(cluster_endpoints_list)
 
             if update_endpoints_stubs:
-                for node, newEndpoints in temp_endpoints.items():
-                    (channel_endpoints, add_new_channel) = self.check_for_new_endpoints(
-                        node, newEndpoints
-                    )
+                
+                tasks = self._add_new_channels_from_temp_endpoints(temp_endpoints)
+                
+                await asyncio.gather(*tasks)
 
-                    if add_new_channel:
-                        try:
-                            # TODO: Wait for all calls to drain
-                            tasks.append(channel_endpoints.channel.close())
-                        except Exception as e:
-                            logger.debug(
-                                "While tending, failed to close GRPC channel while replacing up old endpoints: "
-                                + str(e)
-                            )
-                        self.add_new_channel_to_node_channels(node, newEndpoints)
-
-                for node, channel_endpoints in list(self._node_channels.items()):
-                    if not temp_endpoints.get(node):
-                        try:
-                            # TODO: Wait for all calls to drain
-                            tasks.append(channel_endpoints.channel.close())
-                            del self._node_channels[node]
-
-                        except Exception as e:
-                            logger.debug(
-                                "While tending, failed to close GRPC channel while removing unused endpoints: "
-                                + str(e)
-                            )
+                tasks = self._close_old_channels_from_node_channels(temp_endpoints)
 
                 await asyncio.gather(*tasks)
 
-            if not self.client_server_compatible:
+            await asyncio.sleep(TEND_INTERVAL)
 
-                (stub, about_request) = self._prepare_about()
 
-                self.current_server_version = (
-                    await stub.Get(about_request, credentials=self._token)
-                ).version
+            asyncio.create_task(self._tend_cluster())
 
-                self.client_server_compatible = self.verify_compatibile_server()
-                self._tend_initalized.set()
-
-            # TODO: check tend interval.
-            await asyncio.sleep(1)
-            self._task = asyncio.create_task(self._tend())
         except Exception as e:
-            logger.error("Tending failed at unindentified location: %s", e)
+            logger.error("Unexpected tend failure: %s", e)
+            self._tend_exception = e
+            raise e
+
+    async def _get_cluster_id_coroutine(self, stub):
+        try:
+            return await stub.GetClusterId(empty, credentials=self._token,)
+        except Exception as e:
+            logger.debug(
+                "While tending, failed to get cluster id with error: " + str(e)
+            )
+
+    async def _get_cluster_endpoints_coroutine(self, stub):
+        try:
+            return (
+                await stub.GetClusterEndpoints(
+                    vector_db_pb2.ClusterNodeEndpointsRequest(
+                        listenerName=self.listener_name
+                    ),
+                    credentials=self._token,
+                )
+            ).endpoints
+        except Exception as e:
+            logger.debug(
+                "While tending, failed to get cluster endpoints with error: "
+                + str(e)
+            )
+
+    async def _close_on_channel_coroutine(self, channel_endpoints):
+        try:
+            await channel_endpoints.channel.close()
+        except Exception as e:
+            logger.debug(
+                "While tending, failed to close GRPC channel: "
+                + str(e)
+            )
+
+    def _call_get_cluster_id(self, stub):
+        return asyncio.create_task(self._get_cluster_id_coroutine(stub))  
+
+    def _call_get_cluster_endpoints(self, stub):
+        return asyncio.create_task(self._get_cluster_endpoints_coroutine(stub))
+
+    def _call_close_on_channel(self, channel_endpoints):
+        return asyncio.create_task(self._close_on_channel_coroutine(channel_endpoints))
+
+    async def _tend_token(self):
+        try:
+            if not self._token:
+                return
+            elif self._token != True:
+                await asyncio.sleep((self._ttl * self._ttl_threshold))
+
+            await self._update_token_and_ttl()
+
+            async with self._auth_tending_lock:
+                self._auth_task = asyncio.create_task(self._tend_token())
+
+        except Exception as e: 
+            self._tend_exception = e
+            logger.error("Failed to tend token with error: %s", e)            
+            raise e
+
+    async def _update_token_and_ttl(
+        self,
+    ) -> None:
+
+        (auth_stub, auth_request) = self._prepare_authenticate(
+            self._credentials, logger
+        )
+
+        try:
+            response = await auth_stub.Authenticate(auth_request)
+        except grpc.RpcError as e:
+            logger.error("Failed to refresh authentication token with error: %s", e)
+            raise types.AVSServerError(rpc_error=e)
+
+        self._respond_authenticate(response.token)
+
+    async def _check_server_version(self):
+        try: 
+            stub = vector_db_pb2_grpc.AboutServiceStub(self.get_channel())
+            about_request = vector_db_pb2.AboutRequest()
+
+            try:
+                response = await stub.Get(
+                    about_request, credentials=self._token
+                )
+                self.current_server_version = response.version
+            except grpc.RpcError as e:
+                logger.debug(
+                    "Failed to retrieve server version: "
+                    + str(e)
+                )
+                self._tend_exception = AVSServerError(rpc_error=e)  
+            self.verify_compatibile_server()
+
+        except Exception as e:
+            logger.debug(
+                "Failed to retrieve server version: "
+                + str(e)
+            )
+            self._tend_exception = e
             raise e
 
     def _create_channel(self, host: str, port: int) -> grpc.Channel:
@@ -224,17 +258,19 @@ class ChannelProvider(base_channel_provider.BaseChannelProvider):
         else:
             return grpc.aio.insecure_channel(f"{host}:{port}", options=options)
 
-    async def _update_token_and_ttl(
-        self,
-    ) -> None:
-        (auth_stub, auth_request) = self._prepare_authenticate(
-            self._credentials, logger
-        )
+    async def close(self):
+        # signals to tend_cluster to end cluster tending
+        self._closed = True
 
-        try:
-            response = await auth_stub.Authenticate(auth_request)
-        except grpc.RpcError as e:
-            logger.error("Failed to refresh authentication token with error: %s", e)
-            raise types.AVSServerError(rpc_error=e)
+        # wait until cluster tending has ended
+        await self._tend_ended.wait()
 
-        self._respond_authenticate(response.token)
+        for channel in self._seedChannels:
+            await channel.close()
+
+        for k, channelEndpoints in self._node_channels.items():
+            if channelEndpoints.channel:
+                await channelEndpoints.channel.close()
+
+        async with self._auth_tending_lock:
+            self._auth_task.cancel()

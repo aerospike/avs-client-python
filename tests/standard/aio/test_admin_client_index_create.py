@@ -7,6 +7,15 @@ from ...utils import random_name
 from .aio_utils import drop_specified_index
 from hypothesis import given, settings, Verbosity, Phase
 
+server_defaults = {
+    "m": 16,
+    "ef_construction": 100,
+    "ef": 100,
+    "batching_params": {
+        "max_records": 10000,
+        "interval": 10000,
+    }
+}
 
 class index_create_test_case:
     def __init__(
@@ -345,7 +354,41 @@ async def test_index_create_with_sets(session_admin_client, test_case, random_na
             vector_distance_metric=None,
             sets=None,
             index_params=types.HnswParams(
+                m=8,
+            ),
+            index_labels=None,
+            index_storage=None,
+            timeout=None,
+        ),
+        index_create_test_case(
+            namespace="test",
+            vector_field="example_13",
+            dimensions=1024,
+            vector_distance_metric=None,
+            sets=None,
+            index_params=types.HnswParams(
                 batching_params=types.HnswBatchingParams(max_records=500, interval=500)
+            ),
+            index_labels=None,
+            index_storage=None,
+            timeout=None,
+        ),
+        index_create_test_case(
+            namespace="test",
+            vector_field="example_20",
+            dimensions=1024,
+            vector_distance_metric=None,
+            sets="demo",
+            index_params=types.HnswParams(
+                caching_params=types.HnswCachingParams(max_entries=10, expiry=3000),
+                healer_params=types.HnswHealerParams(
+                    max_scan_rate_per_node=80,
+                    max_scan_page_size=40,
+                    re_index_percent=50,
+                    schedule_delay=5,
+                    parallelism=4,
+                ),
+                merge_params=types.HnswIndexMergeParams(parallelism=10),
             ),
             index_labels=None,
             index_storage=None,
@@ -376,19 +419,19 @@ async def test_index_create_with_index_params(
             assert result["id"]["namespace"] == test_case.namespace
             assert result["dimensions"] == test_case.dimensions
             assert result["field"] == test_case.vector_field
-            assert result["hnsw_params"]["m"] == test_case.index_params.m
+            assert result["hnsw_params"]["m"] == test_case.index_params.m or server_defaults
             assert (
                 result["hnsw_params"]["ef_construction"]
-                == test_case.index_params.ef_construction
+                == test_case.index_params.ef_construction or server_defaults
             )
-            assert result["hnsw_params"]["ef"] == test_case.index_params.ef
+            assert result["hnsw_params"]["ef"] == test_case.index_params.ef or server_defaults
             assert (
                 result["hnsw_params"]["batching_params"]["max_records"]
-                == test_case.index_params.batching_params.max_records
+                == test_case.index_params.batching_params.max_records or server_defaults
             )
             assert (
                 result["hnsw_params"]["batching_params"]["interval"]
-                == test_case.index_params.batching_params.interval
+                == test_case.index_params.batching_params.interval or server_defaults
             )
             assert result["storage"]["namespace"] == test_case.namespace
             assert result["storage"]["set_name"] == random_name
@@ -403,7 +446,7 @@ async def test_index_create_with_index_params(
     [
         index_create_test_case(
             namespace="test",
-            vector_field="example_13",
+            vector_field="example_14",
             dimensions=1024,
             vector_distance_metric=None,
             sets=None,
@@ -455,7 +498,7 @@ async def test_index_create_index_labels(session_admin_client, test_case, random
     [
         index_create_test_case(
             namespace="test",
-            vector_field="example_14",
+            vector_field="example_15",
             dimensions=1024,
             vector_distance_metric=None,
             sets=None,
@@ -504,7 +547,7 @@ async def test_index_create_index_storage(session_admin_client, test_case, rando
     [
         index_create_test_case(
             namespace="test",
-            vector_field="example_15",
+            vector_field="example_16",
             dimensions=1024,
             vector_distance_metric=None,
             sets=None,

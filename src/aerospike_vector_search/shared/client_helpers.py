@@ -354,9 +354,14 @@ class BaseClient(object):
             self, namespace, name, wait_interval
         )
 
+    def _check_timeout(self, start_time, timeout):
+        if start_time + timeout < time.monotonic():
+            raise AVSClientError(message="timed-out waiting for index creation")
+            
     def _check_completion_condition(
         self, start_time, timeout, index_status, unmerged_record_initialized
     ):
+        self._check_timeout(start_time, timeout)
 
         if start_time + 10 < time.monotonic():
             unmerged_record_initialized = True

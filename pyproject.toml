@@ -22,7 +22,7 @@ classifiers = [
     "Programming Language :: Python :: Implementation :: CPython",
     "Topic :: Database"
 ]
-version = "1.0.0"
+version = "1.0.1"
 requires-python = ">3.8"
 dependencies = [
     "grpcio == 1.64.1",

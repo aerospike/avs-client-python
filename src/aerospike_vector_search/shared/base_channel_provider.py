@@ -124,23 +124,18 @@ class BaseChannelProvider(object):
         new_channel = self._create_channel_from_server_endpoint_list(newEndpoints)
         self._node_channels[node] = ChannelAndEndpoints(new_channel, newEndpoints)
 
-    def init_tend(self) -> None:
-        end_tend = False
-        if self._is_loadbalancer:
+    def init_tend_cluster(self) -> None:
+
+        end_tend_cluster = False
+        if self._is_loadbalancer or self._closed:
             # Skip tend if we are behind a load-balancer
-            end_tend = True
+            end_tend_cluster = True
 
-        if self._closed:
-            end_tend = True
-
-        # TODO: Worry about thread safety
-        temp_endpoints: dict[int, vector_db_pb2.ServerEndpointList] = {}
-
-        update_endpoints_stub = None
         channels = self._seedChannels + [
             x.channel for x in self._node_channels.values()
         ]
-        return (temp_endpoints, update_endpoints_stub, channels, end_tend)
+
+        return (channels, end_tend_cluster)
 
     def check_cluster_id(self, new_cluster_id) -> None:
         if new_cluster_id == self._cluster_id:
@@ -150,8 +145,7 @@ class BaseChannelProvider(object):
 
         return True
 
-    def update_temp_endpoints(self, response, temp_endpoints):
-        endpoints = response.endpoints
+    def update_temp_endpoints(self, endpoints, temp_endpoints):
         if len(endpoints) > len(temp_endpoints):
             return endpoints
         else:
@@ -160,6 +154,7 @@ class BaseChannelProvider(object):
     def check_for_new_endpoints(self, node, newEndpoints):
 
         channel_endpoints = self._node_channels.get(node)
+
         add_new_channel = True
 
         if channel_endpoints:
@@ -172,13 +167,6 @@ class BaseChannelProvider(object):
 
     def _get_ttl(self, payload):
         return payload["exp"] - payload["iat"]
-
-    def _check_if_token_refresh_needed(self):
-        if self._token and (time.time() - self._ttl_start) > (
-            self._ttl * self._ttl_threshold
-        ):
-            return True
-        return False
 
     def _prepare_authenticate(self, credentials, logger):
         logger.debug("Refreshing auth token")
@@ -205,8 +193,93 @@ class BaseChannelProvider(object):
 
     def verify_compatibile_server(self) -> bool:
         def parse_version(v: str):
-            return tuple(int(part) if part.isdigit() else part for part in v.split("."))
+            return tuple(str(part) if part.isdigit() else part for part in v.split("."))
+        if parse_version(self.current_server_version) < parse_version(self.minimum_required_version):
+            self._tend_ended.set()
+            raise types.AVSClientError(
+                message="This AVS Client version is only compatbile with AVS Servers above the following version number: "
+                + self.minimum_required_version
+            )
+        else:
+            self.client_server_compatible = True
 
-        return parse_version(self.current_server_version) >= parse_version(
-            self.minimum_required_version
-        )
+    def _gather_new_cluster_ids_and_cluster_info_stubs(self, channels):
+
+        stubs = []
+        responses = []
+
+        for channel in channels:
+
+            stub = vector_db_pb2_grpc.ClusterInfoServiceStub(channel)
+            stubs.append(stub)
+
+            response = self._call_get_cluster_id(stub)
+            responses.append(response)
+
+        return (stubs, responses)
+
+    def _gather_stubs_for_endpoint_updating(self, new_cluster_ids, cluster_info_stubs):
+        update_endpoints_stubs = []
+        for index, value in enumerate(new_cluster_ids):
+
+            if self.check_cluster_id(value.id):
+                update_endpoints_stub = cluster_info_stubs[index]
+
+                update_endpoints_stubs.append(update_endpoints_stub)
+        return update_endpoints_stubs
+
+    def _gather_temp_endpoints(self, new_cluster_ids, update_endpoints_stubs):
+
+        responses = []
+        for stub in update_endpoints_stubs:
+            response = self._call_get_cluster_endpoints(stub)
+
+
+            responses.append(response)
+        return responses
+
+    def _assign_temporary_endpoints(self, cluster_endpoints_list):
+        # TODO: Worry about thread safety
+        temp_endpoints: dict[int, vector_db_pb2.ServerEndpointList] = {}
+        for endpoints in cluster_endpoints_list:
+            temp_endpoints = self.update_temp_endpoints(
+                endpoints, temp_endpoints
+            )
+        return temp_endpoints
+
+
+    def _add_new_channels_from_temp_endpoints(self, temp_endpoints):
+        responses = []
+
+
+        for node, newEndpoints in temp_endpoints.items():
+
+            # Compare node channel result
+            (channel_endpoints, add_new_channel) = self.check_for_new_endpoints(
+                node, newEndpoints
+            )
+
+
+            if add_new_channel:
+                if channel_endpoints:
+                    response = self._call_close_on_channel(channel_endpoints)
+                    responses.append(response)
+                
+                self.add_new_channel_to_node_channels(node, newEndpoints)
+
+        return responses
+
+    def _close_old_channels_from_node_channels(self, temp_endpoints):
+        responses = []
+
+
+        for node, channel_endpoints in list(self._node_channels.items()):
+            if not temp_endpoints.get(node):
+                # TODO: Wait for all calls to drain
+                response = self._call_close_on_channel(channel_endpoints)
+                responses.append(response)
+
+
+                del self._node_channels[node]
+
+        return responses
