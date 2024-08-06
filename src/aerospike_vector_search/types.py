@@ -224,23 +224,25 @@ class HnswBatchingParams(object):
     """
     Parameters for configuring batching behaviour for batch based index update.
 
-    :param max_records: Maximum number of records to fit in a batch. Defaults to 10000.
-    :param interva: The maximum amount of time in milliseconds to wait before finalizing a batch. Defaults to 10000.
+    :param max_records: Maximum number of records to fit in a batch. Defaults to server default..
+    :param interval: The maximum amount of time in milliseconds to wait before finalizing a batch. Defaults to server default..
     """
 
     def __init__(
         self,
         *,
-        max_records: Optional[int] = 10000,
-        interval: Optional[int] = 10000,
+        max_records: Optional[int] = None,
+        interval: Optional[int] = None,
     ) -> None:
         self.max_records = max_records
         self.interval = interval
 
     def _to_pb2(self):
         params = types_pb2.HnswBatchingParams()
-        params.maxRecords = self.max_records
-        params.interval = self.interval
+        if self.max_records:
+            params.maxRecords = self.max_records
+        if self.interval:
+            params.interval = self.interval
         return params
 
     def __repr__(self) -> str:
@@ -400,9 +402,9 @@ class HnswParams(object):
     def __init__(
         self,
         *,
-        m: Optional[int] = 16,
-        ef_construction: Optional[int] = 100,
-        ef: Optional[int] = 100,
+        m: Optional[int] = None,
+        ef_construction: Optional[int] = None,
+        ef: Optional[int] = None,
         batching_params: Optional[HnswBatchingParams] = HnswBatchingParams(),
         max_mem_queue_size: Optional[int] = None,
         caching_params: Optional[HnswCachingParams] = HnswCachingParams(),
@@ -420,9 +422,15 @@ class HnswParams(object):
 
     def _to_pb2(self):
         params = types_pb2.HnswParams()
-        params.m = self.m
-        params.efConstruction = self.ef_construction
-        params.ef = self.ef
+        if self.m:
+            params.m = self.m
+
+        if self.ef_construction:
+            params.efConstruction = self.ef_construction
+
+        if self.ef:
+            params.ef = self.ef
+
         if self.max_mem_queue_size:
             params.maxMemQueueSize = self.max_mem_queue_size
 
@@ -581,14 +589,31 @@ class IndexId(object):
 
 class IndexDefinition(object):
     """
-    AVS Index Defintion
+    AVS Index Definition
 
-    :param username: Username associated with user.
-    :type username: str
+    :param id: Index ID.
+    :type id: str
 
-    :param roles: roles associated with user.
-    :type roles: list[str]
+    :param dimensions: Number of dimensions.
+    :type dimensions: int
 
+    :param vector_distance_metric: Metric used to evaluate vector searches on the given index
+    :type vector_distance_metric: VectorDistanceMetric
+
+    :param field: Field name.
+    :type field: str
+
+    :param sets: Set name
+    :type sets: str
+    
+    :param hnsw_params: HNSW parameters.
+    :type hnsw_params: HnswParams
+
+    :param storage: Index storage details.
+    :type storage: IndexStorage
+
+    :param index_labels: Meta data associated with the index. Defaults to None.
+    :type index_labels: Optional[dict[str, str]]
     """
 
     def __init__(
@@ -596,26 +621,34 @@ class IndexDefinition(object):
         *,
         id: str,
         dimensions: int,
+        vector_distance_metric: types_pb2.VectorDistanceMetric,
         field: str,
+        sets: str,
         hnsw_params: HnswParams,
         storage: IndexStorage,
+        index_labels: dict[str, str]
     ) -> None:
         self.id = id
         self.dimensions = dimensions
+        self.vector_distance_metric = vector_distance_metric
         self.field = field
+        self.sets = sets
         self.hnsw_params = hnsw_params
         self.storage = storage
+        self.index_labels = index_labels
 
     def __repr__(self) -> str:
         return (
-            f"IndexDefinition(id={self.id!r}, dimensions={self.dimensions}, field={self.field!r}, "
-            f"hnsw_params={self.hnsw_params!r}, storage={self.storage!r})"
+            f"IndexDefinition(id={self.id!r}, dimensions={self.dimensions}, field={self.field!r}, sets={self.sets!r},"
+            f"vector_distance_metric={self.vector_distance_metric!r}, hnsw_params={self.hnsw_params!r}, storage={self.storage!r}, "
+            f"index_labels={self.index_labels}"
         )
 
     def __str__(self) -> str:
         return (
-            f"IndexDefinition(id={self.id}, dimensions={self.dimensions}, field={self.field}, "
-            f"hnsw_params={self.hnsw_params}, storage={self.storage})"
+            f"IndexDefinition(id={self.id}, dimensions={self.dimensions}, field={self.field}, sets={self.sets!r}, "
+            f"vector_distance_metric={self.vector_distance_metric}, hnsw_params={self.hnsw_params}, storage={self.storage}, "
+            f"index_labels={self.index_labels}"
         )
 
     def __eq__(self, other) -> bool:
@@ -624,9 +657,12 @@ class IndexDefinition(object):
         return (
             self.id == other.id
             and self.dimensions == other.dimensions
+            and self.vector_distance_metric == other.vector_distance_metric
             and self.field == other.field
+            and self.sets == other.sets
             and self.hnsw_params == other.hnsw_params
             and self.storage == other.storage
+            and self.index_labels == other.index_labels
         )
 
     def __getitem__(self, key):

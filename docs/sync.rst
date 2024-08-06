@@ -1,7 +1,7 @@
 Synchronous Clients
 =====================
 
-This module contains clients with coroutine methods used for asynchronous programming.
+This module contains clients with methods used for synchronous programming.
 
 
 .. toctree::
