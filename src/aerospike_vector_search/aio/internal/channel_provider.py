@@ -55,13 +55,13 @@ class ChannelProvider(base_channel_provider.BaseChannelProvider):
         self._ready: asyncio.Event = asyncio.Event()
 
         # When locked, new task is being assigned to _auth_task
-        self._auth_tending: asyncio.Lock = asyncio.Lock()
+        self._auth_tending_lock: asyncio.Lock = asyncio.Lock()
 
         # initializes authentication tending
         self._auth_task: Optional[asyncio.Task] = asyncio.create_task(self._tend_token())
 
         # initializes client tending processes
-        self._task: Optional[asyncio.Task] = asyncio.create_task(self._tend())
+        asyncio.create_task(self._tend())
 
         # Exception to progotate to main control flow from errors generated during tending
         self._tend_exception: Exception = None
@@ -80,11 +80,10 @@ class ChannelProvider(base_channel_provider.BaseChannelProvider):
         try:
             await self._auth_task
 
-
-            await self._tend_cluster()
-
             # verfies server is minimally compatible with client
             await self._check_server_version()
+
+            await self._tend_cluster()
 
             self._ready.set()
 
@@ -126,7 +125,8 @@ class ChannelProvider(base_channel_provider.BaseChannelProvider):
 
             await asyncio.sleep(TEND_INTERVAL)
 
-            self._task = asyncio.create_task(self._tend_cluster())
+
+            asyncio.create_task(self._tend_cluster())
 
         except Exception as e:
             logger.error("Unexpected tend failure: %s", e)
@@ -184,7 +184,7 @@ class ChannelProvider(base_channel_provider.BaseChannelProvider):
 
             await self._update_token_and_ttl()
 
-            async with self._auth_tending:
+            async with self._auth_tending_lock:
                 self._auth_task = asyncio.create_task(self._tend_token())
 
         except Exception as e: 
@@ -272,10 +272,5 @@ class ChannelProvider(base_channel_provider.BaseChannelProvider):
             if channelEndpoints.channel:
                 await channelEndpoints.channel.close()
 
-        async with self._auth_tending:
+        async with self._auth_tending_lock:
             self._auth_task.cancel()
-
-        try:
-            await self._task
-        except asyncio.exceptions.CancelledError:
-            pass

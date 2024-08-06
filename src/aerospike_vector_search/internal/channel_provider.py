@@ -50,18 +50,18 @@ class ChannelProvider(base_channel_provider.BaseChannelProvider):
         # When locked, new task is being assigned to _auth_task
         self._auth_tending_lock: threading.Lock = threading.Lock()
 
-        # Timers assigned in various tending functions
-        self._tend_timer = None
         self._auth_timer = None
 
         # initializes authentication tending
         self._tend_token()
 
+        # verfies server is minimally compatible with client
+        self._check_server_version()
+
         # initializes cluster tending
         self._tend_cluster()
 
-        # verfies server is minimally compatible with client
-        self._check_server_version()
+
 
 
 
@@ -90,8 +90,7 @@ class ChannelProvider(base_channel_provider.BaseChannelProvider):
                 self._close_old_channels_from_node_channels(temp_endpoints)
 
 
-            self._tend_timer = threading.Timer(TEND_INTERVAL, self._tend_cluster)
-            self._tend_timer.start()
+            threading.Timer(TEND_INTERVAL, self._tend_cluster).start()
 
         except Exception as e:
             logger.error("Tending failed at unindentified location: %s", e)
@@ -212,9 +211,6 @@ class ChannelProvider(base_channel_provider.BaseChannelProvider):
         for k, channelEndpoints in self._node_channels.items():
             if channelEndpoints.channel:
                 channelEndpoints.channel.close()
-
-        if self._tend_timer != None:
-            self._tend_timer.join()
 
         with self._auth_tending_lock:
             if self._auth_timer != None:
