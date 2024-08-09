@@ -405,10 +405,13 @@ def test_index_create_with_sets(session_admin_client, test_case, random_name):
                     max_scan_rate_per_node=80,
                     max_scan_page_size=40,
                     re_index_percent=50,
-                    schedule_delay=5,
+                    schedule="* 0/5 * ? * * *",
                     parallelism=4,
                 ),
-                merge_params=types.HnswIndexMergeParams(parallelism=10),
+                merge_params=types.HnswIndexMergeParams(
+                    parallelism=10,
+                    reindex_parallelism=3
+                ),
             ),
             index_labels=None,
             index_storage=None,
@@ -476,8 +479,12 @@ def test_index_create_with_index_params(session_admin_client, test_case, random_
                 )
             if getattr(result.hnsw_params, 'merge_params', None) is not None:
                 assert (
-                    result["hnsw_params"]["merge_params"]["parallelism"]
-                    == test_case.index_params.merge_params.parallelism
+                    result["hnsw_params"]["merge_params"]["index_parallelism"]
+                    == test_case.index_params.merge_params.index_parallelism
+                )
+                assert (
+                    result["hnsw_params"]["merge_params"]["reindex_parallelism"]
+                    == test_case.index_params.merge_params.reindex_parallelism
                 )
             if getattr(result.hnsw_params, 'healer_params', None) is not None:
                 assert (
@@ -495,8 +502,8 @@ def test_index_create_with_index_params(session_admin_client, test_case, random_
                     == test_case.index_params.healer_params.re_index_percent
                 )
                 assert (
-                    int(result["hnsw_params"]["healer_params"]["schedule_delay"])
-                    == test_case.index_params.healer_params.schedule_delay
+                    result["hnsw_params"]["healer_params"]["schedule"]
+                    == test_case.index_params.healer_params.schedule
                 )
                 assert (
                     result["hnsw_params"]["healer_params"]["parallelism"]

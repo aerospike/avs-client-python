@@ -1,6 +1,6 @@
 import time
 from .. import types
-from .proto_generated import types_pb2
+from .proto_generated import types_pb2, index_pb2
 from .proto_generated import index_pb2_grpc
 
 
@@ -22,7 +22,10 @@ def _prepare_wait_for_index_waiting(client, namespace, name, wait_interval):
     consecutive_index_validations = 0
 
     index_stub = index_pb2_grpc.IndexServiceStub(client._channel_provider.get_channel())
-    index_wait_request = types_pb2.IndexId(namespace=namespace, name=name)
+    index_id = types_pb2.IndexId(namespace=namespace, name=name)
+    index_wait_request = index_pb2.IndexGetRequest(
+        indexId=index_id
+    )
     return (
         index_stub,
         wait_interval,

@@ -388,7 +388,10 @@ async def test_index_create_with_sets(session_admin_client, test_case, random_na
                     schedule_delay=5,
                     parallelism=4,
                 ),
-                merge_params=types.HnswIndexMergeParams(parallelism=10),
+                merge_params=types.HnswIndexMergeParams(
+                    parallelism=10,
+                    reindex_parallelism=3
+                ),
             ),
             index_labels=None,
             index_storage=None,
