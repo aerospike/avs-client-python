@@ -366,18 +366,25 @@ class HnswIndexMergeParams(object):
     """
     Parameters to configure the HNSW index merge behavior.
 
-    :param parallelism: The number of vectors merged in parallel from a batch index to main index.
-        Default is the global healer config, which is configured in the AVS Server.
-    :type parallelism: Optional[int]
+    :param index_parallelism: The number of vectors merged in parallel from an indexing record batch-index to the main
+        index. Default is the global healer config, which is configured in the AVS Server.
+    :type index_parallelism: Optional[int]
+
+    :param reindex_parallelism: The number of vectors merged in parallel from an indexing record batch-index to the main
+        index. Default is the global healer config, which is configured in the AVS Server.
+    :type reindex_parallelism: Optional[int]
     """
 
-    def __init__(self, *, parallelism: Optional[int] = None) -> None:
-        self.parallelism = parallelism
+    def __init__(self, *, index_parallelism: Optional[int] = None, reindex_parallelism: Optional[int] = None) -> None:
+        self.index_parallelism = index_parallelism
+        self.reindex_parallelism = reindex_parallelism
 
     def _to_pb2(self):
         params = types_pb2.HnswIndexMergeParams()
-        if self.parallelism:
-            params.parallelism = self.parallelism
+        if self.index_parallelism:
+            params.index_parallelism = self.index_parallelism
+        if self.reindex_parallelism:
+            params.reindex_parallelism = self.reindex_parallelism
         return params
 
 

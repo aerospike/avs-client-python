@@ -120,7 +120,8 @@ def fromIndexDefintion(input: types_pb2.IndexDefinition) -> types.IndexDefinitio
                parallelism=input.hnswParams.healerParams.parallelism
             ),
             merge_params=types.HnswIndexMergeParams(
-               parallelism=input.hnswParams.mergeParams.parallelism
+               index_parallelism=input.hnswParams.mergeParams.index_parallelism,
+               reindex_parallelism=input.hnswParams.mergeParams.reindex_parallelism
             )
         ),
         index_labels=input.labels,

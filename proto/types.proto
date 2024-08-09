@@ -214,9 +214,15 @@ message HnswSearchParams {
 
 // Params to configure Hnsw batch index into main index.
 message HnswIndexMergeParams {
-  // The number of vectors merged in parallel from a batch index to main index.
+  // The number of vectors merged in parallel from an indexing record
+  // batch-index to the main index.
   // Defaults to global indexing config configured for the VectorDB.
-  optional uint32  parallelism = 1;
+  optional uint32 indexParallelism = 1;
+
+  // The number of vectors merged in parallel from a re-indexing record
+  // batch-index to the main index.
+  // Defaults to global re-indexing config configured for the VectorDB.
+  optional uint32 reIndexParallelism = 2;
 }
 
 // Params to configure Hnsw index cache
