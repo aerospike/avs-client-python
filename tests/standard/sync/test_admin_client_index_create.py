@@ -7,6 +7,15 @@ from ...utils import random_name
 from .sync_utils import drop_specified_index
 from hypothesis import given, settings, Verbosity
 
+server_defaults = {
+    "m": 16,
+    "ef_construction": 100,
+    "ef": 100,
+    "batching_params": {
+        "max_records": 10000,
+        "interval": 10000,
+    }
+}
 
 class index_create_test_case:
     def __init__(
@@ -360,6 +369,19 @@ def test_index_create_with_sets(session_admin_client, test_case, random_name):
         ),
         index_create_test_case(
             namespace="test",
+            vector_field="example_20",
+            dimensions=1024,
+            vector_distance_metric=None,
+            sets=None,
+            index_params=types.HnswParams(
+                m=8,
+            ),
+            index_labels=None,
+            index_storage=None,
+            timeout=None,
+        ),
+        index_create_test_case(
+            namespace="test",
             vector_field="example_12",
             dimensions=1024,
             vector_distance_metric=None,
@@ -421,25 +443,25 @@ def test_index_create_with_index_params(session_admin_client, test_case, random_
             assert result["id"]["namespace"] == test_case.namespace
             assert result["dimensions"] == test_case.dimensions
             assert result["field"] == test_case.vector_field
-            assert result["hnsw_params"]["m"] == test_case.index_params.m
+            assert result["hnsw_params"]["m"] == test_case.index_params.m or server_defaults
             assert (
                 result["hnsw_params"]["ef_construction"]
-                == test_case.index_params.ef_construction
+                == test_case.index_params.ef_construction  or server_defaults
             )
-            assert result["hnsw_params"]["ef"] == test_case.index_params.ef
+            assert result["hnsw_params"]["ef"] == test_case.index_params.ef or server_defaults
             if getattr(result.hnsw_params, 'max_mem_queue_size', None) is not None:
                 assert (
                     result["hnsw_params"]["max_mem_queue_size"]
-                    == test_case.index_params.max_mem_queue_size
+                    == test_case.index_params.max_mem_queue_size or server_defaults
                 )
 
             assert (
                 result["hnsw_params"]["batching_params"]["max_records"]
-                == test_case.index_params.batching_params.max_records
+                == test_case.index_params.batching_params.max_records or server_defaults
             )
             assert (
                 result["hnsw_params"]["batching_params"]["interval"]
-                == test_case.index_params.batching_params.interval
+                == test_case.index_params.batching_params.interval or server_defaults
             )
             """
             if getattr(result.hnsw_params, 'caching_params', None) is not None:

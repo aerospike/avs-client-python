@@ -18,7 +18,7 @@ class Client(BaseClient):
 
     This client is designed to conduct Aerospike Vector Search administrative operation such as creating indexes, querying index information, and dropping indexes.
 
-    :param seeds: Defines the Aerospike Database cluster nodes to which you want AVS to connect. AVS iterates through the seed nodes. After connecting to a node, AVS discovers all of the nodes in the cluster.
+    :param seeds: Defines the AVS nodes to which you want AVS to connect. AVS iterates through the seed nodes. After connecting to a node, AVS discovers all of the nodes in the cluster.
     :type seeds: Union[types.HostPort, tuple[types.HostPort, ...]]
 
     :param listener_name: An external (NATed) address and port combination that differs from the actual address and port where AVS is listening. Clients can access AVS on a node using the advertised listener address and port. Defaults to None.
@@ -39,10 +39,10 @@ class Client(BaseClient):
     :param root_certificate: The PEM-encoded root certificates as a byte string. Defaults to None.
     :type root_certificate: Optional[list[bytes], bytes]
 
-    :param certificate_chain: The PEM-encoded private key as a byte string. Defaults to None.
+    :param certificate_chain: The PEM-encoded certificate chain as a byte string. Defaults to None.
     :type certificate_chain: Optional[bytes]
 
-    :param private_key: The PEM-encoded certificate chain as a byte string. Defaults to None.
+    :param private_key: The PEM-encoded private key as a byte string. Defaults to None.
     :type private_key: Optional[bytes]
 
     :raises AVSClientError: Raised when no seed host is provided.
@@ -110,21 +110,24 @@ class Client(BaseClient):
         :param vector_distance_metric:
             The distance metric used to compare when performing a vector search.
             Defaults to :class:`VectorDistanceMetric.SQUARED_EUCLIDEAN`.
-        :type dimensions: Optional[types.VectorDistanceMetric]
+        :type vector_distance_metric: Optional[types.VectorDistanceMetric]
 
         :param sets: The set used for the index. Defaults to None.
-        :type dimensions: Optional[str]
+        :type sets: Optional[str]
 
         :param index_params: (Optional[types.HnswParams], optional): Parameters used for tuning
             vector search. Defaults to None. If index_params is None, then the default values
             specified for :class:`types.HnswParams` will be used.
-        :type dimensions: Optional[types.HnswParams]
+        :type index_params: Optional[types.HnswParams]
 
         :param index_labels: Meta data associated with the index. Defaults to None.
-        :type dimensions: Optional[dict[str, str]]
+        :type index_labels: Optional[dict[str, str]]
+
+        :param index_storage: Namespace and set where index overhead (non-vector data) is stored.
+        :type index_storage: Optional[types.IndexStorage]
 
         :param timeout: Time in seconds this operation will wait before raising an :class:`AVSServerError <aerospike_vector_search.types.AVSServerError>`. Defaults to None.
-        :type dimensions: int
+        :type timeout: int
 
         Raises:
             AVSServerError: Raised if an error occurs during the RPC communication with the server while attempting to create the index.
@@ -437,7 +440,7 @@ class Client(BaseClient):
 
     def get_user(self, *, username: str, timeout: Optional[int] = None) -> types.User:
         """
-        Retrieves AVS User information from the AVS Server
+        Retrieves AVS User information from the AVS Server.
 
         :param username: Username of the user to be retrieved.
         :type username: str
@@ -501,7 +504,7 @@ class Client(BaseClient):
         self, *, username: str, roles: list[str], timeout: Optional[int] = None
     ) -> None:
         """
-        grant roles to existing AVS Users.
+        Grant roles to existing AVS Users.
 
         :param username: Username of the user which will receive the roles.
         :type username: str
@@ -535,12 +538,12 @@ class Client(BaseClient):
         self, *, username: str, roles: list[str], timeout: Optional[int] = None
     ) -> None:
         """
-        grant roles to existing AVS Users.
+        Revoke roles from existing AVS Users.
 
         :param username: Username of the user undergoing role removal.
         :type username: str
 
-        :param roles: Roles the specified user will no longer maintain.
+        :param roles: Roles to be revoked.
         :type roles: list[str]
 
         :param timeout: Time in seconds this operation will wait before raising an :class:`AVSServerError <aerospike_vector_search.types.AVSServerError>`. Defaults to None.
@@ -567,7 +570,7 @@ class Client(BaseClient):
 
     def list_roles(self, timeout: Optional[int] = None) -> list[dict]:
         """
-        grant roles to existing AVS Users.
+        List roles available on the AVS server.
 
         :param timeout: Time in seconds this operation will wait before raising an :class:`AVSServerError <aerospike_vector_search.types.AVSServerError>`. Defaults to None.
         :type timeout: int

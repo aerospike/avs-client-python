@@ -336,4 +336,4 @@ class BaseClient(object):
 
     def _check_timeout(self, start_time, timeout):
         if start_time + timeout < time.monotonic():
-            raise "timed-out waiting for index creation"
+            raise AVSClientError(message="timed-out waiting for index creation")

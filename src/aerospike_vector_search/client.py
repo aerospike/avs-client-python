@@ -20,7 +20,7 @@ class Client(BaseClient):
     Moreover, the client supports Hierarchical Navigable Small World (HNSW) vector searches,
     allowing users to find vectors similar to a given query vector within an index.
 
-    :param seeds: Defines the Aerospike Database cluster nodes to which you want AVS to connect. AVS iterates through the seed nodes. After connecting to a node, AVS discovers all of the nodes in the cluster.
+    :param seeds: Defines the AVS nodes to which you want AVS to connect. AVS iterates through the seed nodes. After connecting to a node, AVS discovers all of the nodes in the cluster.
     :type seeds: Union[types.HostPort, tuple[types.HostPort, ...]]
 
     :param listener_name: An external (NATed) address and port combination that differs from the actual address and port where AVS is listening. Clients can access AVS on a node using the advertised listener address and port. Defaults to None.
@@ -41,10 +41,10 @@ class Client(BaseClient):
     :param root_certificate: The PEM-encoded root certificates as a byte string. Defaults to None.
     :type root_certificate: Optional[list[bytes], bytes]
 
-    :param certificate_chain: The PEM-encoded private key as a byte string. Defaults to None.
+    :param certificate_chain: The PEM-encoded certificate chain as a byte string. Defaults to None.
     :type certificate_chain: Optional[bytes]
 
-    :param private_key: The PEM-encoded certificate chain as a byte string. Defaults to None.
+    :param private_key: The PEM-encoded private key as a byte string. Defaults to None.
     :type private_key: Optional[bytes]
 
     :raises AVSClientError: Raised when no seed host is provided.
@@ -106,16 +106,15 @@ class Client(BaseClient):
         :param set_name: The name of the set to which the record belongs. Defaults to None.
         :type set_name: Optional[str]
 
-        :param ignore_mem_queue_full: Ignore the in-memory queue full error. These records would be written to storage
-            and later, the index healer would pick for indexing. Defaults to False.
+        :param ignore_mem_queue_full: Ignore the in-memory queue full error. These records will be written to storage
+            and later, the index healer will pick them for indexing. Defaults to False.
         :type ignore_mem_queue_full: int
 
         :param timeout: Time in seconds this operation will wait before raising an :class:`AVSServerError <aerospike_vector_search.types.AVSServerError>`. Defaults to None.
         :type timeout: int
 
-
         Raises:
-            AVSServerError: Raised if an error occurs during the RPC communication with the server while attempting to insert a vector..
+            AVSServerError: Raised if an error occurs during the RPC communication with the server while attempting to insert a vector.
             This error could occur due to various reasons such as network issues, server-side failures, or invalid request parameters.
 
         """
@@ -163,15 +162,15 @@ class Client(BaseClient):
         :param set_name: The name of the set to which the record belongs. Defaults to None.
         :type set_name: Optional[str]
 
-        :param ignore_mem_queue_full: Ignore the in-memory queue full error. These records would be written to storage
-            and later, the index healer would pick for indexing. Defaults to False.
+        :param ignore_mem_queue_full: Ignore the in-memory queue full error. These records will be written to storage
+            and later, the index healer will pick them for indexing. Defaults to False.
         :type ignore_mem_queue_full: int
 
         :param timeout: Time in seconds this operation will wait before raising an :class:`AVSServerError <aerospike_vector_search.types.AVSServerError>`. Defaults to None.
         :type timeout: int
 
         Raises:
-            AVSServerError: Raised if an error occurs during the RPC communication with the server while attempting to update a vector..
+            AVSServerError: Raised if an error occurs during the RPC communication with the server while attempting to update a vector.
             This error could occur due to various reasons such as network issues, server-side failures, or invalid request parameters.
 
         """
@@ -221,15 +220,15 @@ class Client(BaseClient):
         :param set_name: The name of the set to which the record belongs. Defaults to None.
         :type set_name: Optional[str]
 
-        :param ignore_mem_queue_full: Ignore the in-memory queue full error. These records would be written to storage
-            and later, the index healer would pick for indexing. Defaults to False.
+        :param ignore_mem_queue_full: Ignore the in-memory queue full error. These records will be written to storage
+            and later, the index healer will pick them for indexing. Defaults to False.
         :type ignore_mem_queue_full: int
 
         :param timeout: Time in seconds this operation will wait before raising an :class:`AVSServerError <aerospike_vector_search.types.AVSServerError>`. Defaults to None.
         :type timeout: int
 
         Raises:
-            AVSServerError: Raised if an error occurs during the RPC communication with the server while attempting to upsert a vector..
+            AVSServerError: Raised if an error occurs during the RPC communication with the server while attempting to upsert a vector.
             This error could occur due to various reasons such as network issues, server-side failures, or invalid request parameters.
 
         """
@@ -279,13 +278,13 @@ class Client(BaseClient):
         :type set_name: Optional[str]
 
         :param timeout: Time in seconds this operation will wait before raising an :class:`AVSServerError <aerospike_vector_search.types.AVSServerError>`. Defaults to None.
-        :type dimensions: int
+        :type timeout: int
 
         Returns:
             types.RecordWithKey: A record with its associated key.
 
         Raises:
-            AVSServerError: Raised if an error occurs during the RPC communication with the server while attempting to get a vector..
+            AVSServerError: Raised if an error occurs during the RPC communication with the server while attempting to get a vector.
             This error could occur due to various reasons such as network issues, server-side failures, or invalid request parameters.
         """
 
@@ -324,13 +323,13 @@ class Client(BaseClient):
         :type set_name: str
 
         :param timeout: Time in seconds this operation will wait before raising an :class:`AVSServerError <aerospike_vector_search.types.AVSServerError>`. Defaults to None.
-        :type dimensions: int
+        :type timeout: int
 
         Returns:
             bool: True if the record exists, False otherwise.
 
         Raises:
-            AVSServerError: Raised if an error occurs during the RPC communication with the server while attempting to see if a given vector exists..
+            AVSServerError: Raised if an error occurs during the RPC communication with the server while attempting to see if a given vector exists.
             This error could occur due to various reasons such as network issues, server-side failures, or invalid request parameters.
         """
 
@@ -369,10 +368,10 @@ class Client(BaseClient):
         :type set_name: Optional[str]
 
         :param timeout: Time in seconds this operation will wait before raising an :class:`AVSServerError <aerospike_vector_search.types.AVSServerError>`. Defaults to None.
-        :type dimensions: int
+        :type timeout: int
 
         Raises:
-            AVSServerError: Raised if an error occurs during the RPC communication with the server while attempting to create the index.
+            AVSServerError: Raised if an error occurs during the RPC communication with the server while attempting to delete the index.
             This error could occur due to various reasons such as network issues, server-side failures, or invalid request parameters.
         """
 
@@ -417,13 +416,13 @@ class Client(BaseClient):
         :type set_name: optional[str]
 
         :param timeout: Time in seconds this operation will wait before raising an :class:`AVSServerError <aerospike_vector_search.types.AVSServerError>`. Defaults to None.
-        :type dimensions: int
+        :type timeout: int
 
         Returns:
             bool: True if the record is indexed, False otherwise.
 
         Raises:
-            AVSServerError: Raised if an error occurs during the RPC communication with the server while attempting to create the index.
+            AVSServerError: Raised if an error occurs during the RPC communication with the server while attempting to check if the vector is indexed.
             This error could occur due to various reasons such as network issues, server-side failures, or invalid request parameters.
         """
 
@@ -477,13 +476,13 @@ class Client(BaseClient):
         :type field_names: Optional[list[str]]
 
         :param timeout: Time in seconds this operation will wait before raising an :class:`AVSServerError <aerospike_vector_search.types.AVSServerError>`. Defaults to None.
-        :type dimensions: int
+        :type timeout: int
 
         Returns:
             list[types.Neighbor]: A list of neighbors records found by the search.
 
         Raises:
-            AVSServerError: Raised if an error occurs during the RPC communication with the server while attempting to create the index.
+            AVSServerError: Raised if an error occurs during the RPC communication with the server while attempting to vector search.
             This error could occur due to various reasons such as network issues, server-side failures, or invalid request parameters.
         """
 
@@ -539,7 +538,7 @@ class Client(BaseClient):
 
         Raises:
             Exception: Raised when the timeout occurs while waiting for index completion.
-            AVSServerError: Raised if an error occurs during the RPC communication with the server while attempting to create the index.
+            AVSServerError: Raised if an error occurs during the RPC communication with the server while attempting to wait for index completion.
             This error could occur due to various reasons such as network issues, server-side failures, or invalid request parameters.
 
         Note:
