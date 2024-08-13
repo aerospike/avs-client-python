@@ -172,7 +172,7 @@ class ChannelProvider(base_channel_provider.BaseChannelProvider):
                 "Failed to retrieve server version: "
                 + str(e)
             )
-            raise AVSServerError(rpc_error=e)  
+            raise types.AVSServerError(rpc_error=e)  
         self.verify_compatibile_server()
 
 
