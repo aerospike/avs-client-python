@@ -222,6 +222,8 @@ class BaseChannelProvider(object):
         update_endpoints_stubs = []
         for index, value in enumerate(new_cluster_ids):
 
+            if not value:
+                continue
             if self.check_cluster_id(value.id):
                 update_endpoints_stub = cluster_info_stubs[index]
 
