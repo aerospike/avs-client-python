@@ -224,7 +224,7 @@ class ChannelProvider(base_channel_provider.BaseChannelProvider):
                     + str(e)
                 )
                 self._tend_exception = AVSServerError(rpc_error=e)  
-            self.verify_compatibile_server()
+            self.verify_compatible_server()
 
         except Exception as e:
             logger.debug(

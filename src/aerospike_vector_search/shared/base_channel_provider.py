@@ -191,7 +191,7 @@ class BaseChannelProvider(object):
 
         self._token = grpc.access_token_call_credentials(token)
 
-    def verify_compatibile_server(self) -> bool:
+    def verify_compatible_server(self) -> bool:
         def parse_version(v: str):
             return tuple(str(part) if part.isdigit() else part for part in v.split("."))
         if parse_version(self.current_server_version) < parse_version(self.minimum_required_version):
@@ -222,6 +222,8 @@ class BaseChannelProvider(object):
         update_endpoints_stubs = []
         for index, value in enumerate(new_cluster_ids):
 
+            if not value:
+                continue
             if self.check_cluster_id(value.id):
                 update_endpoints_stub = cluster_info_stubs[index]
 
