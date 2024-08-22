@@ -125,7 +125,6 @@ jobs:
         assets/call_gen_tls.sh
         cat aerospike-vector-search.yml
         cat aerospike.conf
-        cat /etc/hosts
       working-directory: tests
 
     - name: Add hosts to /etc/hosts
@@ -204,6 +203,9 @@ jobs:
         assets/call_gen_tls_auth.sh
       working-directory: tests
 
+    - name: Add hosts to /etc/hosts
+      run: |
+        sudo echo "0.0.0.0 child" | sudo tee -a /etc/hosts
 
     - name: Run unit tests
       run: |
@@ -275,6 +277,9 @@ jobs:
         cat aerospike.conf
       working-directory: tests
 
+    - name: Add hosts to /etc/hosts
+      run: |
+        sudo echo "0.0.0.0 child" | sudo tee -a /etc/hosts
 
     - name: Run unit tests
       run: |
@@ -348,6 +353,10 @@ jobs:
         assets/call_gen_mtls.sh
       working-directory: tests
 
+    - name: Add hosts to /etc/hosts
+      run: |
+        sudo echo "0.0.0.0 brawn" | sudo tee -a /etc/hosts
+
     - name: Run unit tests
       run: |
 
@@ -416,6 +425,10 @@ jobs:
       run: |
         assets/call_gen_mtls_auth.sh
       working-directory: tests
+
+    - name: Add hosts to /etc/hosts
+      run: |
+        sudo echo "0.0.0.0 brawn" | sudo tee -a /etc/hosts
 
     - name: Run unit tests
       run: |
@@ -487,6 +500,10 @@ jobs:
         cat /etc/hosts
       working-directory: tests
 
+    - name: Add hosts to /etc/hosts
+      run: |
+        sudo echo "0.0.0.0 brawn" | sudo tee -a /etc/hosts
+
     - name: Run unit tests
       run: |
 
@@ -495,7 +512,7 @@ jobs:
 
         sleep 5
 
-        python -m pytest rbac -s --host 0.0.0.0 --port 5000 --root_certificate tls/root.crt --private_key tls/brawn.key.pem --certificate_chain tls/brawn.crt --ssl_target_name_override brawn -vs
+        python -m pytest rbac -s --host 0.0.0.0 --port 5000 --root_certificate tls/root.crt --private_key tls/brawn.key.pem --certificate_chain tls/brawn.crt -vs
       working-directory: tests
 
   test-is-loadbalancer:
