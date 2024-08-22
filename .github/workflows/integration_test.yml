@@ -125,7 +125,12 @@ jobs:
         assets/call_gen_tls.sh
         cat aerospike-vector-search.yml
         cat aerospike.conf
+        cat /etc/hosts
       working-directory: tests
+
+    - name: Add hosts to /etc/hosts
+      run: |
+        sudo echo "0.0.0.0 child" | sudo tee -a /etc/hosts
 
     - name: Run unit tests
       run: |
