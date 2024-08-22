@@ -245,7 +245,6 @@ class ChannelProvider(base_channel_provider.BaseChannelProvider):
             options.append(('grpc.ssl_target_name_override', self.ssl_target_name_override))
 
         if self.service_config_json:
-            options = []
             options.append(("grpc.service_config", self.service_config_json))
 
         if not options:

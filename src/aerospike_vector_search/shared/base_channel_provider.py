@@ -199,10 +199,6 @@ class BaseChannelProvider(object):
         def parse_version(v: str):
             return tuple(str(part) if part.isdigit() else part for part in v.split("."))
         if parse_version(self.current_server_version) < parse_version(self.minimum_required_version):
-            print("CURR")
-            print(self.current_server_version)
-            print("MIN")
-            print(self.minimum_required_version)
             self._tend_ended.set()
             raise types.AVSClientError(
                 message="This AVS Client version is only compatbile with AVS Servers above the following version number: "
