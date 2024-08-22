@@ -60,6 +60,7 @@ class Client(BaseClient):
         root_certificate: Optional[Union[list[str], str]] = None,
         certificate_chain: Optional[str] = None,
         private_key: Optional[str] = None,
+        ssl_target_name_override: Optional[str] = None
     ) -> None:
         seeds = self._prepare_seeds(seeds)
 
@@ -73,6 +74,7 @@ class Client(BaseClient):
             certificate_chain,
             private_key,
             service_config_path,
+            ssl_target_name_override
         )
 
     async def index_create(

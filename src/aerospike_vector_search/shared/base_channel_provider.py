@@ -44,6 +44,7 @@ class BaseChannelProvider(object):
         certificate_chain: Optional[str] = None,
         private_key: Optional[str] = None,
         service_config_path: Optional[str] = None,
+        ssl_target_name_override: Optional[str] = None
     ) -> None:
         self.seeds: tuple[types.HostPort, ...] = seeds
         self.listener_name: Optional[str] = listener_name
@@ -55,11 +56,14 @@ class BaseChannelProvider(object):
         else:
             self.service_config_json = None
 
+        self.ssl_target_name_override = ssl_target_name_override
+
         self._credentials = helpers._get_credentials(username, password)
         if self._credentials:
             self._token = True
         else:
             self._token = None
+            
         self._root_certificate = root_certificate
         self._certificate_chain = certificate_chain
         self._private_key = private_key
@@ -195,6 +199,10 @@ class BaseChannelProvider(object):
         def parse_version(v: str):
             return tuple(str(part) if part.isdigit() else part for part in v.split("."))
         if parse_version(self.current_server_version) < parse_version(self.minimum_required_version):
+            print("CURR")
+            print(self.current_server_version)
+            print("MIN")
+            print(self.minimum_required_version)
             self._tend_ended.set()
             raise types.AVSClientError(
                 message="This AVS Client version is only compatbile with AVS Servers above the following version number: "

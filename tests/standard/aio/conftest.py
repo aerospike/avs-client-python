@@ -18,6 +18,7 @@ async def drop_all_indexes(
     root_certificate,
     certificate_chain,
     private_key,
+    ssl_target_name_override,
     is_loadbalancer,
 ):
     if root_certificate:
@@ -39,6 +40,7 @@ async def drop_all_indexes(
         root_certificate=root_certificate,
         certificate_chain=certificate_chain,
         private_key=private_key,
+        ssl_target_name_override=ssl_target_name_override,
     ) as client:
 
         index_list = await client.index_list()
@@ -59,6 +61,7 @@ async def session_admin_client(
     root_certificate,
     certificate_chain,
     private_key,
+    ssl_target_name_override,
     is_loadbalancer,
 ):
     if root_certificate:
@@ -78,6 +81,7 @@ async def session_admin_client(
         root_certificate=root_certificate,
         certificate_chain=certificate_chain,
         private_key=private_key,
+        ssl_target_name_override=ssl_target_name_override,
         username=username,
         password=password,
     )
@@ -95,6 +99,7 @@ async def session_vector_client(
     root_certificate,
     certificate_chain,
     private_key,
+    ssl_target_name_override,
     is_loadbalancer,
 ):
 
@@ -115,6 +120,7 @@ async def session_vector_client(
         root_certificate=root_certificate,
         certificate_chain=certificate_chain,
         private_key=private_key,
+        ssl_target_name_override=ssl_target_name_override,
         username=username,
         password=password,
     )
@@ -131,6 +137,7 @@ async def function_admin_client(
     root_certificate,
     certificate_chain,
     private_key,
+    ssl_target_name_override,
     is_loadbalancer,
 ):
 
@@ -151,6 +158,7 @@ async def function_admin_client(
         root_certificate=root_certificate,
         certificate_chain=certificate_chain,
         private_key=private_key,
+        ssl_target_name_override=ssl_target_name_override,
         username=username,
         password=password,
     )

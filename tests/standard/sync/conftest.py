@@ -18,6 +18,7 @@ def drop_all_indexes(
     certificate_chain,
     private_key,
     is_loadbalancer,
+    ssl_target_name_override,
 ):
 
     if root_certificate:
@@ -39,6 +40,7 @@ def drop_all_indexes(
         root_certificate=root_certificate,
         certificate_chain=certificate_chain,
         private_key=private_key,
+        ssl_target_name_override=ssl_target_name_override,
     ) as client:
         index_list = client.index_list()
 
@@ -57,6 +59,7 @@ def session_admin_client(
     certificate_chain,
     private_key,
     is_loadbalancer,
+    ssl_target_name_override,
 ):
 
     if root_certificate:
@@ -78,6 +81,8 @@ def session_admin_client(
         root_certificate=root_certificate,
         certificate_chain=certificate_chain,
         private_key=private_key,
+        ssl_target_name_override=ssl_target_name_override,
+
     )
     yield client
     client.close()
@@ -93,6 +98,7 @@ def session_admin_client(
     certificate_chain,
     private_key,
     is_loadbalancer,
+    ssl_target_name_override
 ):
 
     if root_certificate:
@@ -114,6 +120,7 @@ def session_admin_client(
         root_certificate=root_certificate,
         certificate_chain=certificate_chain,
         private_key=private_key,
+        ssl_target_name_override=ssl_target_name_override
     )
     yield client
     client.close()
@@ -129,6 +136,7 @@ def session_vector_client(
     certificate_chain,
     private_key,
     is_loadbalancer,
+    ssl_target_name_override
 ):
 
     if root_certificate:
@@ -150,6 +158,7 @@ def session_vector_client(
         root_certificate=root_certificate,
         certificate_chain=certificate_chain,
         private_key=private_key,
+        ssl_target_name_override=ssl_target_name_override
     )
     yield client
     client.close()
@@ -165,6 +174,7 @@ def function_admin_client(
     certificate_chain,
     private_key,
     is_loadbalancer,
+    ssl_target_name_override
 ):
 
     if root_certificate:
@@ -186,6 +196,7 @@ def function_admin_client(
         root_certificate=root_certificate,
         certificate_chain=certificate_chain,
         private_key=private_key,
+        ssl_target_name_override=ssl_target_name_override
     )
     yield client
     client.close()
