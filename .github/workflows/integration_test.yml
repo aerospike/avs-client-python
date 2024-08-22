@@ -144,8 +144,6 @@ jobs:
         docker ps
         python -m pytest standard/aio -s --host 0.0.0.0 --port 5000 --root_certificate tls/root.crt --ssl_target_name_override child -vs
 
-        docker logs aerospike-vector-search
-        docker logs aerospike
       working-directory: tests
 
   test-tls-auth:
@@ -512,7 +510,7 @@ jobs:
 
         sleep 5
 
-        python -m pytest rbac -s --host 0.0.0.0 --port 5000 --root_certificate tls/root.crt --private_key tls/brawn.key.pem --certificate_chain tls/brawn.crt -vs
+        python -m pytest rbac -s --host 0.0.0.0 --port 5000 --root_certificate tls/root.crt --private_key tls/brawn.key.pem --certificate_chain tls/brawn.crt --ssl_target_name_override brawn -vs
       working-directory: tests
 
   test-is-loadbalancer:
