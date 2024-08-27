@@ -7,10 +7,10 @@ from google.protobuf import empty_pb2 as google_dot_protobuf_dot_empty__pb2
 from . import index_pb2 as index__pb2
 from . import types_pb2 as types__pb2
 
-GRPC_GENERATED_VERSION = '1.64.1'
+GRPC_GENERATED_VERSION = '1.65.2'
 GRPC_VERSION = grpc.__version__
-EXPECTED_ERROR_RELEASE = '1.65.0'
-SCHEDULED_RELEASE_DATE = 'June 25, 2024'
+EXPECTED_ERROR_RELEASE = '1.66.0'
+SCHEDULED_RELEASE_DATE = 'August 6, 2024'
 _version_not_supported = False
 
 try:
@@ -44,7 +44,7 @@ class IndexServiceStub(object):
         """
         self.Create = channel.unary_unary(
                 '/aerospike.vector.IndexService/Create',
-                request_serializer=types__pb2.IndexDefinition.SerializeToString,
+                request_serializer=index__pb2.IndexCreateRequest.SerializeToString,
                 response_deserializer=google_dot_protobuf_dot_empty__pb2.Empty.FromString,
                 _registered_method=True)
         self.Update = channel.unary_unary(
@@ -54,22 +54,22 @@ class IndexServiceStub(object):
                 _registered_method=True)
         self.Drop = channel.unary_unary(
                 '/aerospike.vector.IndexService/Drop',
-                request_serializer=types__pb2.IndexId.SerializeToString,
+                request_serializer=index__pb2.IndexDropRequest.SerializeToString,
                 response_deserializer=google_dot_protobuf_dot_empty__pb2.Empty.FromString,
                 _registered_method=True)
         self.List = channel.unary_unary(
                 '/aerospike.vector.IndexService/List',
-                request_serializer=google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
+                request_serializer=index__pb2.IndexListRequest.SerializeToString,
                 response_deserializer=types__pb2.IndexDefinitionList.FromString,
                 _registered_method=True)
         self.Get = channel.unary_unary(
                 '/aerospike.vector.IndexService/Get',
-                request_serializer=types__pb2.IndexId.SerializeToString,
+                request_serializer=index__pb2.IndexGetRequest.SerializeToString,
                 response_deserializer=types__pb2.IndexDefinition.FromString,
                 _registered_method=True)
         self.GetStatus = channel.unary_unary(
                 '/aerospike.vector.IndexService/GetStatus',
-                request_serializer=types__pb2.IndexId.SerializeToString,
+                request_serializer=index__pb2.IndexStatusRequest.SerializeToString,
                 response_deserializer=index__pb2.IndexStatusResponse.FromString,
                 _registered_method=True)
         self.GcInvalidVertices = channel.unary_unary(
@@ -138,7 +138,7 @@ def add_IndexServiceServicer_to_server(servicer, server):
     rpc_method_handlers = {
             'Create': grpc.unary_unary_rpc_method_handler(
                     servicer.Create,
-                    request_deserializer=types__pb2.IndexDefinition.FromString,
+                    request_deserializer=index__pb2.IndexCreateRequest.FromString,
                     response_serializer=google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
             ),
             'Update': grpc.unary_unary_rpc_method_handler(
@@ -148,22 +148,22 @@ def add_IndexServiceServicer_to_server(servicer, server):
             ),
             'Drop': grpc.unary_unary_rpc_method_handler(
                     servicer.Drop,
-                    request_deserializer=types__pb2.IndexId.FromString,
+                    request_deserializer=index__pb2.IndexDropRequest.FromString,
                     response_serializer=google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
             ),
             'List': grpc.unary_unary_rpc_method_handler(
                     servicer.List,
-                    request_deserializer=google_dot_protobuf_dot_empty__pb2.Empty.FromString,
+                    request_deserializer=index__pb2.IndexListRequest.FromString,
                     response_serializer=types__pb2.IndexDefinitionList.SerializeToString,
             ),
             'Get': grpc.unary_unary_rpc_method_handler(
                     servicer.Get,
-                    request_deserializer=types__pb2.IndexId.FromString,
+                    request_deserializer=index__pb2.IndexGetRequest.FromString,
                     response_serializer=types__pb2.IndexDefinition.SerializeToString,
             ),
             'GetStatus': grpc.unary_unary_rpc_method_handler(
                     servicer.GetStatus,
-                    request_deserializer=types__pb2.IndexId.FromString,
+                    request_deserializer=index__pb2.IndexStatusRequest.FromString,
                     response_serializer=index__pb2.IndexStatusResponse.SerializeToString,
             ),
             'GcInvalidVertices': grpc.unary_unary_rpc_method_handler(
@@ -198,7 +198,7 @@ class IndexService(object):
             request,
             target,
             '/aerospike.vector.IndexService/Create',
-            types__pb2.IndexDefinition.SerializeToString,
+            index__pb2.IndexCreateRequest.SerializeToString,
             google_dot_protobuf_dot_empty__pb2.Empty.FromString,
             options,
             channel_credentials,
@@ -252,7 +252,7 @@ class IndexService(object):
             request,
             target,
             '/aerospike.vector.IndexService/Drop',
-            types__pb2.IndexId.SerializeToString,
+            index__pb2.IndexDropRequest.SerializeToString,
             google_dot_protobuf_dot_empty__pb2.Empty.FromString,
             options,
             channel_credentials,
@@ -279,7 +279,7 @@ class IndexService(object):
             request,
             target,
             '/aerospike.vector.IndexService/List',
-            google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
+            index__pb2.IndexListRequest.SerializeToString,
             types__pb2.IndexDefinitionList.FromString,
             options,
             channel_credentials,
@@ -306,7 +306,7 @@ class IndexService(object):
             request,
             target,
             '/aerospike.vector.IndexService/Get',
-            types__pb2.IndexId.SerializeToString,
+            index__pb2.IndexGetRequest.SerializeToString,
             types__pb2.IndexDefinition.FromString,
             options,
             channel_credentials,
@@ -333,7 +333,7 @@ class IndexService(object):
             request,
             target,
             '/aerospike.vector.IndexService/GetStatus',
-            types__pb2.IndexId.SerializeToString,
+            index__pb2.IndexStatusRequest.SerializeToString,
             index__pb2.IndexStatusResponse.FromString,
             options,
             channel_credentials,
