@@ -22,6 +22,9 @@ def pytest_addoption(parser):
         "--private_key", action="store", default=None, help="Path to private key"
     )
     parser.addoption(
+        "--ssl_target_name_override", action="store", default=None, help="ssl target name override"
+    )
+    parser.addoption(
         "--is_loadbalancer",
         action="store_true",
         help="Enable to use load balancer tending logic",
@@ -62,6 +65,9 @@ def certificate_chain(request):
 def root_certificate(request):
     return request.config.getoption("--root_certificate")
 
+@pytest.fixture(scope="module", autouse=True)
+def ssl_target_name_override(request):
+    return request.config.getoption("--ssl_target_name_override")
 
 @pytest.fixture(scope="module", autouse=True)
 def host(request):

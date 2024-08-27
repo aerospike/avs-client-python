@@ -32,6 +32,7 @@ class ChannelProvider(base_channel_provider.BaseChannelProvider):
         certificate_chain: Optional[str] = None,
         private_key: Optional[str] = None,
         service_config_path: Optional[str] = None,
+        ssl_target_name_override: Optional[str] = None
     ) -> None:
         super().__init__(
             seeds,
@@ -43,6 +44,7 @@ class ChannelProvider(base_channel_provider.BaseChannelProvider):
             certificate_chain,
             private_key,
             service_config_path,
+            ssl_target_name_override
         )
         # When set, client has concluded cluster tending
         self._tend_ended = threading.Event()
@@ -179,11 +181,16 @@ class ChannelProvider(base_channel_provider.BaseChannelProvider):
 
     def _create_channel(self, host: str, port: int) -> grpc.Channel:
         host = re.sub(r"%.*", "", host)
+        
+        options = []
+
+        if self.ssl_target_name_override:
+            options.append(('grpc.ssl_target_name_override', self.ssl_target_name_override))
 
         if self.service_config_json:
-            options = []
             options.append(("grpc.service_config", self.service_config_json))
-        else:
+
+        if not options:
             options = None
 
         if self._root_certificate:

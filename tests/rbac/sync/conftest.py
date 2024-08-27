@@ -14,6 +14,7 @@ def drop_all_indexes(
     port,
     certificate_chain,
     private_key,
+    ssl_target_name_override,
     is_loadbalancer,
 ):
 
@@ -36,6 +37,7 @@ def drop_all_indexes(
         root_certificate=root_certificate,
         certificate_chain=certificate_chain,
         private_key=private_key,
+        ssl_target_name_override=ssl_target_name_override,
     ) as client:
         index_list = client.index_list()
 
@@ -53,6 +55,7 @@ def session_rbac_admin_client(
     port,
     certificate_chain,
     private_key,
+    ssl_target_name_override,
     is_loadbalancer,
 ):
 
@@ -75,6 +78,7 @@ def session_rbac_admin_client(
         root_certificate=root_certificate,
         certificate_chain=certificate_chain,
         private_key=private_key,
+        ssl_target_name_override=ssl_target_name_override,
     )
     yield client
     client.close()
