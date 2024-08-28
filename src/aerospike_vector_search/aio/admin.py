@@ -252,7 +252,7 @@ class Client(BaseClient):
         return self._respond_index_list(response)
 
     async def index_get(
-        self, *, namespace: str, name: str, timeout: Optional[int] = None
+        self, *, namespace: str, name: str, timeout: Optional[int] = None, apply_defaults: Optional[bool] = True
     ) -> dict[str, Union[int, str]]:
         """
         Retrieve the information related with an index.
@@ -266,6 +266,9 @@ class Client(BaseClient):
         :param timeout: Time in seconds this operation will wait before raising an :class:`AVSServerError <aerospike_vector_search.types.AVSServerError>`. Defaults to None.
         :type timeout: int
 
+        :param apply_defaults: Apply default values to parameters which are not set by user. Defaults to True.
+        :type apply_defaults: bool
+
         Returns: dict[str, Union[int, str]: Information about an index.
 
         Raises:
@@ -276,7 +279,7 @@ class Client(BaseClient):
         await self._channel_provider._is_ready()
 
         (index_stub, index_get_request, kwargs) = self._prepare_index_get(
-            namespace, name, timeout, logger
+            namespace, name, timeout, logger, apply_defaults,
         )
 
         try:
