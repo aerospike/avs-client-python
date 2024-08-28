@@ -121,7 +121,7 @@ def fromIndexDefintion(input: types_pb2.IndexDefinition) -> types.IndexDefinitio
             ),
             merge_params=types.HnswIndexMergeParams(
                index_parallelism=input.hnswParams.mergeParams.indexParallelism,
-               reindex_parallelism=input.hnswParams.mergeParams.reindexParallelism
+               reindex_parallelism=input.hnswParams.mergeParams.reIndexParallelism
             )
         ),
         index_labels=input.labels,
