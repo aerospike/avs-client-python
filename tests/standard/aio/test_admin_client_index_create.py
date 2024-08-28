@@ -367,7 +367,7 @@ async def test_index_create_with_sets(session_admin_client, test_case, random_na
             vector_distance_metric=None,
             sets=None,
             index_params=types.HnswParams(
-                batching_params=types.HnswBatchingParams(max_records=500, interval=500)
+                batching_params=types.HnswBatchingParams(max_records=2000, interval=500)
             ),
             index_labels=None,
             index_storage=None,
