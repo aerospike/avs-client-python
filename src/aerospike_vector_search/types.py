@@ -382,9 +382,9 @@ class HnswIndexMergeParams(object):
     def _to_pb2(self):
         params = types_pb2.HnswIndexMergeParams()
         if self.index_parallelism:
-            params.index_parallelism = self.index_parallelism
+            params.indexParallelism = self.index_parallelism
         if self.reindex_parallelism:
-            params.reindex_parallelism = self.reindex_parallelism
+            params.reIndexParallelism = self.reindex_parallelism
         return params
 
 
