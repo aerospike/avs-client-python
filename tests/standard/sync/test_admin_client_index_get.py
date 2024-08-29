@@ -24,7 +24,7 @@ def test_index_get(session_admin_client, empty_test_case, random_name):
         if se.rpc_error.code() != grpc.StatusCode.ALREADY_EXISTS:
             raise se
 
-    result = session_admin_client.index_get(namespace="test", name=random_name)
+    result = session_admin_client.index_get(namespace="test", name=random_name, apply_defaults=True)
 
     assert result["id"]["name"] == random_name
     assert result["id"]["namespace"] == "test"

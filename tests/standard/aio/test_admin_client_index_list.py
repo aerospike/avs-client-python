@@ -21,7 +21,7 @@ async def test_index_list(session_admin_client, empty_test_case, random_name):
         vector_field="science",
         dimensions=1024,
     )
-    result = await session_admin_client.index_list()
+    result = await session_admin_client.index_list(apply_defaults=True)
     assert len(result) > 0
     for index in result:
         assert isinstance(index["id"]["name"], str)
