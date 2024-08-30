@@ -20,6 +20,7 @@ logger = logging.getLogger(__name__)
 
 TEND_INTERVAL = 1
 
+
 class ChannelProvider(base_channel_provider.BaseChannelProvider):
     """AVS Channel Provider"""
 
@@ -34,7 +35,7 @@ class ChannelProvider(base_channel_provider.BaseChannelProvider):
         certificate_chain: Optional[str] = None,
         private_key: Optional[str] = None,
         service_config_path: Optional[str] = None,
-        ssl_target_name_override: Optional[str] = None
+        ssl_target_name_override: Optional[str] = None,
     ) -> None:
 
         super().__init__(
@@ -47,7 +48,7 @@ class ChannelProvider(base_channel_provider.BaseChannelProvider):
             certificate_chain,
             private_key,
             service_config_path,
-            ssl_target_name_override
+            ssl_target_name_override,
         )
 
         # When set, client has concluded cluster tending
@@ -60,7 +61,9 @@ class ChannelProvider(base_channel_provider.BaseChannelProvider):
         self._auth_tending_lock: asyncio.Lock = asyncio.Lock()
 
         # initializes authentication tending
-        self._auth_task: Optional[asyncio.Task] = asyncio.create_task(self._tend_token())
+        self._auth_task: Optional[asyncio.Task] = asyncio.create_task(
+            self._tend_token()
+        )
 
         # initializes client tending processes
         asyncio.create_task(self._tend())
@@ -72,7 +75,7 @@ class ChannelProvider(base_channel_provider.BaseChannelProvider):
         # Wait 1 round of cluster tending, auth token initialization, and server client compatiblity verfication
         await self._ready.wait()
 
-        # This propogates any fatal/unexpected errors from client initialization/tending to the client. 
+        # This propogates any fatal/unexpected errors from client initialization/tending to the client.
         # Raising errors in a task does not deliver this error information to users
         if self._tend_exception:
             raise self._tend_exception
@@ -97,17 +100,20 @@ class ChannelProvider(base_channel_provider.BaseChannelProvider):
     async def _tend_cluster(self):
         try:
             (channels, end_tend_cluster) = self.init_tend_cluster()
-            
 
             if end_tend_cluster:
                 self._tend_ended.set()
                 return
 
-            (cluster_info_stubs, tasks) = self._gather_new_cluster_ids_and_cluster_info_stubs(channels)
+            (cluster_info_stubs, tasks) = (
+                self._gather_new_cluster_ids_and_cluster_info_stubs(channels)
+            )
 
             new_cluster_ids = await asyncio.gather(*tasks)
 
-            update_endpoints_stubs = self._gather_stubs_for_endpoint_updating(new_cluster_ids, cluster_info_stubs)
+            update_endpoints_stubs = self._gather_stubs_for_endpoint_updating(
+                new_cluster_ids, cluster_info_stubs
+            )
 
             tasks = self._gather_temp_endpoints(new_cluster_ids, update_endpoints_stubs)
 
@@ -116,9 +122,9 @@ class ChannelProvider(base_channel_provider.BaseChannelProvider):
             temp_endpoints = self._assign_temporary_endpoints(cluster_endpoints_list)
 
             if update_endpoints_stubs:
-                
+
                 tasks = self._add_new_channels_from_temp_endpoints(temp_endpoints)
-                
+
                 await asyncio.gather(*tasks)
 
                 tasks = self._close_old_channels_from_node_channels(temp_endpoints)
@@ -126,7 +132,6 @@ class ChannelProvider(base_channel_provider.BaseChannelProvider):
                 await asyncio.gather(*tasks)
 
             await asyncio.sleep(TEND_INTERVAL)
-
 
             asyncio.create_task(self._tend_cluster())
 
@@ -137,7 +142,10 @@ class ChannelProvider(base_channel_provider.BaseChannelProvider):
 
     async def _get_cluster_id_coroutine(self, stub):
         try:
-            return await stub.GetClusterId(empty, credentials=self._token,)
+            return await stub.GetClusterId(
+                empty,
+                credentials=self._token,
+            )
         except Exception as e:
             logger.debug(
                 "While tending, failed to get cluster id with error: " + str(e)
@@ -155,21 +163,17 @@ class ChannelProvider(base_channel_provider.BaseChannelProvider):
             ).endpoints
         except Exception as e:
             logger.debug(
-                "While tending, failed to get cluster endpoints with error: "
-                + str(e)
+                "While tending, failed to get cluster endpoints with error: " + str(e)
             )
 
     async def _close_on_channel_coroutine(self, channel_endpoints):
         try:
             await channel_endpoints.channel.close()
         except Exception as e:
-            logger.debug(
-                "While tending, failed to close GRPC channel: "
-                + str(e)
-            )
+            logger.debug("While tending, failed to close GRPC channel: " + str(e))
 
     def _call_get_cluster_id(self, stub):
-        return asyncio.create_task(self._get_cluster_id_coroutine(stub))  
+        return asyncio.create_task(self._get_cluster_id_coroutine(stub))
 
     def _call_get_cluster_endpoints(self, stub):
         return asyncio.create_task(self._get_cluster_endpoints_coroutine(stub))
@@ -189,9 +193,9 @@ class ChannelProvider(base_channel_provider.BaseChannelProvider):
             async with self._auth_tending_lock:
                 self._auth_task = asyncio.create_task(self._tend_token())
 
-        except Exception as e: 
+        except Exception as e:
             self._tend_exception = e
-            logger.error("Failed to tend token with error: %s", e)            
+            logger.error("Failed to tend token with error: %s", e)
             raise e
 
     async def _update_token_and_ttl(
@@ -211,28 +215,20 @@ class ChannelProvider(base_channel_provider.BaseChannelProvider):
         self._respond_authenticate(response.token)
 
     async def _check_server_version(self):
-        try: 
+        try:
             stub = vector_db_pb2_grpc.AboutServiceStub(self.get_channel())
             about_request = vector_db_pb2.AboutRequest()
 
             try:
-                response = await stub.Get(
-                    about_request, credentials=self._token
-                )
+                response = await stub.Get(about_request, credentials=self._token)
                 self.current_server_version = response.version
             except grpc.RpcError as e:
-                logger.debug(
-                    "Failed to retrieve server version: "
-                    + str(e)
-                )
-                self._tend_exception = types.AVSServerError(rpc_error=e) 
+                logger.debug("Failed to retrieve server version: " + str(e))
+                self._tend_exception = types.AVSServerError(rpc_error=e)
             self.verify_compatible_server()
 
         except Exception as e:
-            logger.debug(
-                "Failed to retrieve server version: "
-                + str(e)
-            )
+            logger.debug("Failed to retrieve server version: " + str(e))
             self._tend_exception = e
             raise e
 
@@ -242,7 +238,9 @@ class ChannelProvider(base_channel_provider.BaseChannelProvider):
         options = []
 
         if self.ssl_target_name_override:
-            options.append(('grpc.ssl_target_name_override', self.ssl_target_name_override))
+            options.append(
+                ("grpc.ssl_target_name_override", self.ssl_target_name_override)
+            )
 
         if self.service_config_json:
             options.append(("grpc.service_config", self.service_config_json))

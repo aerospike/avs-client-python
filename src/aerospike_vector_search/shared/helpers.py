@@ -23,9 +23,7 @@ def _prepare_wait_for_index_waiting(client, namespace, name, wait_interval):
 
     index_stub = index_pb2_grpc.IndexServiceStub(client._channel_provider.get_channel())
     index_id = types_pb2.IndexId(namespace=namespace, name=name)
-    index_wait_request = index_pb2.IndexGetRequest(
-        indexId=index_id
-    )
+    index_wait_request = index_pb2.IndexGetRequest(indexId=index_id)
     return (
         index_stub,
         wait_interval,
