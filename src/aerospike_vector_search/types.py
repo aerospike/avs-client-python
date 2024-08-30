@@ -743,6 +743,7 @@ class IndexDefinition(object):
             f"index_labels={self.index_labels}"
         )
 
+    # TODO make this representation consistent with HNSWParams, i.e. use newlines and indentation, or remove it completely
     def __str__(self) -> str:
         return (
             f"IndexDefinition(id={self.id}, dimensions={self.dimensions}, field={self.field}, sets={self.sets!r}, "
