@@ -47,8 +47,9 @@ async def test_index_get(session_admin_client, empty_test_case, random_name):
     assert result["hnsw_params"]["healer_params"]["schedule"] == "0 0/15 * ? * * *"
     assert result["hnsw_params"]["healer_params"]["parallelism"] == 1
 
-    assert result["hnsw_params"]["merge_params"]["index_parallelism"] == 80
-    assert result["hnsw_params"]["merge_params"]["reindex_parallelism"] == 26
+    # index parallelism and reindex parallelism are dynamic depending on the CPU cores of the host
+    # assert result["hnsw_params"]["merge_params"]["index_parallelism"] == 80
+    # assert result["hnsw_params"]["merge_params"]["reindex_parallelism"] == 26
 
     await drop_specified_index(session_admin_client, "test", random_name)
 
