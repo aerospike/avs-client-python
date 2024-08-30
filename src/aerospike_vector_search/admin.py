@@ -61,8 +61,7 @@ class Client(BaseClient):
         certificate_chain: Optional[str] = None,
         private_key: Optional[str] = None,
         service_config_path: Optional[str] = None,
-        ssl_target_name_override: Optional[str] = None
-
+        ssl_target_name_override: Optional[str] = None,
     ) -> None:
         seeds = self._prepare_seeds(seeds)
 
@@ -76,7 +75,7 @@ class Client(BaseClient):
             certificate_chain,
             private_key,
             service_config_path,
-            ssl_target_name_override
+            ssl_target_name_override,
         )
 
     def index_create(
@@ -217,7 +216,9 @@ class Client(BaseClient):
             logger.error("Failed waiting for deletion with error: %s", e)
             raise types.AVSServerError(rpc_error=e)
 
-    def index_list(self, timeout: Optional[int] = None, apply_defaults: Optional[bool] = True) -> list[dict]:
+    def index_list(
+        self, timeout: Optional[int] = None, apply_defaults: Optional[bool] = True
+    ) -> list[dict]:
         """
         List all indices.
 
@@ -250,7 +251,12 @@ class Client(BaseClient):
         return self._respond_index_list(response)
 
     def index_get(
-        self, *, namespace: str, name: str, timeout: Optional[int] = None, apply_defaults: Optional[bool] = True
+        self,
+        *,
+        namespace: str,
+        name: str,
+        timeout: Optional[int] = None,
+        apply_defaults: Optional[bool] = True,
     ) -> dict[str, Union[int, str]]:
         """
         Retrieve the information related with an index.

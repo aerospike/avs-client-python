@@ -44,7 +44,7 @@ class BaseChannelProvider(object):
         certificate_chain: Optional[str] = None,
         private_key: Optional[str] = None,
         service_config_path: Optional[str] = None,
-        ssl_target_name_override: Optional[str] = None
+        ssl_target_name_override: Optional[str] = None,
     ) -> None:
         self.seeds: tuple[types.HostPort, ...] = seeds
         self.listener_name: Optional[str] = listener_name
@@ -63,7 +63,7 @@ class BaseChannelProvider(object):
             self._token = True
         else:
             self._token = None
-            
+
         self._root_certificate = root_certificate
         self._certificate_chain = certificate_chain
         self._private_key = private_key
@@ -198,7 +198,10 @@ class BaseChannelProvider(object):
     def verify_compatible_server(self) -> bool:
         def parse_version(v: str):
             return tuple(str(part) if part.isdigit() else part for part in v.split("."))
-        if parse_version(self.current_server_version) < parse_version(self.minimum_required_version):
+
+        if parse_version(self.current_server_version) < parse_version(
+            self.minimum_required_version
+        ):
             self._tend_ended.set()
             raise types.AVSClientError(
                 message="This AVS Client version is only compatbile with AVS Servers above the following version number: "
@@ -240,7 +243,6 @@ class BaseChannelProvider(object):
         for stub in update_endpoints_stubs:
             response = self._call_get_cluster_endpoints(stub)
 
-
             responses.append(response)
         return responses
 
@@ -248,15 +250,11 @@ class BaseChannelProvider(object):
         # TODO: Worry about thread safety
         temp_endpoints: dict[int, vector_db_pb2.ServerEndpointList] = {}
         for endpoints in cluster_endpoints_list:
-            temp_endpoints = self.update_temp_endpoints(
-                endpoints, temp_endpoints
-            )
+            temp_endpoints = self.update_temp_endpoints(endpoints, temp_endpoints)
         return temp_endpoints
-
 
     def _add_new_channels_from_temp_endpoints(self, temp_endpoints):
         responses = []
-
 
         for node, newEndpoints in temp_endpoints.items():
 
@@ -265,12 +263,11 @@ class BaseChannelProvider(object):
                 node, newEndpoints
             )
 
-
             if add_new_channel:
                 if channel_endpoints:
                     response = self._call_close_on_channel(channel_endpoints)
                     responses.append(response)
-                
+
                 self.add_new_channel_to_node_channels(node, newEndpoints)
 
         return responses
@@ -278,13 +275,11 @@ class BaseChannelProvider(object):
     def _close_old_channels_from_node_channels(self, temp_endpoints):
         responses = []
 
-
         for node, channel_endpoints in list(self._node_channels.items()):
             if not temp_endpoints.get(node):
                 # TODO: Wait for all calls to drain
                 response = self._call_close_on_channel(channel_endpoints)
                 responses.append(response)
-
 
                 del self._node_channels[node]
 
