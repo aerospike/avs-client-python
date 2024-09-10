@@ -73,9 +73,6 @@ async def test_index_get_no_defaults(session_admin_client, empty_test_case, rand
     assert result["id"]["namespace"] == "test"
     assert result["dimensions"] == 1024
     assert result["field"] == "science"
-    assert result["storage"]["namespace"] == "test"
-    assert result["storage"].set_name == random_name
-    assert result["storage"]["set_name"] == random_name
 
     # Defaults
     assert result["sets"] == ""
@@ -98,6 +95,10 @@ async def test_index_get_no_defaults(session_admin_client, empty_test_case, rand
 
     assert result["hnsw_params"]["merge_params"]["index_parallelism"] == 0
     assert result["hnsw_params"]["merge_params"]["reindex_parallelism"] == 0
+
+    assert result["storage"]["namespace"] == ""
+    assert result["storage"].set_name == ""
+    assert result["storage"]["set_name"] == ""
 
     await drop_specified_index(session_admin_client, "test", random_name)
 
