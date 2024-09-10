@@ -73,10 +73,6 @@ async def test_index_get_no_defaults(session_admin_client, empty_test_case, rand
     assert result["id"]["namespace"] == "test"
     assert result["dimensions"] == 1024
     assert result["field"] == "science"
-    assert result["hnsw_params"]["ef_construction"] == 100
-    assert result["hnsw_params"]["ef"] == 100
-    assert result["hnsw_params"]["batching_params"]["max_records"] == 100000
-    assert result["hnsw_params"]["batching_params"]["interval"] == 30000
     assert result["storage"]["namespace"] == "test"
     assert result["storage"].set_name == random_name
     assert result["storage"]["set_name"] == random_name
@@ -86,6 +82,10 @@ async def test_index_get_no_defaults(session_admin_client, empty_test_case, rand
     assert result["vector_distance_metric"] == 0
 
     assert result["hnsw_params"]["m"] == 0
+    assert result["hnsw_params"]["ef"] == 0
+    assert result["hnsw_params"]["ef_construction"] == 0
+    assert result["hnsw_params"]["batching_params"]["max_records"] == 0
+    assert result["hnsw_params"]["batching_params"]["interval"] == 0
     assert result["hnsw_params"]["max_mem_queue_size"] == 0
     assert result["hnsw_params"]["caching_params"]["max_entries"] == 0
     assert result["hnsw_params"]["caching_params"]["expiry"] == 0
