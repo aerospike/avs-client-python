@@ -60,6 +60,7 @@ class Client(BaseClient):
         root_certificate: Optional[Union[list[str], str]] = None,
         certificate_chain: Optional[str] = None,
         private_key: Optional[str] = None,
+        ssl_target_name_override: Optional[str] = None,
     ) -> None:
         seeds = self._prepare_seeds(seeds)
 
@@ -73,6 +74,7 @@ class Client(BaseClient):
             certificate_chain,
             private_key,
             service_config_path,
+            ssl_target_name_override,
         )
 
     async def index_create(
@@ -124,7 +126,7 @@ class Client(BaseClient):
 
         :param index_storage: Namespace and set where index overhead (non-vector data) is stored.
         :type index_storage: Optional[types.IndexStorage]
-        
+
         :param timeout: Time in seconds this operation will wait before raising an :class:`AVSServerError <aerospike_vector_search.types.AVSServerError>`. Defaults to None.
         :type timeout: int
 
@@ -216,12 +218,17 @@ class Client(BaseClient):
             logger.error("Failed waiting for deletion with error: %s", e)
             raise types.AVSServerError(rpc_error=e)
 
-    async def index_list(self, timeout: Optional[int] = None) -> list[dict]:
+    async def index_list(
+        self, timeout: Optional[int] = None, apply_defaults: Optional[bool] = True
+    ) -> list[dict]:
         """
         List all indices.
 
         :param timeout: Time in seconds this operation will wait before raising an :class:`AVSServerError <aerospike_vector_search.types.AVSServerError>`. Defaults to None.
         :type timeout: int
+
+        :param apply_defaults: Apply default values to parameters which are not set by user. Defaults to True.
+        :type apply_defaults: bool
 
         Returns: list[dict]: A list of indices.
 
@@ -232,7 +239,9 @@ class Client(BaseClient):
         await self._channel_provider._is_ready()
 
         (index_stub, index_list_request, kwargs) = self._prepare_index_list(
-            timeout, logger
+            timeout,
+            logger,
+            apply_defaults,
         )
 
         try:
@@ -247,7 +256,12 @@ class Client(BaseClient):
         return self._respond_index_list(response)
 
     async def index_get(
-        self, *, namespace: str, name: str, timeout: Optional[int] = None
+        self,
+        *,
+        namespace: str,
+        name: str,
+        timeout: Optional[int] = None,
+        apply_defaults: Optional[bool] = True,
     ) -> dict[str, Union[int, str]]:
         """
         Retrieve the information related with an index.
@@ -261,6 +275,9 @@ class Client(BaseClient):
         :param timeout: Time in seconds this operation will wait before raising an :class:`AVSServerError <aerospike_vector_search.types.AVSServerError>`. Defaults to None.
         :type timeout: int
 
+        :param apply_defaults: Apply default values to parameters which are not set by user. Defaults to True.
+        :type apply_defaults: bool
+
         Returns: dict[str, Union[int, str]: Information about an index.
 
         Raises:
@@ -271,7 +288,11 @@ class Client(BaseClient):
         await self._channel_provider._is_ready()
 
         (index_stub, index_get_request, kwargs) = self._prepare_index_get(
-            namespace, name, timeout, logger
+            namespace,
+            name,
+            timeout,
+            logger,
+            apply_defaults,
         )
 
         try:

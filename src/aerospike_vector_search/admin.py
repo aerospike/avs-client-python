@@ -1,7 +1,8 @@
 import logging
 import sys
 import time
-from typing import Any, Optional, Union
+from typing import Optional, Union
+
 import grpc
 
 from . import types
@@ -60,6 +61,7 @@ class Client(BaseClient):
         certificate_chain: Optional[str] = None,
         private_key: Optional[str] = None,
         service_config_path: Optional[str] = None,
+        ssl_target_name_override: Optional[str] = None,
     ) -> None:
         seeds = self._prepare_seeds(seeds)
 
@@ -73,6 +75,7 @@ class Client(BaseClient):
             certificate_chain,
             private_key,
             service_config_path,
+            ssl_target_name_override,
         )
 
     def index_create(
@@ -213,12 +216,17 @@ class Client(BaseClient):
             logger.error("Failed waiting for deletion with error: %s", e)
             raise types.AVSServerError(rpc_error=e)
 
-    def index_list(self, timeout: Optional[int] = None) -> list[dict]:
+    def index_list(
+        self, timeout: Optional[int] = None, apply_defaults: Optional[bool] = True
+    ) -> list[dict]:
         """
         List all indices.
 
         :param timeout: Time in seconds this operation will wait before raising an :class:`AVSServerError <aerospike_vector_search.types.AVSServerError>`. Defaults to None.
         :type timeout: int
+
+        :param apply_defaults: Apply default values to parameters which are not set by user. Defaults to True.
+        :type apply_defaults: bool
 
         Returns: list[dict]: A list of indices.
 
@@ -228,7 +236,7 @@ class Client(BaseClient):
         """
 
         (index_stub, index_list_request, kwargs) = self._prepare_index_list(
-            timeout, logger
+            timeout, logger, apply_defaults
         )
 
         try:
@@ -243,7 +251,12 @@ class Client(BaseClient):
         return self._respond_index_list(response)
 
     def index_get(
-        self, *, namespace: str, name: str, timeout: Optional[int] = None
+        self,
+        *,
+        namespace: str,
+        name: str,
+        timeout: Optional[int] = None,
+        apply_defaults: Optional[bool] = True,
     ) -> dict[str, Union[int, str]]:
         """
         Retrieve the information related with an index.
@@ -257,6 +270,9 @@ class Client(BaseClient):
         :param timeout: Time in seconds this operation will wait before raising an :class:`AVSServerError <aerospike_vector_search.types.AVSServerError>`. Defaults to None.
         :type timeout: int
 
+        :param apply_defaults: Apply default values to parameters which are not set by user. Defaults to True.
+        :type apply_defaults: bool
+
         Returns: dict[str, Union[int, str]: Information about an index.
 
         Raises:
@@ -266,7 +282,7 @@ class Client(BaseClient):
         """
 
         (index_stub, index_get_request, kwargs) = self._prepare_index_get(
-            namespace, name, timeout, logger
+            namespace, name, timeout, logger, apply_defaults
         )
 
         try:
@@ -341,7 +357,7 @@ class Client(BaseClient):
         :type password: str
 
         :param roles: Roles for the new user.
-        :type password: list[str]
+        :type roles: list[str]
 
         :param timeout: Time in seconds this operation will wait before raising an :class:`AVSServerError <aerospike_vector_search.types.AVSServerError>`. Defaults to None.
         :type timeout: int
@@ -502,7 +518,7 @@ class Client(BaseClient):
         :param username: Username of the user which will receive the roles.
         :type username: str
 
-        :param roles: Roles the specified user will recieved.
+        :param roles: Roles the specified user will receive.
         :type roles: list[str]
 
         :param timeout: Time in seconds this operation will wait before raising an :class:`AVSServerError <aerospike_vector_search.types.AVSServerError>`. Defaults to None.
@@ -611,7 +627,7 @@ class Client(BaseClient):
                     index_creation_request,
                     credentials=self._channel_provider.get_token(),
                 )
-                logger.debug("Index created succesfully")
+                logger.debug("Index created successfully")
                 # Index has been created
                 return
             except grpc.RpcError as e:
@@ -652,7 +668,7 @@ class Client(BaseClient):
                 time.sleep(wait_interval)
             except grpc.RpcError as e:
                 if e.code() == grpc.StatusCode.NOT_FOUND:
-                    logger.debug("Index deleted succesfully")
+                    logger.debug("Index deleted successfully")
                     # Index has been created
                     return
                 else:
@@ -675,7 +691,7 @@ class Client(BaseClient):
         Enter a context manager for the admin client.
 
         Returns:
-            VectorDbAdminlient: Aerospike Vector Search Admin Client instance.
+            VectorDbAdminClient: Aerospike Vector Search Admin Client instance.
         """
         return self
 

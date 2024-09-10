@@ -29,6 +29,7 @@ def test_admin_client_service_config_parse(
     root_certificate,
     certificate_chain,
     private_key,
+    ssl_target_name_override,
     test_case,
 ):
 
@@ -51,6 +52,7 @@ def test_admin_client_service_config_parse(
         certificate_chain=certificate_chain,
         private_key=private_key,
         service_config_path=test_case.service_config_path,
+        ssl_target_name_override=ssl_target_name_override,
     ) as client:
         pass
 
@@ -129,6 +131,7 @@ def test_admin_client_service_config_retries(
     root_certificate,
     certificate_chain,
     private_key,
+    ssl_target_name_override,
     test_case,
 ):
 
@@ -151,6 +154,8 @@ def test_admin_client_service_config_retries(
         certificate_chain=certificate_chain,
         private_key=private_key,
         service_config_path=test_case.service_config_path,
+        ssl_target_name_override=ssl_target_name_override,
+
     ) as client:
 
         try:
@@ -205,6 +210,7 @@ def test_admin_client_service_config_initial_backoff(
     root_certificate,
     certificate_chain,
     private_key,
+    ssl_target_name_override,
     test_case,
 ):
 
@@ -226,6 +232,7 @@ def test_admin_client_service_config_initial_backoff(
         root_certificate=root_certificate,
         certificate_chain=certificate_chain,
         private_key=private_key,
+        ssl_target_name_override=ssl_target_name_override,
         service_config_path=test_case.service_config_path,
     ) as client:
 
@@ -288,6 +295,7 @@ def test_admin_client_service_config_max_backoff(
     root_certificate,
     certificate_chain,
     private_key,
+    ssl_target_name_override,
     test_case,
 ):
 
@@ -309,6 +317,7 @@ def test_admin_client_service_config_max_backoff(
         root_certificate=root_certificate,
         certificate_chain=certificate_chain,
         private_key=private_key,
+        ssl_target_name_override=ssl_target_name_override,
         service_config_path=test_case.service_config_path,
     ) as client:
 
@@ -363,6 +372,7 @@ def test_admin_client_service_config_backoff_multiplier(
     root_certificate,
     certificate_chain,
     private_key,
+    ssl_target_name_override,
     test_case,
 ):
 
@@ -384,6 +394,7 @@ def test_admin_client_service_config_backoff_multiplier(
         root_certificate=root_certificate,
         certificate_chain=certificate_chain,
         private_key=private_key,
+        ssl_target_name_override=ssl_target_name_override,
         service_config_path=test_case.service_config_path,
     ) as client:
 
@@ -438,6 +449,7 @@ def test_admin_client_service_config_retryable_status_codes(
     root_certificate,
     certificate_chain,
     private_key,
+    ssl_target_name_override,
     test_case,
 ):
 
@@ -459,6 +471,7 @@ def test_admin_client_service_config_retryable_status_codes(
         root_certificate=root_certificate,
         certificate_chain=certificate_chain,
         private_key=private_key,
+        ssl_target_name_override=ssl_target_name_override,
         service_config_path=test_case.service_config_path,
     ) as client:
 

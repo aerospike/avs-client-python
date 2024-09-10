@@ -286,10 +286,9 @@ class HnswHealerParams(object):
         Default is the global healer config, which is configured in the AVS Server.
     :type re_index_percent: Optional[int]
 
-    :param schedule_delay: The time delay, in milliseconds, between the termination of a healer run and the commencement
-        of the next one for an index. It only guarantees that the next index healer run for an index will not be scheduled before
-        this time delay. Default is the global healer config, which is configured in the AVS Server.
-    :type schedule_delay: Optional[int]
+    :param schedule: The quartz cron expression defining schedule at which the healer cycle is invoked.
+        Default is the global healer config, which is configured in the AVS Server.
+    :type schedule: Optional[str]
 
     :param parallelism: Maximum number of records to heal in parallel.
         Default is the global healer config, which is configured in the AVS Server.
@@ -302,13 +301,13 @@ class HnswHealerParams(object):
         max_scan_rate_per_node: Optional[int] = None,
         max_scan_page_size: Optional[int] = None,
         re_index_percent: Optional[int] = None,
-        schedule_delay: Optional[int] = None,
+        schedule: Optional[str] = None,
         parallelism: Optional[int] = None,
     ) -> None:
         self.max_scan_rate_per_node = max_scan_rate_per_node
         self.max_scan_page_size = max_scan_page_size
         self.re_index_percent = re_index_percent
-        self.schedule_delay = schedule_delay
+        self.schedule = schedule
         self.parallelism = parallelism
 
     def _to_pb2(self):
@@ -324,15 +323,44 @@ class HnswHealerParams(object):
 
             params.reindexPercent = self.re_index_percent
 
-        if self.schedule_delay:
+        if self.schedule:
 
-            params.scheduleDelay = self.schedule_delay
+            params.schedule = self.schedule
 
         if self.parallelism:
 
             params.parallelism = self.parallelism
 
         return params
+
+    def __repr__(self) -> str:
+        return (
+            f"HnswHealerParams(max_scan_rate_per_node={self.max_scan_rate_per_node}, "
+            f"max_scan_page_size={self.max_scan_page_size}, "
+            f"re_index_percent={self.re_index_percent}, "
+            f"schedule={self.schedule}, "
+            f"parallelism={self.parallelism})"
+        )
+
+    def __str__(self) -> str:
+        return (
+            f"HnswHealerParams {{\n"
+            f"  max_scan_rate_per_node: {self.max_scan_rate_per_node}\n"
+            f"  max_scan_page_size: {self.max_scan_page_size}\n"
+            f"  re_index_percent: {self.re_index_percent}\n"
+            f"  schedule: {self.schedule}\n"
+            f"  parallelism: {self.parallelism}\n"
+            f"}}"
+        )
+
+    def __getitem__(self, key):
+        key = str(key)  # Ensure key is a string
+        if not hasattr(self, key):
+            raise AttributeError(f"'HnswHealerParams' object has no attribute '{key}'")
+        return getattr(self, key)
+
+    def __setitem__(self, key, value):
+        return setattr(self, key, value)
 
 
 class HnswCachingParams(object):
@@ -362,24 +390,84 @@ class HnswCachingParams(object):
             params.expiry = self.expiry
         return params
 
+    def __repr__(self) -> str:
+        return (
+            f"HnswCachingParams(max_entries={self.max_entries}, "
+            f"expiry={self.expiry})"
+        )
+
+    def __str__(self) -> str:
+        return (
+            f"HnswCachingParams {{\n"
+            f"  max_entries: {self.max_entries}\n"
+            f"  expiry: {self.expiry}\n"
+            f"}}"
+        )
+
+    def __getitem__(self, key):
+        key = str(key)  # Ensure key is a string
+        if not hasattr(self, key):
+            raise AttributeError(f"'HnswCachingParams' object has no attribute '{key}'")
+        return getattr(self, key)
+
+    def __setitem__(self, key, value):
+        return setattr(self, key, value)
+
 
 class HnswIndexMergeParams(object):
     """
     Parameters to configure the HNSW index merge behavior.
 
-    :param parallelism: The number of vectors merged in parallel from a batch index to main index.
-        Default is the global healer config, which is configured in the AVS Server.
-    :type parallelism: Optional[int]
+    :param index_parallelism: The number of vectors merged in parallel from an indexing record batch-index to the main
+        index. Default is the global healer config, which is configured in the AVS Server.
+    :type index_parallelism: Optional[int]
+
+    :param reindex_parallelism: The number of vectors merged in parallel from an indexing record batch-index to the main
+        index. Default is the global healer config, which is configured in the AVS Server.
+    :type reindex_parallelism: Optional[int]
     """
 
-    def __init__(self, *, parallelism: Optional[int] = None) -> None:
-        self.parallelism = parallelism
+    def __init__(
+        self,
+        *,
+        index_parallelism: Optional[int] = None,
+        reindex_parallelism: Optional[int] = None,
+    ) -> None:
+        self.index_parallelism = index_parallelism
+        self.reindex_parallelism = reindex_parallelism
 
     def _to_pb2(self):
         params = types_pb2.HnswIndexMergeParams()
-        if self.parallelism:
-            params.parallelism = self.parallelism
+        if self.index_parallelism:
+            params.indexParallelism = self.index_parallelism
+        if self.reindex_parallelism:
+            params.reIndexParallelism = self.reindex_parallelism
         return params
+
+    def __repr__(self) -> str:
+        return (
+            f"HnswIndexMergeParams(index_parallelism={self.index_parallelism}, "
+            f"reindex_parallelism={self.reindex_parallelism})"
+        )
+
+    def __str__(self) -> str:
+        return (
+            f"HnswIndexMergeParams {{\n"
+            f"  index_parallelism: {self.index_parallelism}\n"
+            f"  reindex_parallelism: {self.reindex_parallelism}\n"
+            f"}}"
+        )
+
+    def __getitem__(self, key):
+        key = str(key)
+        if not hasattr(self, key):
+            raise AttributeError(
+                f"'HnswIndexMergeParams' object has no attribute '{key}'"
+            )
+        return getattr(self, key)
+
+    def __setitem__(self, key, value):
+        return setattr(self, key, value)
 
 
 class HnswParams(object):
@@ -445,26 +533,37 @@ class HnswParams(object):
 
     def __repr__(self) -> str:
         batching_repr = repr(self.batching_params)
+        caching_repr = repr(self.caching_params)
+        healer_repr = repr(self.healer_params)
+        merge_repr = repr(self.merge_params)
         return (
             f"HnswParams(m={self.m}, ef_construction={self.ef_construction}, "
-            f"ef={self.ef}, {batching_repr})"
+            f"ef={self.ef}, batching_params={batching_repr}, max_mem_queue_size={self.max_mem_queue_size}, "
+            f"caching_params={caching_repr}, healer_repr={healer_repr}, merge_repr={merge_repr})"
         )
 
     def __str__(self) -> str:
         batching_str = str(self.batching_params)
+        caching_str = str(self.caching_params)
+        healer_str = str(self.healer_params)
+        merge_str = str(self.merge_params)
         return (
             f"hnswParams {{\n"
             f"  m: {self.m}\n"
             f"  efConstruction: {self.ef_construction}\n"
             f"  ef: {self.ef}\n"
             f"  {batching_str}\n"
+            f"  maxMemQueueSize: {self.max_mem_queue_size}\n"
+            f"  {caching_str}\n"
+            f"  {healer_str}\n"
+            f"  {merge_str}\n"
             f"}}"
         )
 
     def __getitem__(self, key):
         key = str(key)  # Ensure key is a string
         if not hasattr(self, key):
-            raise AttributeError(f"'IndexDefinition' object has no attribute '{key}'")
+            raise AttributeError(f"'HnswParams' object has no attribute '{key}'")
         return getattr(self, key)
 
     def __setitem__(self, key, value):
@@ -543,7 +642,7 @@ class IndexStorage(object):
     def __getitem__(self, key):
         key = str(key)  # Ensure key is a string
         if not hasattr(self, key):
-            raise AttributeError(f"'IndexDefinition' object has no attribute '{key}'")
+            raise AttributeError(f"'IndexStorage' object has no attribute '{key}'")
         return getattr(self, key)
 
     def __setitem__(self, key, value):
@@ -605,7 +704,7 @@ class IndexDefinition(object):
 
     :param sets: Set name
     :type sets: str
-    
+
     :param hnsw_params: HNSW parameters.
     :type hnsw_params: HnswParams
 
@@ -626,7 +725,7 @@ class IndexDefinition(object):
         sets: str,
         hnsw_params: HnswParams,
         storage: IndexStorage,
-        index_labels: dict[str, str]
+        index_labels: dict[str, str],
     ) -> None:
         self.id = id
         self.dimensions = dimensions
@@ -644,6 +743,7 @@ class IndexDefinition(object):
             f"index_labels={self.index_labels}"
         )
 
+    # TODO make this representation consistent with HNSWParams, i.e. use newlines and indentation, or remove it completely
     def __str__(self) -> str:
         return (
             f"IndexDefinition(id={self.id}, dimensions={self.dimensions}, field={self.field}, sets={self.sets!r}, "

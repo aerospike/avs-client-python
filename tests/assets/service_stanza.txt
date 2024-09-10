@@ -5,5 +5,5 @@
         default:
           # List of externally accessible addresses and
           # ports for this Proximus instance.
-          - address: child
+          - address: brawn
             port: 5000

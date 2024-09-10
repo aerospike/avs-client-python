@@ -9,7 +9,7 @@ import grpc
 
 from . import helpers
 from .proto_generated import index_pb2_grpc, user_admin_pb2_grpc
-from .proto_generated import types_pb2, user_admin_pb2
+from .proto_generated import types_pb2, user_admin_pb2, index_pb2
 from .. import types
 from . import conversions
 
@@ -69,7 +69,7 @@ class BaseClient(object):
 
         index_stub = self._get_index_stub()
 
-        index_create_request = types_pb2.IndexDefinition(
+        index_definition = types_pb2.IndexDefinition(
             id=id,
             vectorDistanceMetric=vector_distance_metric,
             setFilter=sets,
@@ -79,6 +79,7 @@ class BaseClient(object):
             labels=index_labels,
             storage=index_storage,
         )
+        index_create_request = index_pb2.IndexCreateRequest(definition=index_definition)
         return (index_stub, index_create_request, kwargs)
 
     def _prepare_index_drop(self, namespace, name, timeout, logger) -> None:
@@ -95,30 +96,16 @@ class BaseClient(object):
             kwargs["timeout"] = timeout
 
         index_stub = self._get_index_stub()
-        index_drop_request = self._get_index_id(namespace, name)
-
+        index_id = self._get_index_id(namespace, name)
+        index_drop_request = index_pb2.IndexDropRequest(indexId=index_id)
         return (index_stub, index_drop_request, kwargs)
 
-    def _prepare_index_list(self, timeout, logger) -> None:
-
-        logger.debug("Getting index list: timeout=%s", timeout)
-
-        kwargs = {}
-        if timeout is not None:
-            kwargs["timeout"] = timeout
-
-        index_stub = self._get_index_stub()
-        index_list_request = empty
-
-        return (index_stub, index_list_request, kwargs)
-
-    def _prepare_index_get(self, namespace, name, timeout, logger) -> None:
+    def _prepare_index_list(self, timeout, logger, apply_defaults) -> None:
 
         logger.debug(
-            "Getting index information: namespace=%s, name=%s, timeout=%s",
-            namespace,
-            name,
+            "Getting index list: timeout=%s, apply_defaults=%s",
             timeout,
+            apply_defaults,
         )
 
         kwargs = {}
@@ -126,8 +113,30 @@ class BaseClient(object):
             kwargs["timeout"] = timeout
 
         index_stub = self._get_index_stub()
-        index_get_request = self._get_index_id(namespace, name)
+        index_list_request = index_pb2.IndexListRequest(applyDefaults=apply_defaults)
+        return (index_stub, index_list_request, kwargs)
 
+    def _prepare_index_get(
+        self, namespace, name, timeout, logger, apply_defaults
+    ) -> None:
+
+        logger.debug(
+            "Getting index information: namespace=%s, name=%s, timeout=%s, apply_defaults=%s",
+            namespace,
+            name,
+            timeout,
+            apply_defaults,
+        )
+
+        kwargs = {}
+        if timeout is not None:
+            kwargs["timeout"] = timeout
+
+        index_stub = self._get_index_stub()
+        index_id = self._get_index_id(namespace, name)
+        index_get_request = index_pb2.IndexGetRequest(
+            indexId=index_id, applyDefaults=apply_defaults
+        )
         return (index_stub, index_get_request, kwargs)
 
     def _prepare_index_get_status(self, namespace, name, timeout, logger) -> None:
@@ -144,8 +153,8 @@ class BaseClient(object):
             kwargs["timeout"] = timeout
 
         index_stub = self._get_index_stub()
-        index_get_status_request = self._get_index_id(namespace, name)
-
+        index_id = self._get_index_id(namespace, name)
+        index_get_status_request = index_pb2.IndexStatusRequest(indexId=index_id)
         return (index_stub, index_get_status_request, kwargs)
 
     def _prepare_add_user(self, username, password, roles, timeout, logger) -> None:

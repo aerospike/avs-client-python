@@ -54,13 +54,12 @@ jobs:
         assets/call_gen.sh
         cat aerospike-vector-search.yml
         cat aerospike.conf
-        cat /etc/hosts
 
       working-directory: tests
 
     - name: Run unit tests
       run: |
-        docker run -d  --network=host -p 5000:5000 --name aerospike-vector-search -v ./aerospike-vector-search.yml:/etc/aerospike-vector-search/aerospike-vector-search.yml -v ./features.conf:/etc/aerospike-vector-search/features.conf aerospike/aerospike-vector-search:0.9.0
+        docker run -d  --network=host -p 5000:5000 --name aerospike-vector-search -v ./aerospike-vector-search.yml:/etc/aerospike-vector-search/aerospike-vector-search.yml -v ./features.conf:/etc/aerospike-vector-search/features.conf aerospike/aerospike-vector-search:0.10.0
     
         docker run -d --name aerospike -p 3000:3000 -v .:/etc/aerospike aerospike/aerospike-server-enterprise:latest 
 
@@ -126,7 +125,6 @@ jobs:
         assets/call_gen_tls.sh
         cat aerospike-vector-search.yml
         cat aerospike.conf
-        cat /etc/hosts
       working-directory: tests
 
     - name: Add hosts to /etc/hosts
@@ -136,7 +134,7 @@ jobs:
     - name: Run unit tests
       run: |
 
-        docker run -d --name aerospike-vector-search --network=host -p 5000:5000   -v $(pwd):/etc/aerospike-vector-search aerospike/aerospike-vector-search:0.9.0
+        docker run -d --name aerospike-vector-search --network=host -p 5000:5000   -v $(pwd):/etc/aerospike-vector-search aerospike/aerospike-vector-search:0.10.0
         docker run -d --name aerospike -p 3000:3000 -v .:/etc/aerospike aerospike/aerospike-server-enterprise:latest 
 
         sleep 5
@@ -144,10 +142,8 @@ jobs:
 
 
         docker ps
-        python -m pytest standard/aio -s --host child --port 5000 --root_certificate tls/root.crt   -vs
+        python -m pytest standard/aio -s --host 0.0.0.0 --port 5000 --root_certificate tls/root.crt --ssl_target_name_override child -vs
 
-        docker logs aerospike-vector-search
-        docker logs aerospike
       working-directory: tests
 
   test-tls-auth:
@@ -212,12 +208,12 @@ jobs:
     - name: Run unit tests
       run: |
 
-        docker run -d --name aerospike-vector-search --network=host -p 5000:5000   -v $(pwd):/etc/aerospike-vector-search aerospike/aerospike-vector-search:0.9.0
+        docker run -d --name aerospike-vector-search --network=host -p 5000:5000   -v $(pwd):/etc/aerospike-vector-search aerospike/aerospike-vector-search:0.10.0
         docker run -d --name aerospike -p 3000:3000 -v .:/etc/aerospike aerospike/aerospike-server-enterprise:latest 
 
         sleep 5
 
-        python -m pytest standard/aio -s -vv --host child --port 5000 --root_certificate tls/root.crt --username admin --password admin  
+        python -m pytest standard/aio -s -vv --host 0.0.0.0 --port 5000 --root_certificate tls/root.crt --username admin --password admin  --ssl_target_name_override child
 
       working-directory: tests
 
@@ -277,18 +273,16 @@ jobs:
         assets/call_gen_tls_auth.sh
         cat aerospike-vector-search.yml
         cat aerospike.conf
-        cat /etc/hosts
       working-directory: tests
 
     - name: Add hosts to /etc/hosts
       run: |
         sudo echo "0.0.0.0 child" | sudo tee -a /etc/hosts
-        cat /etc/hosts
 
     - name: Run unit tests
       run: |
 
-        docker run -d --name aerospike-vector-search --network=host -p 5000:5000   -v $(pwd):/etc/aerospike-vector-search aerospike/aerospike-vector-search:0.9.0
+        docker run -d --name aerospike-vector-search --network=host -p 5000:5000   -v $(pwd):/etc/aerospike-vector-search aerospike/aerospike-vector-search:0.10.0
         docker run -d --name aerospike -p 3000:3000 -v .:/etc/aerospike aerospike/aerospike-server-enterprise:latest 
 
         sleep 5
@@ -296,7 +290,7 @@ jobs:
 
 
         docker ps
-        python -m pytest rbac -s -vv --host child --port 5000 --root_certificate tls/root.crt 
+        python -m pytest rbac -s -vv --host 0.0.0.0 --port 5000 --root_certificate tls/root.crt --ssl_target_name_override child
 
         docker logs aerospike-vector-search
         docker logs aerospike
@@ -352,25 +346,24 @@ jobs:
     - name: Create .rnd file if it doesn't exist
       run: touch $HOME/.rnd
 
+    - name: create config
+      run: |
+        assets/call_gen_mtls.sh
+      working-directory: tests
+
     - name: Add hosts to /etc/hosts
       run: |
         sudo echo "0.0.0.0 brawn" | sudo tee -a /etc/hosts
 
-    - name: create config
-      run: |
-        assets/call_gen_mtls.sh
-        cat /etc/hosts
-      working-directory: tests
-
     - name: Run unit tests
       run: |
 
-        docker run -d --name aerospike-vector-search --network=host -p 5000:5000  -v $(pwd):/etc/aerospike-vector-search aerospike/aerospike-vector-search:0.9.0
+        docker run -d --name aerospike-vector-search --network=host -p 5000:5000  -v $(pwd):/etc/aerospike-vector-search aerospike/aerospike-vector-search:0.10.0
         docker run -d --name aerospike -p 3000:3000 -v .:/etc/aerospike aerospike/aerospike-server-enterprise:latest 
 
         sleep 5
 
-        python -m pytest standard/aio -s --host brawn --port 5000 --root_certificate tls/root.crt --private_key tls/brawn.key.pem --certificate_chain tls/brawn.crt   -vs
+        python -m pytest standard/aio -s --host 0.0.0.0 --port 5000 --root_certificate tls/root.crt --private_key tls/brawn.key.pem --certificate_chain tls/brawn.crt --ssl_target_name_override brawn  -vs
 
 
 
@@ -426,25 +419,24 @@ jobs:
     - name: Create .rnd file if it doesn't exist
       run: touch $HOME/.rnd
 
+    - name: create config
+      run: |
+        assets/call_gen_mtls_auth.sh
+      working-directory: tests
+
     - name: Add hosts to /etc/hosts
       run: |
         sudo echo "0.0.0.0 brawn" | sudo tee -a /etc/hosts
 
-    - name: create config
-      run: |
-        assets/call_gen_mtls_auth.sh
-        cat /etc/hosts
-      working-directory: tests
-
     - name: Run unit tests
       run: |
 
-        docker run -d --name aerospike-vector-search --network=host -p 5000:5000  -v $(pwd):/etc/aerospike-vector-search aerospike/aerospike-vector-search:0.9.0
+        docker run -d --name aerospike-vector-search --network=host -p 5000:5000  -v $(pwd):/etc/aerospike-vector-search aerospike/aerospike-vector-search:0.10.0
         docker run -d --name aerospike -p 3000:3000 -v .:/etc/aerospike aerospike/aerospike-server-enterprise:latest 
 
         sleep 5
 
-        python -m pytest standard/aio -s --host brawn --port 5000 --root_certificate tls/root.crt --private_key tls/brawn.key.pem --certificate_chain tls/brawn.crt --username admin --password admin  -vs
+        python -m pytest standard/aio -s --host 0.0.0.0 --port 5000 --root_certificate tls/root.crt --private_key tls/brawn.key.pem --certificate_chain tls/brawn.crt --username admin --password admin --ssl_target_name_override brawn -vs
 
 
 
@@ -500,25 +492,25 @@ jobs:
     - name: Create .rnd file if it doesn't exist
       run: touch $HOME/.rnd
 
-    - name: Add hosts to /etc/hosts
-      run: |
-        sudo echo "0.0.0.0 brawn" | sudo tee -a /etc/hosts
-
     - name: create config
       run: |
         assets/call_gen_mtls_auth.sh
         cat /etc/hosts
       working-directory: tests
 
+    - name: Add hosts to /etc/hosts
+      run: |
+        sudo echo "0.0.0.0 brawn" | sudo tee -a /etc/hosts
+
     - name: Run unit tests
       run: |
 
-        docker run -d --name aerospike-vector-search --network=host -p 5000:5000  -v $(pwd):/etc/aerospike-vector-search aerospike/aerospike-vector-search:0.9.0
+        docker run -d --name aerospike-vector-search --network=host -p 5000:5000  -v $(pwd):/etc/aerospike-vector-search aerospike/aerospike-vector-search:0.10.0
         docker run -d --name aerospike -p 3000:3000 -v .:/etc/aerospike aerospike/aerospike-server-enterprise:latest 
 
         sleep 5
 
-        python -m pytest rbac -s --host brawn --port 5000 --root_certificate tls/root.crt --private_key tls/brawn.key.pem --certificate_chain tls/brawn.crt -vs
+        python -m pytest rbac -s --host 0.0.0.0 --port 5000 --root_certificate tls/root.crt --private_key tls/brawn.key.pem --certificate_chain tls/brawn.crt --ssl_target_name_override brawn -vs
       working-directory: tests
 
   test-is-loadbalancer:
@@ -579,7 +571,7 @@ jobs:
     - name: Run unit tests
       run: |
 
-        docker run -d --name aerospike-vector-search --network=host -p 5000:5000  -v $(pwd):/etc/aerospike-vector-search aerospike/aerospike-vector-search:0.9.0
+        docker run -d --name aerospike-vector-search --network=host -p 5000:5000  -v $(pwd):/etc/aerospike-vector-search aerospike/aerospike-vector-search:0.10.0
         docker run -d --name aerospike -p 3000:3000 -v .:/etc/aerospike aerospike/aerospike-server-enterprise:latest 
 
         sleep 5
@@ -645,7 +637,7 @@ jobs:
     - name: Run unit tests
       run: |
 
-        docker run -d --name aerospike-vector-search --network=host -p 5000:5000  -v $(pwd):/etc/aerospike-vector-search aerospike/aerospike-vector-search:0.9.0
+        docker run -d --name aerospike-vector-search --network=host -p 5000:5000  -v $(pwd):/etc/aerospike-vector-search aerospike/aerospike-vector-search:0.10.0
         docker run -d --name aerospike -p 3000:3000 -v .:/etc/aerospike aerospike/aerospike-server-enterprise:latest 
 
         sleep 5

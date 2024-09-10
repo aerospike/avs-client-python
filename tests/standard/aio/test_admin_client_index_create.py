@@ -367,7 +367,7 @@ async def test_index_create_with_sets(session_admin_client, test_case, random_na
             vector_distance_metric=None,
             sets=None,
             index_params=types.HnswParams(
-                batching_params=types.HnswBatchingParams(max_records=500, interval=500)
+                batching_params=types.HnswBatchingParams(max_records=2000, interval=20000)
             ),
             index_labels=None,
             index_storage=None,
@@ -385,10 +385,13 @@ async def test_index_create_with_sets(session_admin_client, test_case, random_na
                     max_scan_rate_per_node=80,
                     max_scan_page_size=40,
                     re_index_percent=50,
-                    schedule_delay=5,
+                    schedule="* 0/5 * ? * * *",
                     parallelism=4,
                 ),
-                merge_params=types.HnswIndexMergeParams(parallelism=10),
+                merge_params=types.HnswIndexMergeParams(
+                    index_parallelism=10,
+                    reindex_parallelism=3
+                ),
             ),
             index_labels=None,
             index_storage=None,

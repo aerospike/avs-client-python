@@ -18,6 +18,7 @@ logger = logging.getLogger(__name__)
 
 TEND_INTERVAL = 1
 
+
 class ChannelProvider(base_channel_provider.BaseChannelProvider):
     """Proximus Channel Provider"""
 
@@ -32,6 +33,7 @@ class ChannelProvider(base_channel_provider.BaseChannelProvider):
         certificate_chain: Optional[str] = None,
         private_key: Optional[str] = None,
         service_config_path: Optional[str] = None,
+        ssl_target_name_override: Optional[str] = None,
     ) -> None:
         super().__init__(
             seeds,
@@ -43,6 +45,7 @@ class ChannelProvider(base_channel_provider.BaseChannelProvider):
             certificate_chain,
             private_key,
             service_config_path,
+            ssl_target_name_override,
         )
         # When set, client has concluded cluster tending
         self._tend_ended = threading.Event()
@@ -61,25 +64,25 @@ class ChannelProvider(base_channel_provider.BaseChannelProvider):
         # initializes cluster tending
         self._tend_cluster()
 
-
-
-
-
     def _tend_cluster(self):
         try:
-            (channels, end_tend_cluster) = (
-                self.init_tend_cluster()
-            )
+            (channels, end_tend_cluster) = self.init_tend_cluster()
 
             if end_tend_cluster:
                 self._tend_ended.set()
                 return
 
-            (cluster_info_stubs, new_cluster_ids) = self._gather_new_cluster_ids_and_cluster_info_stubs(channels)
+            (cluster_info_stubs, new_cluster_ids) = (
+                self._gather_new_cluster_ids_and_cluster_info_stubs(channels)
+            )
 
-            update_endpoints_stubs = self._gather_stubs_for_endpoint_updating(new_cluster_ids, cluster_info_stubs)
+            update_endpoints_stubs = self._gather_stubs_for_endpoint_updating(
+                new_cluster_ids, cluster_info_stubs
+            )
 
-            cluster_endpoints_list = self._gather_temp_endpoints(new_cluster_ids, update_endpoints_stubs)
+            cluster_endpoints_list = self._gather_temp_endpoints(
+                new_cluster_ids, update_endpoints_stubs
+            )
 
             temp_endpoints = self._assign_temporary_endpoints(cluster_endpoints_list)
 
@@ -89,16 +92,18 @@ class ChannelProvider(base_channel_provider.BaseChannelProvider):
 
                 self._close_old_channels_from_node_channels(temp_endpoints)
 
-
             threading.Timer(TEND_INTERVAL, self._tend_cluster).start()
 
         except Exception as e:
             logger.error("Tending failed at unindentified location: %s", e)
             raise e
-    
+
     def _call_get_cluster_id(self, stub):
         try:
-            return stub.GetClusterId(empty, credentials=self._token,)
+            return stub.GetClusterId(
+                empty,
+                credentials=self._token,
+            )
         except Exception as e:
             logger.debug(
                 "While tending, failed to get cluster id with error: " + str(e)
@@ -116,18 +121,14 @@ class ChannelProvider(base_channel_provider.BaseChannelProvider):
             ).endpoints
         except Exception as e:
             logger.debug(
-                "While tending, failed to get cluster endpoints with error: "
-                + str(e)
+                "While tending, failed to get cluster endpoints with error: " + str(e)
             )
 
     def _call_close_on_channel(self, channel_endpoints):
         try:
             channel_endpoints.channel.close()
         except Exception as e:
-            logger.debug(
-                "While tending, failed to close GRPC channel: "
-                + str(e)
-            )
+            logger.debug("While tending, failed to close GRPC channel: " + str(e))
 
     def _tend_token(self):
 
@@ -137,10 +138,10 @@ class ChannelProvider(base_channel_provider.BaseChannelProvider):
         self._update_token_and_ttl()
 
         with self._auth_tending_lock:
-            self._auth_timer = threading.Timer((self._ttl * self._ttl_threshold), self._tend_token)
+            self._auth_timer = threading.Timer(
+                (self._ttl * self._ttl_threshold), self._tend_token
+            )
             self._auth_timer.start()
-
-
 
     def _update_token_and_ttl(
         self,
@@ -163,27 +164,27 @@ class ChannelProvider(base_channel_provider.BaseChannelProvider):
         about_request = vector_db_pb2.AboutRequest()
 
         try:
-            response = stub.Get(
-                about_request, credentials=self._token
-            )
+            response = stub.Get(about_request, credentials=self._token)
             self.current_server_version = response.version
         except grpc.RpcError as e:
-            logger.debug(
-                "Failed to retrieve server version: "
-                + str(e)
-            )
-            raise types.AVSServerError(rpc_error=e)  
+            logger.debug("Failed to retrieve server version: " + str(e))
+            raise types.AVSServerError(rpc_error=e)
         self.verify_compatible_server()
-
-
 
     def _create_channel(self, host: str, port: int) -> grpc.Channel:
         host = re.sub(r"%.*", "", host)
 
+        options = []
+
+        if self.ssl_target_name_override:
+            options.append(
+                ("grpc.ssl_target_name_override", self.ssl_target_name_override)
+            )
+
         if self.service_config_json:
-            options = []
             options.append(("grpc.service_config", self.service_config_json))
-        else:
+
+        if not options:
             options = None
 
         if self._root_certificate:
