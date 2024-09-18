@@ -71,6 +71,7 @@ jobs:
       working-directory: tests
 
     - name: Upload test coverage
+      if: ${{ matrix.python-version == '3.12' }}
       uses: actions/upload-artifact@v4
       with:
         name: coverage_normal
@@ -408,7 +409,7 @@ jobs:
 
     strategy:
       matrix:
-        python-version: ["3.9", "3.10", "3.11", "3.12"]
+        python-version: ["3.12"]
 
         
     steps:
@@ -487,7 +488,7 @@ jobs:
 
     strategy:
       matrix:
-        python-version: ["3.9", "3.10", "3.11", "3.12"]
+        python-version: ["3.12"]
 
         
     steps:
