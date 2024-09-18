@@ -720,17 +720,22 @@ jobs:
       uses: actions/download-artifact@v4
       with:
         pattern: coverage_*
+        path: coverage_files
+
+    - name: List files
+      run: ls -R coverage_files
 
     - name: Combine coverage reports
       run: |
-        coverage combine coverage_*
+        coverage combine coverage*
         coverage xml
+      working-directory: coverage_files
 
     - name: Upload to Codecov
       uses: codecov/codecov-action@v4
       with:
         fail_ci_if_error: true
-        files: ./coverage.xml
+        files: ./coverage_files/coverage.xml
         token: ${{ secrets.CODECOV_TOKEN }}
 
 #
