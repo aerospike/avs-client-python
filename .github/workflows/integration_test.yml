@@ -67,8 +67,14 @@ jobs:
         sleep 5
 
         docker ps
-        python -m pytest standard/aio -s --host 0.0.0.0 --port 5000 
+        python -m pytest standard/aio -s --host 0.0.0.0 --port 5000 --cov=aerospike_vector_search --cov-report=coverage.xml
       working-directory: tests
+
+    - name: Upload test coverage
+      uses: actions/upload-artifact@v4
+      with:
+        name: coverage_normal
+        path: tests/coverage.xml
 
   test-tls:
     runs-on: ubuntu-24.04
@@ -142,9 +148,16 @@ jobs:
 
 
         docker ps
-        python -m pytest standard/aio -s --host 0.0.0.0 --port 5000 --root_certificate tls/root.crt --ssl_target_name_override child -vs
+        python -m pytest standard/aio -s --host 0.0.0.0 --port 5000 --root_certificate tls/root.crt --ssl_target_name_override child -vs --cov=aerospike_vector_search --cov-report=coverage.xml
 
       working-directory: tests
+
+    - name: Upload test coverage
+      uses: actions/upload-artifact@v4
+      with:
+        name: coverage_tls
+        path: tests/coverage.xml
+
 
   test-tls-auth:
     runs-on: ubuntu-24.04
@@ -213,9 +226,15 @@ jobs:
 
         sleep 5
 
-        python -m pytest standard/aio -s -vv --host 0.0.0.0 --port 5000 --root_certificate tls/root.crt --username admin --password admin  --ssl_target_name_override child
+        python -m pytest standard/aio -s -vv --host 0.0.0.0 --port 5000 --root_certificate tls/root.crt --username admin --password admin  --ssl_target_name_override child --cov=aerospike_vector_search --cov-report=coverage.xml
 
       working-directory: tests
+
+    - name: Upload test coverage
+      uses: actions/upload-artifact@v4
+      with:
+        name: coverage_tls_auth
+        path: tests/coverage.xml
 
 
   test-tls-auth-rbac:
@@ -290,11 +309,17 @@ jobs:
 
 
         docker ps
-        python -m pytest rbac -s -vv --host 0.0.0.0 --port 5000 --root_certificate tls/root.crt --ssl_target_name_override child
+        python -m pytest rbac -s -vv --host 0.0.0.0 --port 5000 --root_certificate tls/root.crt --ssl_target_name_override child --cov=aerospike_vector_search --cov-report=coverage.xml
 
         docker logs aerospike-vector-search
         docker logs aerospike
       working-directory: tests
+
+    - name: Upload test coverage
+      uses: actions/upload-artifact@v4
+      with:
+        name: coverage_tls_auth_rbac
+        path: tests/coverage.xml
 
 
   test-mtls:
@@ -363,11 +388,17 @@ jobs:
 
         sleep 5
 
-        python -m pytest standard/aio -s --host 0.0.0.0 --port 5000 --root_certificate tls/root.crt --private_key tls/brawn.key.pem --certificate_chain tls/brawn.crt --ssl_target_name_override brawn  -vs
+        python -m pytest standard/aio -s --host 0.0.0.0 --port 5000 --root_certificate tls/root.crt --private_key tls/brawn.key.pem --certificate_chain tls/brawn.crt --ssl_target_name_override brawn  -vs --cov=aerospike_vector_search --cov-report=coverage.xml
 
 
 
       working-directory: tests
+
+    - name: Upload test coverage
+      uses: actions/upload-artifact@v4
+      with:
+        name: coverage_mtls
+        path: tests/coverage.xml
 
 
   test-mtls-auth:
@@ -436,11 +467,17 @@ jobs:
 
         sleep 5
 
-        python -m pytest standard/aio -s --host 0.0.0.0 --port 5000 --root_certificate tls/root.crt --private_key tls/brawn.key.pem --certificate_chain tls/brawn.crt --username admin --password admin --ssl_target_name_override brawn -vs
+        python -m pytest standard/aio -s --host 0.0.0.0 --port 5000 --root_certificate tls/root.crt --private_key tls/brawn.key.pem --certificate_chain tls/brawn.crt --username admin --password admin --ssl_target_name_override brawn -vs --cov=aerospike_vector_search --cov-report=coverage.xml
 
 
 
       working-directory: tests
+
+    - name: Upload test coverage
+      uses: actions/upload-artifact@v4
+      with:
+        name: coverage_mtls_auth_rbac
+        path: tests/coverage.xml
 
 
   test-mtls-auth-rbac:
@@ -510,8 +547,14 @@ jobs:
 
         sleep 5
 
-        python -m pytest rbac -s --host 0.0.0.0 --port 5000 --root_certificate tls/root.crt --private_key tls/brawn.key.pem --certificate_chain tls/brawn.crt --ssl_target_name_override brawn -vs
+        python -m pytest rbac -s --host 0.0.0.0 --port 5000 --root_certificate tls/root.crt --private_key tls/brawn.key.pem --certificate_chain tls/brawn.crt --ssl_target_name_override brawn -vs --cov=aerospike_vector_search --cov-report=coverage.xml
       working-directory: tests
+
+    - name: Upload test coverage
+      uses: actions/upload-artifact@v4
+      with:
+        name: coverage_mtls_auth_rbac
+        path: tests/coverage.xml
 
   test-is-loadbalancer:
     runs-on: ubuntu-24.04
@@ -576,8 +619,14 @@ jobs:
 
         sleep 5
 
-        python -m pytest standard/aio -s --host 0.0.0.0 --port 5000 --is_loadbalancer -vs
+        python -m pytest standard/aio -s --host 0.0.0.0 --port 5000 --is_loadbalancer -vs --cov=aerospike_vector_search --cov-report=coverage.xml
       working-directory: tests
+
+    - name: Upload test coverage
+      uses: actions/upload-artifact@v4
+      with:
+        name: coverage_is_load_balancer
+        path: tests/coverage.xml
 
   test-exhaustive-vector-search:
     runs-on: ubuntu-24.04
@@ -642,8 +691,46 @@ jobs:
 
         sleep 5
 
-        python -m pytest standard/aio -s --host 0.0.0.0 --port 5000 --extensive_vector_search -vs
+        python -m pytest standard/aio -s --host 0.0.0.0 --port 5000 --extensive_vector_search -vs --cov=aerospike_vector_search --cov-report=coverage.xml
       working-directory: tests
+
+    - name: Upload test coverage
+      uses: actions/upload-artifact@v4
+      with:
+        name: coverage_exhaustive_vector_search
+        path: tests/coverage.xml
+
+  upload-to-codecov:
+    needs: [test-normal, test-tls, test-tls-auth, test-tls-auth-rbac, test-mtls, test-mtls-auth, test-mtls-auth-rbac, test-is-loadbalancer, test-exhaustive-vector-search]
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    - name: Set up Python
+      uses: actions/setup-python@v2
+      with:
+        python-version: '3.x'
+
+    - name: Install coverage
+      run: pip install coverage
+
+    - name: Download coverage reports
+      uses: actions/download-artifact@v4
+      with:
+        pattern: coverage_*
+
+    - name: Combine coverage reports
+      run: |
+        coverage combine coverage_*
+        coverage xml
+
+    - name: Upload to Codecov
+      uses: codecov/codecov-action@v4
+      with:
+        fail_ci_if_error: true
+        files: ./coverage.xml
+        token: ${{ secrets.CODECOV_TOKEN }}
 
 #
 #  test-timeout-on-sandbox:

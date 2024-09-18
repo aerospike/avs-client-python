@@ -14,7 +14,7 @@ logger = logging.getLogger(__name__)
 
 class Client(BaseClient):
     """
-    Aerospike Vector Search Vector Client
+    Aerospike Vector Search Client
 
     This client specializes in performing database operations with vector data.
     Moreover, the client supports Hierarchical Navigable Small World (HNSW) vector searches,
