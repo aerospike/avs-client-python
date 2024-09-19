@@ -719,7 +719,6 @@ jobs:
     - name: Download coverage reports
       uses: actions/download-artifact@v4
       with:
-        pattern: coverage_*
         path: coverage_files
 
     - name: List files
@@ -727,7 +726,7 @@ jobs:
 
     - name: Combine coverage reports
       run: |
-        coverage combine **coverage.xml
+        coverage combine $(find . -name "coverage.xml")
         coverage xml
       working-directory: coverage_files
 
