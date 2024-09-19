@@ -727,7 +727,7 @@ jobs:
 
     - name: Combine coverage reports
       run: |
-        coverage combine coverage*
+        coverage combine **coverage.xml
         coverage xml
       working-directory: coverage_files
 
