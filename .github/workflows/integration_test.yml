@@ -723,8 +723,8 @@ jobs:
       with:
         python-version: '3.x'
 
-    - name: Install coverage
-      run: pip install coverage
+    - name: Install dependencies
+      run: pip install coverage build
 
     - name: Download coverage reports
       uses: actions/download-artifact@v4
@@ -737,7 +737,14 @@ jobs:
     - name: Combine coverage reports
       run: |
         coverage combine ./coverage_files/*
-        coverage xml
+    
+    # this is needed because the coverage files expect the source code
+    # to be installed in a certain location. TODO use relative files and source instead
+    # https://coverage.readthedocs.io/en/latest/config.html#config-run-relative-files
+    - name: Build and install aerospike-vector-search
+      run: |
+        python -m build
+        pip install dist/aerospike_vector_search-2.0.0-py3-none-any.whl
 
     - name: Upload to Codecov
       uses: codecov/codecov-action@v4
@@ -745,11 +752,6 @@ jobs:
         fail_ci_if_error: true
         files: ./coverage.xml
         token: ${{ secrets.CODECOV_TOKEN }}
-
-    - uses: actions/checkout@v4
-    - name: Setup tmate session
-      if: ${{ failure() }}
-      uses: mxschmitt/action-tmate@v3
 
 #
 #  test-timeout-on-sandbox:
