@@ -736,7 +736,7 @@ jobs:
 
     - name: Combine coverage reports
       run: |
-        coverage combine ./coverage_files/*
+        coverage combine $(find coverage-reports -name "coverage_data")
     
     # this is needed because the coverage files expect the source code
     # to be installed in a certain location. TODO use relative files and source instead
