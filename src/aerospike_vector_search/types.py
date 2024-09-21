@@ -1,3 +1,4 @@
+from dataclasses import dataclass
 import enum
 from typing import Any, Optional
 
@@ -48,6 +49,14 @@ class Key(object):
         Returns a string representation of the key.
         """
         return f"Key: namespace='{self.namespace}', set='{self.set}', key={self.key}"
+    
+    def __eq__(self, other):
+        return (
+            self.namespace == other.namespace
+            and self.set == other.set
+            and self.key == other.key
+        )
+
 
 
 class RecordWithKey(object):
@@ -113,9 +122,9 @@ class Neighbor(object):
     """
 
     def __init__(self, *, key: Key, fields: dict[str, Any], distance: float) -> None:
-        self.key = key
-        self.fields = fields
-        self.distance = distance
+        self.key: Key = key
+        self.fields: dict[str, Any] = fields
+        self.distance: float = distance
 
     def __str__(self):
         """
@@ -138,6 +147,17 @@ class Neighbor(object):
         return "{{\n\t{},\n\tdistance: {},\n\tfields: {{\n{}\n\t}}\n}}".format(
             self.key, self.distance, fields_info
         )
+    
+    def __eq__(self, other) -> bool:
+        if not isinstance(other, Neighbor):
+            return NotImplemented
+
+        return (
+            self.distance == other.distance
+            and self.key == other.key
+            and self.fields == other.fields
+        )
+
 
 
 class VectorDistanceMetric(enum.Enum):

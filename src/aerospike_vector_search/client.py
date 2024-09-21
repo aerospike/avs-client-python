@@ -259,6 +259,7 @@ class Client(BaseClient):
         namespace: str,
         key: Union[int, str, bytes, bytearray],
         field_names: Optional[list[str]] = None,
+        field_exclusions: Optional[list[str]] = None,
         set_name: Optional[str] = None,
         timeout: Optional[int] = None,
     ) -> types.RecordWithKey:
@@ -273,8 +274,16 @@ class Client(BaseClient):
 
 
         :param field_names: A list of field names to retrieve from the record.
+            When used, fields that are not included are not sent by the server,
+            saving on network traffic.
             If None, all fields are retrieved. Defaults to None.
         :type field_names: Optional[list[str]]
+
+        :param field_exclusions: A list of field names to exclude from the record.
+            When used, the excluded fields are not sent by the server,
+            saving on network traffic.
+            If None, all fields are retrieved. Defaults to None.
+        :type field_exclusions: Optional[list[str]]
 
         :param set_name: The name of the set from which to read the record. Defaults to None.
         :type set_name: Optional[str]
@@ -291,7 +300,7 @@ class Client(BaseClient):
         """
 
         (transact_stub, key, get_request, kwargs) = self._prepare_get(
-            namespace, key, field_names, set_name, timeout, logger
+            namespace, key, field_names, field_exclusions, set_name, timeout, logger
         )
 
         try:
@@ -452,6 +461,7 @@ class Client(BaseClient):
         limit: int,
         search_params: Optional[types.HnswSearchParams] = None,
         field_names: Optional[list[str]] = None,
+        field_exclusions: Optional[list[str]] = None,
         timeout: Optional[int] = None,
     ) -> list[types.Neighbor]:
         """
@@ -474,8 +484,16 @@ class Client(BaseClient):
         :type search_params: Optional[types_pb2.HnswSearchParams]
 
         :param field_names: A list of field names to retrieve from the results.
+            When used, fields that are not included are not sent by the server,
+            saving on network traffic.
             If None, all fields are retrieved. Defaults to None.
         :type field_names: Optional[list[str]]
+
+        :param field_exclusions: A list of field names to exclude from the results.
+            When used, the excluded fields are not sent by the server,
+            saving on network traffic.
+            If None, all fields are retrieved. Defaults to None.
+        :type field_exclusions: Optional[list[str]]
 
         :param timeout: Time in seconds this operation will wait before raising an :class:`AVSServerError <aerospike_vector_search.types.AVSServerError>`. Defaults to None.
         :type timeout: int
@@ -495,6 +513,7 @@ class Client(BaseClient):
             limit,
             search_params,
             field_names,
+            field_exclusions,
             timeout,
             logger,
         )
