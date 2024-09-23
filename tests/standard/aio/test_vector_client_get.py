@@ -78,6 +78,24 @@ class get_test_case:
             expected_fields={},
             timeout=None,
         ),
+        get_test_case(
+            namespace="test",
+            include_fields=[],
+            exclude_fields=None,
+            set_name=None,
+            record_data={"english": 1, "spanish": 2},
+            expected_fields={},
+            timeout=None,
+        ),
+        get_test_case(
+            namespace="test",
+            include_fields=None,
+            exclude_fields=[],
+            set_name=None,
+            record_data={"english": 1, "spanish": 2},
+            expected_fields={"english": 1, "spanish": 2},
+            timeout=None,
+        ),
     ],
 )
 async def test_vector_get(session_vector_client, test_case, random_key):
