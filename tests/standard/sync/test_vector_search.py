@@ -87,7 +87,7 @@ def vector_search(client, vector, name):
         index_name=name,
         query=vector,
         limit=100,
-        field_names=["unit_test"],
+        include_fields=["unit_test"],
     )
     return result
 
@@ -98,7 +98,7 @@ def vector_search_ef_80(client, vector, name):
         index_name=name,
         query=vector,
         limit=100,
-        field_names=["unit_test"],
+        include_fields=["unit_test"],
         search_params=types.HnswSearchParams(ef=80),
     )
     return result
@@ -164,8 +164,8 @@ class get_test_case:
         limit,
         query,
         namespace,
-        field_names,
-        field_exclusions,
+        include_fields,
+        exclude_fields,
         set_name,
         record_data,
         expected_results,
@@ -176,8 +176,8 @@ class get_test_case:
         self.limit = limit
         self.query = query
         self.namespace = namespace
-        self.field_names = field_names
-        self.field_exclusions = field_exclusions
+        self.include_fields = include_fields
+        self.exclude_fields = exclude_fields
         self.set_name = set_name
         self.record_data = record_data
         self.expected_results = expected_results
@@ -194,8 +194,8 @@ class get_test_case:
             limit=3,
             query=[0.0, 0.0, 0.0],
             namespace="test",
-            field_names=None,
-            field_exclusions = None,
+            include_fields=None,
+            exclude_fields = None,
             set_name=None,
             record_data={
                 "rec1": {
@@ -225,8 +225,8 @@ class get_test_case:
             limit=3,
             query=[0.0, 0.0, 0.0],
             namespace="test",
-            field_names=["bin1"],
-            field_exclusions=["bin1"],
+            include_fields=["bin1"],
+            exclude_fields=["bin1"],
             set_name=None,
             record_data={
                 "rec1": {
@@ -279,8 +279,8 @@ async def test_vector_search_field_filters(
         index_name=test_case.index_name,
         query=test_case.query,
         limit=test_case.limit,
-        field_names=test_case.field_names,
-        field_exclusions=test_case.field_exclusions,
+        include_fields=test_case.include_fields,
+        exclude_fields=test_case.exclude_fields,
     )
 
     assert results == test_case.expected_results
@@ -552,7 +552,7 @@ def test_vector_vector_search_timeout(
                 index_name="demo2",
                 query=[0, 1, 2],
                 limit=100,
-                field_names=["unit_test"],
+                include_fields=["unit_test"],
                 timeout=0.0001,
             )
         except AVSServerError as se:

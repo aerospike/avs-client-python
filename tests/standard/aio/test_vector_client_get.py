@@ -12,16 +12,16 @@ class get_test_case:
         self,
         *,
         namespace,
-        field_names,
-        field_exclusions,
+        include_fields,
+        exclude_fields,
         set_name,
         record_data,
         expected_fields,
         timeout,
     ):
         self.namespace = namespace
-        self.field_names = field_names
-        self.field_exclusions = field_exclusions
+        self.include_fields = include_fields
+        self.exclude_fields = exclude_fields
         self.set_name = set_name
         self.record_data = record_data
         self.expected_fields = expected_fields
@@ -35,8 +35,8 @@ class get_test_case:
     [
         get_test_case(
             namespace="test",
-            field_names=["skills"],
-            field_exclusions = None,
+            include_fields=["skills"],
+            exclude_fields = None,
             set_name=None,
             record_data={"skills": [i for i in range(1024)]},
             expected_fields={"skills": [i for i in range(1024)]},
@@ -44,8 +44,8 @@ class get_test_case:
         ),
         get_test_case(
             namespace="test",
-            field_names=["english"],
-            field_exclusions = None,
+            include_fields=["english"],
+            exclude_fields = None,
             set_name=None,
             record_data={"english": [float(i) for i in range(1024)]},
             expected_fields={"english": [float(i) for i in range(1024)]},
@@ -53,8 +53,8 @@ class get_test_case:
         ),
         get_test_case(
             namespace="test",
-            field_names=["english"],
-            field_exclusions = None,
+            include_fields=["english"],
+            exclude_fields = None,
             set_name=None,
             record_data={"english": 1, "spanish": 2},
             expected_fields={"english": 1},
@@ -62,8 +62,8 @@ class get_test_case:
         ),
         get_test_case(
             namespace="test",
-            field_names=None,
-            field_exclusions=["spanish"],
+            include_fields=None,
+            exclude_fields=["spanish"],
             set_name=None,
             record_data={"english": 1, "spanish": 2},
             expected_fields={"english": 1},
@@ -71,8 +71,8 @@ class get_test_case:
         ),
         get_test_case(
             namespace="test",
-            field_names=["spanish"],
-            field_exclusions=["spanish"],
+            include_fields=["spanish"],
+            exclude_fields=["spanish"],
             set_name=None,
             record_data={"english": 1, "spanish": 2},
             expected_fields={},
@@ -90,8 +90,8 @@ async def test_vector_get(session_vector_client, test_case, random_key):
     result = await session_vector_client.get(
         namespace=test_case.namespace,
         key=random_key,
-        field_names=test_case.field_names,
-        field_exclusions=test_case.field_exclusions,
+        include_fields=test_case.include_fields,
+        exclude_fields=test_case.exclude_fields,
     )
     assert result.key.namespace == test_case.namespace
     if test_case.set_name == None:
@@ -114,8 +114,8 @@ async def test_vector_get(session_vector_client, test_case, random_key):
     [
         get_test_case(
             namespace="test",
-            field_names=["skills"],
-            field_exclusions = None,
+            include_fields=["skills"],
+            exclude_fields = None,
             set_name=None,
             record_data=None,
             expected_fields=None,
@@ -133,8 +133,8 @@ async def test_vector_get_timeout(
             result = await session_vector_client.get(
                 namespace=test_case.namespace,
                 key=random_key,
-                field_names=test_case.field_names,
-                field_exclusions=test_case.field_exclusions,
+                include_fields=test_case.include_fields,
+                exclude_fields=test_case.exclude_fields,
                 timeout=test_case.timeout,
             )
     assert e_info.value.rpc_error.code() == grpc.StatusCode.DEADLINE_EXCEEDED

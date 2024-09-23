@@ -2,6 +2,7 @@ import asyncio
 import logging
 import sys
 from typing import Any, Optional, Union
+import warnings
 
 import grpc
 import numpy as np
@@ -269,10 +270,12 @@ class Client(BaseClient):
         *,
         namespace: str,
         key: Union[int, str, bytes, bytearray, np.generic, np.ndarray],
-        field_names: Optional[list[str]] = None,
-        field_exclusions: Optional[list[str]] = None,
+        include_fields: Optional[list[str]] = None,
+        exclude_fields: Optional[list[str]] = None,
         set_name: Optional[str] = None,
         timeout: Optional[int] = None,
+        # field_names is deprecated, use include_fields
+        field_names: Optional[list[str]] = None,
     ) -> types.RecordWithKey:
         """
         Read a record from Aerospike Vector Search.
@@ -283,23 +286,26 @@ class Client(BaseClient):
         :param key: The key for the record.
         :type key: Union[int, str, bytes, bytearray, np.generic, np.ndarray]
 
-        :param field_names: A list of field names to retrieve from the record.
+        :param include_fields: A list of field names to retrieve from the record.
             When used, fields that are not included are not sent by the server,
             saving on network traffic.
             If None, all fields are retrieved. Defaults to None.
-        :type field_names: Optional[list[str]]
+        :type include_fields: Optional[list[str]]
 
-        :param field_exclusions: A list of field names to exclude from the record.
+        :param exclude_fields: A list of field names to exclude from the record.
             When used, the excluded fields are not sent by the server,
             saving on network traffic.
             If None, all fields are retrieved. Defaults to None.
-        :type field_exclusions: Optional[list[str]]
+        :type exclude_fields: Optional[list[str]]
 
         :param set_name: The name of the set from which to read the record. Defaults to None.
         :type set_name: Optional[str]
 
         :param timeout: Time in seconds this operation will wait before raising an :class:`AVSServerError <aerospike_vector_search.types.AVSServerError>`. Defaults to None.
         :type timeout: int
+
+        :param field_names: Deprecated, use include_fields instead.
+        :type field_names: Optional[list[str]]
 
         Returns:
             types.RecordWithKey: A record with its associated key.
@@ -310,10 +316,18 @@ class Client(BaseClient):
 
         """
 
+        # TODO remove this when 'field_names' is removed
+        if field_names is not None:
+            warnings.warn(
+                "The 'field_names' argument is deprecated. Use 'include_fields' instead",
+                DeprecationWarning,
+            )
+            include_fields = field_names
+
         await self._channel_provider._is_ready()
 
         (transact_stub, key, get_request, kwargs) = self._prepare_get(
-            namespace, key, field_names, field_exclusions, set_name, timeout, logger
+            namespace, key, include_fields, exclude_fields, set_name, timeout, logger
         )
 
         try:
@@ -481,9 +495,11 @@ class Client(BaseClient):
         query: list[Union[bool, float]],
         limit: int,
         search_params: Optional[types.HnswSearchParams] = None,
-        field_names: Optional[list[str]] = None,
-        field_exclusions: Optional[list[str]] = None,
+        include_fields: Optional[list[str]] = None,
+        exclude_fields: Optional[list[str]] = None,
         timeout: Optional[int] = None,
+        # field_names is deprecated, use include_fields
+        field_names: Optional[list[str]] = None,
     ) -> list[types.Neighbor]:
         """
         Perform a Hierarchical Navigable Small World (HNSW) vector search in Aerospike Vector Search.
@@ -504,20 +520,23 @@ class Client(BaseClient):
             If None, the default parameters for the index are used. Defaults to None.
         :type search_params: Optional[types_pb2.HnswSearchParams]
 
-        :param field_names: A list of field names to retrieve from the results.
+        :param include_fields: A list of field names to retrieve from the results.
             When used, fields that are not included are not sent by the server,
             saving on network traffic.
             If None, all fields are retrieved. Defaults to None.
-        :type field_names: Optional[list[str]]
+        :type include_fields: Optional[list[str]]
 
-        :param field_exclusions: A list of field names to exclude from the results.
+        :param exclude_fields: A list of field names to exclude from the results.
             When used, the excluded fields are not sent by the server,
             saving on network traffic.
             If None, all fields are retrieved. Defaults to None.
-        :type field_exclusions: Optional[list[str]]
+        :type exclude_fields: Optional[list[str]]
 
         :param timeout: Time in seconds this operation will wait before raising an :class:`AVSServerError <aerospike_vector_search.types.AVSServerError>`. Defaults to None.
         :type timeout: int
+
+        :param field_names: Deprecated, use include_fields instead.
+        :type field_names: Optional[list[str]]
 
         Returns:
             list[types.Neighbor]: A list of neighbors records found by the search.
@@ -526,6 +545,15 @@ class Client(BaseClient):
             AVSServerError: Raised if an error occurs during the RPC communication with the server while attempting to vector search.
             This error could occur due to various reasons such as network issues, server-side failures, or invalid request parameters.
         """
+
+        # TODO remove this when 'field_names' is removed
+        if field_names is not None:
+            warnings.warn(
+                "The 'field_names' argument is deprecated. Use 'include_fields' instead",
+                DeprecationWarning,
+            )
+            include_fields = field_names
+
         await self._channel_provider._is_ready()
 
         (transact_stub, vector_search_request, kwargs) = self._prepare_vector_search(
@@ -534,8 +562,8 @@ class Client(BaseClient):
             query,
             limit,
             search_params,
-            field_names,
-            field_exclusions,
+            include_fields,
+            exclude_fields,
             timeout,
             logger,
         )

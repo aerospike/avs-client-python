@@ -131,15 +131,15 @@ class BaseClient(object):
         )
 
     def _prepare_get(
-        self, namespace, key, field_names, field_exclusions, set_name, timeout, logger
+        self, namespace, key, include_fields, exclude_fields, set_name, timeout, logger
     ) -> None:
 
         logger.debug(
-            "Getting record: namespace=%s, key=%s, field_names:%s, field_exclusions:%s, set_name:%s, timeout:%s",
+            "Getting record: namespace=%s, key=%s, include_fields:%s, exclude_fields:%s, set_name:%s, timeout:%s",
             namespace,
             key,
-            field_names,
-            field_exclusions,
+            include_fields,
+            exclude_fields,
             set_name,
             timeout,
         )
@@ -149,7 +149,7 @@ class BaseClient(object):
             kwargs["timeout"] = timeout
 
         key = self._get_key(namespace, set_name, key)
-        projection_spec = self._get_projection_spec(field_names=field_names, exclude_field_names=field_exclusions)
+        projection_spec = self._get_projection_spec(include_fields=include_fields, exclude_include_fields=exclude_fields)
 
         transact_stub = self._get_transact_stub()
         get_request = transact_pb2.GetRequest(key=key, projection=projection_spec)
@@ -233,8 +233,8 @@ class BaseClient(object):
         query,
         limit,
         search_params,
-        field_names,
-        field_exclusions,
+        include_fields,
+        exclude_fields,
         timeout,
         logger,
     ) -> None:
@@ -244,21 +244,21 @@ class BaseClient(object):
             kwargs["timeout"] = timeout
 
         logger.debug(
-            "Performing vector search: namespace=%s, index_name=%s, query=%s, limit=%s, search_params=%s, field_names=%s, field_exclusions=%s, timeout:%s",
+            "Performing vector search: namespace=%s, index_name=%s, query=%s, limit=%s, search_params=%s, include_fields=%s, exclude_fields=%s, timeout:%s",
             namespace,
             index_name,
             query,
             limit,
             search_params,
-            field_names,
-            field_exclusions,
+            include_fields,
+            exclude_fields,
             timeout,
         )
 
         if search_params != None:
             search_params = search_params._to_pb2()
 
-        projection_spec = self._get_projection_spec(field_names=field_names, exclude_field_names=field_exclusions)
+        projection_spec = self._get_projection_spec(include_fields=include_fields, exclude_include_fields=exclude_fields)
 
         index = types_pb2.IndexId(namespace=namespace, name=index_name)
 
@@ -302,8 +302,8 @@ class BaseClient(object):
     def _get_projection_spec(
         self,
         *,
-        field_names: Optional[list] = None,
-        exclude_field_names: Optional[list] = None,
+        include_fields: Optional[list] = None,
+        exclude_include_fields: Optional[list] = None,
     ):
         # include all fields by default
         include = transact_pb2.ProjectionFilter(
@@ -314,14 +314,14 @@ class BaseClient(object):
             type=transact_pb2.ProjectionType.NONE, fields=None
         )
 
-        if field_names:
+        if include_fields is not None:
             include = transact_pb2.ProjectionFilter(
-                type=transact_pb2.ProjectionType.SPECIFIED, fields=field_names
+                type=transact_pb2.ProjectionType.SPECIFIED, fields=include_fields
             )
 
-        if exclude_field_names:
+        if exclude_include_fields is not None:
             exclude = transact_pb2.ProjectionFilter(
-                type=transact_pb2.ProjectionType.SPECIFIED, fields=exclude_field_names
+                type=transact_pb2.ProjectionType.SPECIFIED, fields=exclude_include_fields
             )
 
         projection_spec = transact_pb2.ProjectionSpec(include=include, exclude=exclude)
