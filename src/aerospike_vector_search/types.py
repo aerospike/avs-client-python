@@ -125,9 +125,9 @@ class Neighbor(object):
     """
 
     def __init__(self, *, key: Key, fields: dict[str, Any], distance: float) -> None:
-        self.key: Key = key
-        self.fields: dict[str, Any] = fields
-        self.distance: float = distance
+        self.key = key
+        self.fields = fields
+        self.distance = distance
 
     def __str__(self):
         """
