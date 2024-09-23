@@ -51,6 +51,9 @@ class Key(object):
         return f"Key: namespace='{self.namespace}', set='{self.set}', key={self.key}"
     
     def __eq__(self, other):
+        if not isinstance(other, Key):
+            return NotImplemented
+
         return (
             self.namespace == other.namespace
             and self.set == other.set
