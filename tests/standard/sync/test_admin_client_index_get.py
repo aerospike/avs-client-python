@@ -63,14 +63,14 @@ def test_index_get(session_admin_client, empty_test_case, random_name):
 #@given(random_name=index_strategy())
 #@settings(max_examples=1, deadline=1000)
 async def test_index_get_no_defaults(session_admin_client, empty_test_case, random_name):
-    await session_admin_client.index_create(
+    session_admin_client.index_create(
         namespace="test",
         name=random_name,
         vector_field="science",
         dimensions=1024,
     )
 
-    result = await session_admin_client.index_get(namespace="test", name=random_name, apply_defaults=False)
+    result = session_admin_client.index_get(namespace="test", name=random_name, apply_defaults=False)
 
     # AVS server still returns values for these fields even if apply_defaults is False
     # this might change in the future if it is fixed in the server
@@ -104,7 +104,7 @@ async def test_index_get_no_defaults(session_admin_client, empty_test_case, rand
     assert result["hnsw_params"]["merge_params"]["index_parallelism"] == 0
     assert result["hnsw_params"]["merge_params"]["reindex_parallelism"] == 0
 
-    await drop_specified_index(session_admin_client, "test", random_name)
+    drop_specified_index(session_admin_client, "test", random_name)
 
 
 @pytest.mark.parametrize("empty_test_case", [None])
