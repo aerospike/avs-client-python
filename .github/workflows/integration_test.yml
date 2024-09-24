@@ -67,7 +67,7 @@ jobs:
         sleep 5
 
         docker ps
-        python -m pytest standard/aio -s --host 0.0.0.0 --port 5000 --cov=aerospike_vector_search
+        python -m pytest standard -s --host 0.0.0.0 --port 5000 --cov=aerospike_vector_search
 
         mv .coverage coverage_data
       working-directory: tests
@@ -151,7 +151,7 @@ jobs:
 
 
         docker ps
-        python -m pytest standard/aio -s --host 0.0.0.0 --port 5000 --root_certificate tls/root.crt --ssl_target_name_override child -vs --cov=aerospike_vector_search
+        python -m pytest standard -s --host 0.0.0.0 --port 5000 --root_certificate tls/root.crt --ssl_target_name_override child -vs --cov=aerospike_vector_search
 
         mv .coverage coverage_data
       working-directory: tests
@@ -230,7 +230,7 @@ jobs:
 
         sleep 5
 
-        python -m pytest standard/aio -s -vv --host 0.0.0.0 --port 5000 --root_certificate tls/root.crt --username admin --password admin  --ssl_target_name_override child --cov=aerospike_vector_search
+        python -m pytest standard -s -vv --host 0.0.0.0 --port 5000 --root_certificate tls/root.crt --username admin --password admin  --ssl_target_name_override child --cov=aerospike_vector_search
 
         mv .coverage coverage_data
       working-directory: tests
@@ -395,7 +395,7 @@ jobs:
 
         sleep 5
 
-        python -m pytest standard/aio -s --host 0.0.0.0 --port 5000 --root_certificate tls/root.crt --private_key tls/brawn.key.pem --certificate_chain tls/brawn.crt --ssl_target_name_override brawn  -vs --cov=aerospike_vector_search
+        python -m pytest standard -s --host 0.0.0.0 --port 5000 --root_certificate tls/root.crt --private_key tls/brawn.key.pem --certificate_chain tls/brawn.crt --ssl_target_name_override brawn  -vs --cov=aerospike_vector_search
 
         mv .coverage coverage_data
       working-directory: tests
@@ -473,7 +473,7 @@ jobs:
 
         sleep 5
 
-        python -m pytest standard/aio -s --host 0.0.0.0 --port 5000 --root_certificate tls/root.crt --private_key tls/brawn.key.pem --certificate_chain tls/brawn.crt --username admin --password admin --ssl_target_name_override brawn -vs --cov=aerospike_vector_search
+        python -m pytest standard -s --host 0.0.0.0 --port 5000 --root_certificate tls/root.crt --private_key tls/brawn.key.pem --certificate_chain tls/brawn.crt --username admin --password admin --ssl_target_name_override brawn -vs --cov=aerospike_vector_search
 
         mv .coverage coverage_data
       working-directory: tests
@@ -626,7 +626,7 @@ jobs:
 
         sleep 5
 
-        python -m pytest standard/aio -s --host 0.0.0.0 --port 5000 --is_loadbalancer -vs --cov=aerospike_vector_search
+        python -m pytest standard -s --host 0.0.0.0 --port 5000 --is_loadbalancer -vs --cov=aerospike_vector_search
 
         mv .coverage coverage_data
       working-directory: tests
@@ -700,7 +700,7 @@ jobs:
 
         sleep 5
 
-        python -m pytest standard/aio -s --host 0.0.0.0 --port 5000 --extensive_vector_search --cov=aerospike_vector_search -vs
+        python -m pytest standard -s --host 0.0.0.0 --port 5000 --extensive_vector_search --cov=aerospike_vector_search -vs
 
         mv .coverage coverage_data
       working-directory: tests
@@ -787,5 +787,5 @@ jobs:
 #    - name: Run unit tests
 #      run: |
 #
-#        python -m pytest standard/aio -s --host  34.42.225.207 --port 5000 --with_latency
+#        python -m pytest standard -s --host  34.42.225.207 --port 5000 --with_latency
 #      working-directory: tests
