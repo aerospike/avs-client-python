@@ -289,6 +289,8 @@ class Client(BaseClient):
         :param include_fields: A list of field names to retrieve from the record.
             When used, fields that are not included are not sent by the server,
             saving on network traffic.
+            If a field is listed in both include_fields and exclude_fields,
+            exclude_fields takes priority, and the field is not returned.
             If None, all fields are retrieved. Defaults to None.
         :type include_fields: Optional[list[str]]
 
@@ -320,7 +322,7 @@ class Client(BaseClient):
         if field_names is not None:
             warnings.warn(
                 "The 'field_names' argument is deprecated. Use 'include_fields' instead",
-                DeprecationWarning,
+                FutureWarning,
             )
             include_fields = field_names
 
@@ -523,6 +525,8 @@ class Client(BaseClient):
         :param include_fields: A list of field names to retrieve from the results.
             When used, fields that are not included are not sent by the server,
             saving on network traffic.
+            If a field is listed in both include_fields and exclude_fields,
+            exclude_fields takes priority, and the field is not returned.
             If None, all fields are retrieved. Defaults to None.
         :type include_fields: Optional[list[str]]
 
@@ -550,7 +554,7 @@ class Client(BaseClient):
         if field_names is not None:
             warnings.warn(
                 "The 'field_names' argument is deprecated. Use 'include_fields' instead",
-                DeprecationWarning,
+                FutureWarning,
             )
             include_fields = field_names
 

@@ -155,7 +155,7 @@ async def grade_results(
         assert recall > 0.9
 
 
-class get_test_case:
+class vector_search_test_case:
     def __init__(
         self,
         *,
@@ -188,7 +188,7 @@ class get_test_case:
 @pytest.mark.parametrize(
     "test_case",
     [
-        get_test_case(
+        vector_search_test_case(
             index_name="basic_search",
             index_dimensions=3,
             vector_field="vector",
@@ -219,7 +219,7 @@ class get_test_case:
                 ),
             ],
         ),
-        get_test_case(
+        vector_search_test_case(
             index_name="field_filter",
             index_dimensions=3,
             vector_field="vector",
