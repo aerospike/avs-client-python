@@ -149,7 +149,7 @@ class BaseClient(object):
             kwargs["timeout"] = timeout
 
         key = self._get_key(namespace, set_name, key)
-        projection_spec = self._get_projection_spec(include_fields=include_fields, exclude_include_fields=exclude_fields)
+        projection_spec = self._get_projection_spec(include_fields=include_fields, exclude_fields=exclude_fields)
 
         transact_stub = self._get_transact_stub()
         get_request = transact_pb2.GetRequest(key=key, projection=projection_spec)
@@ -258,7 +258,7 @@ class BaseClient(object):
         if search_params != None:
             search_params = search_params._to_pb2()
 
-        projection_spec = self._get_projection_spec(include_fields=include_fields, exclude_include_fields=exclude_fields)
+        projection_spec = self._get_projection_spec(include_fields=include_fields, exclude_fields=exclude_fields)
 
         index = types_pb2.IndexId(namespace=namespace, name=index_name)
 
@@ -303,25 +303,25 @@ class BaseClient(object):
         self,
         *,
         include_fields: Optional[list] = None,
-        exclude_include_fields: Optional[list] = None,
+        exclude_fields: Optional[list] = None,
     ):
         # include all fields by default
-        include = transact_pb2.ProjectionFilter(
-            type=transact_pb2.ProjectionType.ALL, fields=None
-        )
-        # exclude no fields by default
-        exclude = transact_pb2.ProjectionFilter(
-            type=transact_pb2.ProjectionType.NONE, fields=None
-        )
-
-        if include_fields is not None:
+        if include_fields is None:
+            include = transact_pb2.ProjectionFilter(
+                type=transact_pb2.ProjectionType.ALL, fields=None
+            )
+        else:
             include = transact_pb2.ProjectionFilter(
                 type=transact_pb2.ProjectionType.SPECIFIED, fields=include_fields
             )
 
-        if exclude_include_fields is not None:
+        if exclude_fields is None:
             exclude = transact_pb2.ProjectionFilter(
-                type=transact_pb2.ProjectionType.SPECIFIED, fields=exclude_include_fields
+                type=transact_pb2.ProjectionType.NONE, fields=None
+            )
+        else:
+            exclude = transact_pb2.ProjectionFilter(
+                type=transact_pb2.ProjectionType.SPECIFIED, fields=exclude_fields
             )
 
         projection_spec = transact_pb2.ProjectionSpec(include=include, exclude=exclude)
