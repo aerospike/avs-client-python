@@ -655,7 +655,7 @@ class Client(BaseClient):
 
     async def close(self):
         """
-        Close the Aerospike Vector Search Vector Client.
+        Close the Aerospike Vector Search Client.
 
         This method closes gRPC channels connected to Aerospike Vector Search.
 
@@ -666,15 +666,15 @@ class Client(BaseClient):
 
     async def __aenter__(self):
         """
-        Enter an asynchronous context manager for the vector client.
+        Enter an asynchronous context manager for the client.
 
         Returns:
-            VectorDbClient: Aerospike Vector Search Vector Client instance.
+            VectorDbClient: Aerospike Vector Search Client instance.
         """
         return self
 
     async def __aexit__(self, exc_type, exc_val, exc_tb):
         """
-        Exit an asynchronous context manager for the vector client.
+        Exit an asynchronous context manager for the client.
         """
         await self.close()

@@ -67,8 +67,17 @@ jobs:
         sleep 5
 
         docker ps
-        python -m pytest standard/aio -s --host 0.0.0.0 --port 5000 
+        python -m pytest standard -s --host 0.0.0.0 --port 5000 --cov=aerospike_vector_search
+
+        mv .coverage coverage_data
       working-directory: tests
+
+    - name: Upload test coverage
+      if: ${{ matrix.python-version == '3.12' }}
+      uses: actions/upload-artifact@v4
+      with:
+        name: coverage_normal
+        path: tests/coverage_data
 
   test-tls:
     runs-on: ubuntu-24.04
@@ -142,9 +151,17 @@ jobs:
 
 
         docker ps
-        python -m pytest standard/aio -s --host 0.0.0.0 --port 5000 --root_certificate tls/root.crt --ssl_target_name_override child -vs
+        python -m pytest standard -s --host 0.0.0.0 --port 5000 --root_certificate tls/root.crt --ssl_target_name_override child -vs --cov=aerospike_vector_search
 
+        mv .coverage coverage_data
       working-directory: tests
+
+    - name: Upload test coverage
+      uses: actions/upload-artifact@v4
+      with:
+        name: coverage_tls
+        path: tests/coverage_data
+
 
   test-tls-auth:
     runs-on: ubuntu-24.04
@@ -213,9 +230,16 @@ jobs:
 
         sleep 5
 
-        python -m pytest standard/aio -s -vv --host 0.0.0.0 --port 5000 --root_certificate tls/root.crt --username admin --password admin  --ssl_target_name_override child
+        python -m pytest standard -s -vv --host 0.0.0.0 --port 5000 --root_certificate tls/root.crt --username admin --password admin  --ssl_target_name_override child --cov=aerospike_vector_search
 
+        mv .coverage coverage_data
       working-directory: tests
+
+    - name: Upload test coverage
+      uses: actions/upload-artifact@v4
+      with:
+        name: coverage_tls_auth
+        path: tests/coverage_data
 
 
   test-tls-auth-rbac:
@@ -290,11 +314,19 @@ jobs:
 
 
         docker ps
-        python -m pytest rbac -s -vv --host 0.0.0.0 --port 5000 --root_certificate tls/root.crt --ssl_target_name_override child
+        python -m pytest rbac -s -vv --host 0.0.0.0 --port 5000 --root_certificate tls/root.crt --ssl_target_name_override child --cov=aerospike_vector_search
 
         docker logs aerospike-vector-search
         docker logs aerospike
+
+        mv .coverage coverage_data
       working-directory: tests
+
+    - name: Upload test coverage
+      uses: actions/upload-artifact@v4
+      with:
+        name: coverage_tls_auth_rbac
+        path: tests/coverage_data
 
 
   test-mtls:
@@ -363,11 +395,16 @@ jobs:
 
         sleep 5
 
-        python -m pytest standard/aio -s --host 0.0.0.0 --port 5000 --root_certificate tls/root.crt --private_key tls/brawn.key.pem --certificate_chain tls/brawn.crt --ssl_target_name_override brawn  -vs
+        python -m pytest standard -s --host 0.0.0.0 --port 5000 --root_certificate tls/root.crt --private_key tls/brawn.key.pem --certificate_chain tls/brawn.crt --ssl_target_name_override brawn  -vs --cov=aerospike_vector_search
 
-
-
+        mv .coverage coverage_data
       working-directory: tests
+
+    - name: Upload test coverage
+      uses: actions/upload-artifact@v4
+      with:
+        name: coverage_mtls
+        path: tests/coverage_data
 
 
   test-mtls-auth:
@@ -377,7 +414,7 @@ jobs:
 
     strategy:
       matrix:
-        python-version: ["3.9", "3.10", "3.11", "3.12"]
+        python-version: ["3.12"]
 
         
     steps:
@@ -436,11 +473,16 @@ jobs:
 
         sleep 5
 
-        python -m pytest standard/aio -s --host 0.0.0.0 --port 5000 --root_certificate tls/root.crt --private_key tls/brawn.key.pem --certificate_chain tls/brawn.crt --username admin --password admin --ssl_target_name_override brawn -vs
+        python -m pytest standard -s --host 0.0.0.0 --port 5000 --root_certificate tls/root.crt --private_key tls/brawn.key.pem --certificate_chain tls/brawn.crt --username admin --password admin --ssl_target_name_override brawn -vs --cov=aerospike_vector_search
 
-
-
+        mv .coverage coverage_data
       working-directory: tests
+
+    - name: Upload test coverage
+      uses: actions/upload-artifact@v4
+      with:
+        name: coverage_mtls_auth
+        path: tests/coverage_data
 
 
   test-mtls-auth-rbac:
@@ -450,7 +492,7 @@ jobs:
 
     strategy:
       matrix:
-        python-version: ["3.9", "3.10", "3.11", "3.12"]
+        python-version: ["3.12"]
 
         
     steps:
@@ -510,8 +552,16 @@ jobs:
 
         sleep 5
 
-        python -m pytest rbac -s --host 0.0.0.0 --port 5000 --root_certificate tls/root.crt --private_key tls/brawn.key.pem --certificate_chain tls/brawn.crt --ssl_target_name_override brawn -vs
+        python -m pytest rbac -s --host 0.0.0.0 --port 5000 --root_certificate tls/root.crt --private_key tls/brawn.key.pem --certificate_chain tls/brawn.crt --ssl_target_name_override brawn -vs --cov=aerospike_vector_search
+      
+        mv .coverage coverage_data
       working-directory: tests
+
+    - name: Upload test coverage
+      uses: actions/upload-artifact@v4
+      with:
+        name: coverage_mtls_auth_rbac
+        path: tests/coverage_data
 
   test-is-loadbalancer:
     runs-on: ubuntu-24.04
@@ -576,8 +626,16 @@ jobs:
 
         sleep 5
 
-        python -m pytest standard/aio -s --host 0.0.0.0 --port 5000 --is_loadbalancer -vs
+        python -m pytest standard -s --host 0.0.0.0 --port 5000 --is_loadbalancer -vs --cov=aerospike_vector_search
+
+        mv .coverage coverage_data
       working-directory: tests
+
+    - name: Upload test coverage
+      uses: actions/upload-artifact@v4
+      with:
+        name: coverage_is_load_balancer
+        path: tests/coverage_data
 
   test-exhaustive-vector-search:
     runs-on: ubuntu-24.04
@@ -642,8 +700,58 @@ jobs:
 
         sleep 5
 
-        python -m pytest standard/aio -s --host 0.0.0.0 --port 5000 --extensive_vector_search -vs
+        python -m pytest standard -s --host 0.0.0.0 --port 5000 --extensive_vector_search --cov=aerospike_vector_search -vs
+
+        mv .coverage coverage_data
       working-directory: tests
+
+    - name: Upload test coverage
+      uses: actions/upload-artifact@v4
+      with:
+        name: coverage_exhaustive_vector_search
+        path: tests/coverage_data
+
+  upload-to-codecov:
+    needs: [test-normal, test-tls, test-tls-auth, test-tls-auth-rbac, test-mtls, test-mtls-auth, test-mtls-auth-rbac, test-is-loadbalancer, test-exhaustive-vector-search]
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    - name: Set up Python
+      uses: actions/setup-python@v2
+      with:
+        python-version: '3.x'
+
+    - name: Install dependencies
+      run: pip install coverage build
+
+    - name: Download coverage reports
+      uses: actions/download-artifact@v4
+      with:
+        path: coverage_files
+
+    - name: List files
+      run: ls -R coverage_files
+
+    - name: Combine coverage reports
+      run: |
+        coverage combine $(find coverage_files -name "coverage_data")
+    
+    # this is needed because the coverage files expect the source code
+    # to be installed in a certain location. TODO use relative files and source instead
+    # https://coverage.readthedocs.io/en/latest/config.html#config-run-relative-files
+    - name: Build and install aerospike-vector-search
+      run: |
+        python -m build
+        pip install dist/aerospike_vector_search-2.0.0-py3-none-any.whl
+
+    - name: Upload to Codecov
+      uses: codecov/codecov-action@v4
+      with:
+        fail_ci_if_error: true
+        files: ./coverage.xml
+        token: ${{ secrets.CODECOV_TOKEN }}
 
 #
 #  test-timeout-on-sandbox:
@@ -679,5 +787,5 @@ jobs:
 #    - name: Run unit tests
 #      run: |
 #
-#        python -m pytest standard/aio -s --host  34.42.225.207 --port 5000 --with_latency
+#        python -m pytest standard -s --host  34.42.225.207 --port 5000 --with_latency
 #      working-directory: tests
