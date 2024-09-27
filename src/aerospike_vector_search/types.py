@@ -30,8 +30,8 @@ class Key(object):
     :param namespace (str): The namespace for the key.
     :type namespace: str
 
-    :param set: (optional[str]): The set for the key.
-    :type set: optional[str]
+    :param set: str: The set for the key. Use the empty string "" to signify no set.
+    :type set: str
 
     :param key: (Any): The key itself.
     :type key: Union[int, str, bytes, bytearray, np.ndarray, np.generic]

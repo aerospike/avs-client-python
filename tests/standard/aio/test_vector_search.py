@@ -208,7 +208,7 @@ class vector_search_test_case:
                 types.Neighbor(
                     key=types.Key(
                         namespace="test",
-                        set="", #TODO should this accept None?
+                        set="",
                         key="rec1",
                     ),
                     fields={
@@ -239,7 +239,7 @@ class vector_search_test_case:
                 types.Neighbor(
                     key=types.Key(
                         namespace="test",
-                        set="", #TODO should this accept None?
+                        set="",
                         key="rec1",
                     ),
                     fields={},
