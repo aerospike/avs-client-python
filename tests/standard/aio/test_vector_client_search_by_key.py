@@ -237,7 +237,7 @@ class vector_search_by_key_test_case:
                         key="rec1",
                     ),
                     fields={
-                        "bin": 2,
+                        "bin": 1,
                         "vector": [1.0, 1.0, 1.0],
                     },
                     distance=0.0,
