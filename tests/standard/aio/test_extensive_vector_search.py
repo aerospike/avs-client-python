@@ -2,6 +2,7 @@ import numpy as np
 import asyncio
 import pytest
 import random
+import time
 from aerospike_vector_search import types, AVSServerError
 
 import grpc
@@ -184,6 +185,11 @@ async def test_vector_search(
         session_vector_client.wait_for_index_completion(namespace="test", name="demo1")
     )
     await asyncio.gather(*tasks)
+
+    # Wait for index completion isn't perfect
+    # give the index some extra time since accuracy is the point of this test
+    time.sleep(5)
+
     await grade_results(
         base_numpy,
         truth_numpy,
@@ -221,6 +227,11 @@ async def test_vector_search_with_set_same_as_index(
         session_vector_client.wait_for_index_completion(namespace="test", name="demo2")
     )
     await asyncio.gather(*tasks)
+
+    # Wait for index completion isn't perfect
+    # give the index some extra time since accuracy is the point of this test
+    time.sleep(5)
+
     await grade_results(
         base_numpy,
         truth_numpy,
@@ -262,6 +273,11 @@ async def test_vector_search_with_set_different_than_name(
         session_vector_client.wait_for_index_completion(namespace="test", name="demo3")
     )
     await asyncio.gather(*tasks)
+
+    # Wait for index completion isn't perfect
+    # give the index some extra time since accuracy is the point of this test
+    time.sleep(5)
+
     await grade_results(
         base_numpy,
         truth_numpy,
@@ -303,6 +319,11 @@ async def test_vector_search_with_index_storage_different_than_name(
         session_vector_client.wait_for_index_completion(namespace="test", name="demo4")
     )
     await asyncio.gather(*tasks)
+
+    # Wait for index completion isn't perfect
+    # give the index some extra time since accuracy is the point of this test
+    time.sleep(5)
+
     await grade_results(
         base_numpy,
         truth_numpy,
@@ -344,6 +365,11 @@ async def test_vector_search_with_index_storage_different_location(
         session_vector_client.wait_for_index_completion(namespace="test", name="demo5")
     )
     await asyncio.gather(*tasks)
+
+    # Wait for index completion isn't perfect
+    # give the index some extra time since accuracy is the point of this test
+    time.sleep(5)
+
     await grade_results(
         base_numpy,
         truth_numpy,
@@ -385,6 +411,11 @@ async def test_vector_search_with_separate_namespace(
         session_vector_client.wait_for_index_completion(namespace="test", name="demo6")
     )
     await asyncio.gather(*tasks)
+
+    # Wait for index completion isn't perfect
+    # give the index some extra time since accuracy is the point of this test
+    time.sleep(5)
+
     await grade_results(
         base_numpy,
         truth_numpy,
