@@ -173,6 +173,30 @@ class Neighbor(object):
             and self.key == other.key
             and self.fields == other.fields
         )
+    
+    def __lt__(self, other) -> bool:
+        if not isinstance(other, Neighbor):
+            return NotImplemented
+
+        return self.distance < other.distance
+    
+    def __le__(self, other) -> bool:
+        if not isinstance(other, Neighbor):
+            return NotImplemented
+
+        return self.distance <= other.distance
+    
+    def __gt__(self, other) -> bool:
+        if not isinstance(other, Neighbor):
+            return NotImplemented
+
+        return self.distance > other.distance
+    
+    def __ge__(self, other) -> bool:
+        if not isinstance(other, Neighbor):
+            return NotImplemented
+
+        return self.distance >= other.distance
 
 
 
