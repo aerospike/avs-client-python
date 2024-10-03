@@ -293,7 +293,6 @@ def test_vector_search_by_key(
         exclude_fields=test_case.exclude_fields,
     )
 
-    breakpoint()
     assert results == test_case.expected_results
 
     for key in test_case.record_data:
