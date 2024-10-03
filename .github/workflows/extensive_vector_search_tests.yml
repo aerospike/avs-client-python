@@ -4,11 +4,6 @@ on:
   push:
     branches:
       - dev
-      - main
-  # TODO remove this after testing it in the PR
-  pull_request:
-    branches:
-      - dev
 
 jobs:
   test-exhaustive-vector-search:
