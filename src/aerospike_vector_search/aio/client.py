@@ -492,9 +492,10 @@ class Client(BaseClient):
     async def vector_search_by_key(
         self,
         *,
-        namespace: str,
+        index_namespace: str,
         index_name: str,
         key: Union[int, str, bytes, bytearray],
+        key_namespace: str,
         vector_field: str,
         limit: int,
         set_name: Optional[str] = None,
@@ -506,14 +507,17 @@ class Client(BaseClient):
         """
         Perform a Hierarchical Navigable Small World (HNSW) vector search in Aerospike Vector Search by primary record key.
 
-        :param namespace: The namespace for the records.
-        :type namespace: str
+        :param index_namespace: The namespace that stores the index.
+        :type index_namespace: str
 
         :param index_name: The name of the index.
         :type index_name: str
 
         :param key: The primary key of the record that stores the vector to use in the search.
         :type key: Union[int, str, bytes, bytearray]
+
+        :param key_namespace: The namespace that stores the record.
+        :type key_namespace: str
 
         :param vector_field: The name of the field containing vector data.
         :type vector_field: str
@@ -556,7 +560,7 @@ class Client(BaseClient):
             This error could occur due to various reasons such as network issues, server-side failures, or invalid request parameters.
         """
         rec_and_key = await self.get(
-            namespace=namespace,
+            namespace=key_namespace,
             key=key,
             set_name=set_name,
             timeout=timeout,
@@ -565,7 +569,7 @@ class Client(BaseClient):
         vector = rec_and_key.fields[vector_field]
 
         neighbors = await self.vector_search(
-            namespace=namespace,
+            namespace=index_namespace,
             index_name=index_name,
             query=vector,
             limit=limit,

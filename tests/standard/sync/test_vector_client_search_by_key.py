@@ -11,7 +11,8 @@ class vector_search_by_key_test_case:
         vector_field,
         limit,
         key,
-        namespace,
+        key_namespace,
+        index_namespace,
         include_fields,
         exclude_fields,
         set_name,
@@ -23,12 +24,13 @@ class vector_search_by_key_test_case:
         self.vector_field = vector_field
         self.limit = limit
         self.key = key
-        self.namespace = namespace
+        self.index_namespace = index_namespace
         self.include_fields = include_fields
         self.exclude_fields = exclude_fields
         self.set_name = set_name
         self.record_data = record_data
         self.expected_results = expected_results
+        self.key_namespace = key_namespace
 
 # TODO add a teardown
 #@settings(max_examples=1, deadline=1000)
@@ -37,12 +39,13 @@ class vector_search_by_key_test_case:
     [
         # test string key
         vector_search_by_key_test_case(
-            index_name="key_str",
+            index_name="basic_search",
             index_dimensions=3,
             vector_field="vector",
             limit=2,
             key="rec1",
-            namespace="test",
+            key_namespace="test",
+            index_namespace="test",
             include_fields=None,
             exclude_fields=None,
             set_name=None,
@@ -89,12 +92,13 @@ class vector_search_by_key_test_case:
         ),
         # test int key
         vector_search_by_key_test_case(
-            index_name="key_int",
+            index_name="field_filter",
             index_dimensions=3,
             vector_field="vector",
             limit=3,
             key=1,
-            namespace="test",
+            key_namespace="test",
+            index_namespace="test",
             include_fields=["bin"],
             exclude_fields=["bin"],
             set_name=None,
@@ -131,12 +135,13 @@ class vector_search_by_key_test_case:
         ),
         # test bytes key
         vector_search_by_key_test_case(
-            index_name="key_bytes",
+            index_name="field_filter",
             index_dimensions=3,
             vector_field="vector",
             limit=3,
             key=bytes("rec1", "utf-8"),
-            namespace="test",
+            key_namespace="test",
+            index_namespace="test",
             include_fields=["bin"],
             exclude_fields=["bin"],
             set_name=None,
@@ -208,12 +213,13 @@ class vector_search_by_key_test_case:
         # ),
         # test with set name
         vector_search_by_key_test_case(
-            index_name="key_set",
+            index_name="basic_search",
             index_dimensions=3,
             vector_field="vector",
-            limit=2,
+            limit=1,
             key="rec1",
-            namespace="test",
+            key_namespace="test",
+            index_namespace="test",
             include_fields=None,
             exclude_fields=None,
             set_name="test_set",
@@ -263,7 +269,7 @@ def test_vector_search_by_key(
 ):
     
     session_admin_client.index_create(
-        namespace=test_case.namespace,
+        namespace=test_case.index_namespace,
         name=test_case.index_name,
         vector_field=test_case.vector_field,
         dimensions=test_case.index_dimensions,
@@ -271,21 +277,22 @@ def test_vector_search_by_key(
 
     for key, rec in test_case.record_data.items():
         session_vector_client.upsert(
-            namespace=test_case.namespace,
+            namespace=test_case.key_namespace,
             key=key,
             record_data=rec,
             set_name=test_case.set_name,
         )
     
     session_vector_client.wait_for_index_completion(
-        namespace=test_case.namespace,
+        namespace=test_case.index_namespace,
         name=test_case.index_name,
     )
 
     results = session_vector_client.vector_search_by_key(
-        namespace=test_case.namespace,
+        index_namespace=test_case.index_namespace,
         index_name=test_case.index_name,
         key=test_case.key,
+        key_namespace=test_case.key_namespace,
         vector_field=test_case.vector_field,
         limit=test_case.limit,
         set_name=test_case.set_name,
@@ -297,11 +304,11 @@ def test_vector_search_by_key(
 
     for key in test_case.record_data:
         session_vector_client.delete(
-            namespace=test_case.namespace,
+            namespace=test_case.key_namespace,
             key=key,
         )
 
     session_admin_client.index_drop(
-        namespace=test_case.namespace,
+        namespace=test_case.index_namespace,
         name=test_case.index_name,
     )
