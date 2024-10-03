@@ -294,6 +294,7 @@ async def test_vector_search_by_key(
         key=test_case.key,
         vector_field=test_case.vector_field,
         limit=test_case.limit,
+        set_name=test_case.set_name,
         include_fields=test_case.include_fields,
         exclude_fields=test_case.exclude_fields,
     )

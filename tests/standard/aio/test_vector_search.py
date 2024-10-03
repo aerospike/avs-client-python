@@ -133,7 +133,6 @@ async def test_vector_search(
         index_name=test_case.index_name,
         query=test_case.query,
         limit=test_case.limit,
-        set_name=test_case.set_name,
         include_fields=test_case.include_fields,
         exclude_fields=test_case.exclude_fields,
     )
