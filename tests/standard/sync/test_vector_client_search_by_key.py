@@ -35,142 +35,142 @@ class vector_search_by_key_test_case:
 @pytest.mark.parametrize(
     "test_case",
     [
-        # # test string key
-        # vector_search_by_key_test_case(
-        #     index_name="key_str",
-        #     index_dimensions=3,
-        #     vector_field="vector",
-        #     limit=2,
-        #     key="rec1",
-        #     namespace="test",
-        #     include_fields=None,
-        #     exclude_fields=None,
-        #     set_name=None,
-        #     record_data={
-        #         "rec1": {
-        #             "bin": 1,
-        #             "vector": [1.0, 1.0, 1.0],
-        #         },
-        #         "rec2": {
-        #             "bin": 2,
-        #             "vector": [2.0, 2.0, 2.0],
-        #         },
-        #         "rec3": {
-        #             "bin": 3,
-        #             "vector": [3.0, 3.0, 3.0],
-        #         },
-        #     },
-        #     expected_results=[
-        #         types.Neighbor(
-        #             key=types.Key(
-        #                 namespace="test",
-        #                 set="",
-        #                 key="rec1",
-        #             ),
-        #             fields={
-        #                 "bin": 1,
-        #                 "vector": [1.0, 1.0, 1.0],
-        #             },
-        #             distance=0.0,
-        #         ),
-        #         types.Neighbor(
-        #             key=types.Key(
-        #                 namespace="test",
-        #                 set="",
-        #                 key="rec2",
-        #             ),
-        #             fields={
-        #                 "bin": 2,
-        #                 "vector": [2.0, 2.0, 2.0],
-        #             },
-        #             distance=3.0,
-        #         ),
-        #     ],
-        # ),
-        # # test int key
-        # vector_search_by_key_test_case(
-        #     index_name="key_int",
-        #     index_dimensions=3,
-        #     vector_field="vector",
-        #     limit=3,
-        #     key=1,
-        #     namespace="test",
-        #     include_fields=["bin"],
-        #     exclude_fields=["bin"],
-        #     set_name=None,
-        #     record_data={
-        #         1: {
-        #             "bin": 1,
-        #             "vector": [1.0, 1.0, 1.0],
-        #         },
-        #         2: {
-        #             "bin": 2,
-        #             "vector": [2.0, 2.0, 2.0],
-        #         },
-        #     },
-        #     expected_results=[
-        #         types.Neighbor(
-        #             key=types.Key(
-        #                 namespace="test",
-        #                 set="",
-        #                 key=1,
-        #             ),
-        #             fields={},
-        #             distance=0.0,
-        #         ),
-        #         types.Neighbor(
-        #             key=types.Key(
-        #                 namespace="test",
-        #                 set="",
-        #                 key=2,
-        #             ),
-        #             fields={},
-        #             distance=3.0,
-        #         ),
-        #     ],
-        # ),
-        # # test bytes key
-        # vector_search_by_key_test_case(
-        #     index_name="key_bytes",
-        #     index_dimensions=3,
-        #     vector_field="vector",
-        #     limit=3,
-        #     key=bytes("rec1", "utf-8"),
-        #     namespace="test",
-        #     include_fields=["bin"],
-        #     exclude_fields=["bin"],
-        #     set_name=None,
-        #     record_data={
-        #         bytes("rec1", "utf-8"): {
-        #             "bin": 1,
-        #             "vector": [1.0, 1.0, 1.0],
-        #         },
-        #         bytes("rec2", "utf-8"): {
-        #             "bin": 2,
-        #             "vector": [2.0, 2.0, 2.0],
-        #         },
-        #     },
-        #     expected_results=[
-        #         types.Neighbor(
-        #             key=types.Key(
-        #                 namespace="test",
-        #                 set="",
-        #                 key=bytes("rec1", "utf-8"),
-        #             ),
-        #             fields={},
-        #             distance=0.0,
-        #         ),
-        #         types.Neighbor(
-        #             key=types.Key(
-        #                 namespace="test",
-        #                 set="",
-        #                 key=bytes("rec2", "utf-8"),
-        #             ),
-        #             fields={},
-        #             distance=3.0,
-        #         ),
-        #     ],
-        # ),
+        # test string key
+        vector_search_by_key_test_case(
+            index_name="key_str",
+            index_dimensions=3,
+            vector_field="vector",
+            limit=2,
+            key="rec1",
+            namespace="test",
+            include_fields=None,
+            exclude_fields=None,
+            set_name=None,
+            record_data={
+                "rec1": {
+                    "bin": 1,
+                    "vector": [1.0, 1.0, 1.0],
+                },
+                "rec2": {
+                    "bin": 2,
+                    "vector": [2.0, 2.0, 2.0],
+                },
+                "rec3": {
+                    "bin": 3,
+                    "vector": [3.0, 3.0, 3.0],
+                },
+            },
+            expected_results=[
+                types.Neighbor(
+                    key=types.Key(
+                        namespace="test",
+                        set="",
+                        key="rec1",
+                    ),
+                    fields={
+                        "bin": 1,
+                        "vector": [1.0, 1.0, 1.0],
+                    },
+                    distance=0.0,
+                ),
+                types.Neighbor(
+                    key=types.Key(
+                        namespace="test",
+                        set="",
+                        key="rec2",
+                    ),
+                    fields={
+                        "bin": 2,
+                        "vector": [2.0, 2.0, 2.0],
+                    },
+                    distance=3.0,
+                ),
+            ],
+        ),
+        # test int key
+        vector_search_by_key_test_case(
+            index_name="key_int",
+            index_dimensions=3,
+            vector_field="vector",
+            limit=3,
+            key=1,
+            namespace="test",
+            include_fields=["bin"],
+            exclude_fields=["bin"],
+            set_name=None,
+            record_data={
+                1: {
+                    "bin": 1,
+                    "vector": [1.0, 1.0, 1.0],
+                },
+                2: {
+                    "bin": 2,
+                    "vector": [2.0, 2.0, 2.0],
+                },
+            },
+            expected_results=[
+                types.Neighbor(
+                    key=types.Key(
+                        namespace="test",
+                        set="",
+                        key=1,
+                    ),
+                    fields={},
+                    distance=0.0,
+                ),
+                types.Neighbor(
+                    key=types.Key(
+                        namespace="test",
+                        set="",
+                        key=2,
+                    ),
+                    fields={},
+                    distance=3.0,
+                ),
+            ],
+        ),
+        # test bytes key
+        vector_search_by_key_test_case(
+            index_name="key_bytes",
+            index_dimensions=3,
+            vector_field="vector",
+            limit=3,
+            key=bytes("rec1", "utf-8"),
+            namespace="test",
+            include_fields=["bin"],
+            exclude_fields=["bin"],
+            set_name=None,
+            record_data={
+                bytes("rec1", "utf-8"): {
+                    "bin": 1,
+                    "vector": [1.0, 1.0, 1.0],
+                },
+                bytes("rec2", "utf-8"): {
+                    "bin": 2,
+                    "vector": [2.0, 2.0, 2.0],
+                },
+            },
+            expected_results=[
+                types.Neighbor(
+                    key=types.Key(
+                        namespace="test",
+                        set="",
+                        key=bytes("rec1", "utf-8"),
+                    ),
+                    fields={},
+                    distance=0.0,
+                ),
+                types.Neighbor(
+                    key=types.Key(
+                        namespace="test",
+                        set="",
+                        key=bytes("rec2", "utf-8"),
+                    ),
+                    fields={},
+                    distance=3.0,
+                ),
+            ],
+        ),
         # test bytearray key
         # TODO: add a bytearray key case, bytearrays are not hashable
         # so this is not easily added. Leaving it for now.

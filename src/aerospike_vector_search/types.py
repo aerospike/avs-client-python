@@ -43,6 +43,13 @@ class Key(object):
         self.set = set
         self.key = key
 
+    def __repr__(self) -> str:
+        return (
+            f"namespace={self.namespace}, "
+            f"set={self.set}, "
+            f"key={self.key}"
+        )
+
     def __str__(self):
         """
         Returns a string representation of the key.
@@ -127,6 +134,13 @@ class Neighbor(object):
         self.key = key
         self.fields = fields
         self.distance = distance
+
+    def __repr__(self) -> str:
+        return (
+            f"key={self.key}, "
+            f"fields={self.fields}, "
+            f"distance={self.distance}"
+        )
 
     def __str__(self):
         """
