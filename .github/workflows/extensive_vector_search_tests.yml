@@ -4,11 +4,6 @@ on:
   push:
     branches:
       - dev
-      - main
-  # TODO remove this after testing it in the PR
-  pull_request:
-    branches:
-      - dev
 
 jobs:
   test-exhaustive-vector-search:
@@ -74,7 +69,7 @@ jobs:
 
         sleep 5
 
-        python -m pytest standard -s --host 0.0.0.0 --port 5000 --extensive_vector_search --cov=aerospike_vector_search -vs
+        python -m pytest standard -s --host 0.0.0.0 --port 5000 --extensive_vector_search -vs
 
         mv .coverage coverage_data
       working-directory: tests

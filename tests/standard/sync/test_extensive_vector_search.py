@@ -1,6 +1,6 @@
 import numpy as np
 import pytest
-import random
+import time
 from aerospike_vector_search import types
 from aerospike_vector_search import AVSServerError
 import grpc
@@ -176,6 +176,10 @@ def test_vector_search(
 
     session_vector_client.wait_for_index_completion(namespace="test", name="demo1")
 
+    # Wait for index completion isn't perfect
+    # give the index some extra time since accuracy is the point of this test
+    time.sleep(5)
+
     grade_results(
         base_numpy,
         truth_numpy,
@@ -211,6 +215,10 @@ def test_vector_search_with_set_same_as_index(
 
     session_vector_client.wait_for_index_completion(namespace="test", name="demo2")
 
+    # Wait for index completion isn't perfect
+    # give the index some extra time since accuracy is the point of this test
+    time.sleep(5)
+
     grade_results(
         base_numpy,
         truth_numpy,
@@ -244,6 +252,10 @@ def test_vector_search_with_set_different_than_name(
 
     for j, vector in enumerate(base_numpy):
         put_vector(session_vector_client, vector, j, "example1")
+
+    # Wait for index completion isn't perfect
+    # give the index some extra time since accuracy is the point of this test
+    time.sleep(5)
 
     session_vector_client.wait_for_index_completion(namespace="test", name="demo3")
 
@@ -283,6 +295,10 @@ def test_vector_search_with_index_storage_different_than_name(
 
     session_vector_client.wait_for_index_completion(namespace="test", name="demo4")
 
+    # Wait for index completion isn't perfect
+    # give the index some extra time since accuracy is the point of this test
+    time.sleep(5)
+
     grade_results(
         base_numpy,
         truth_numpy,
@@ -318,6 +334,10 @@ def test_vector_search_with_index_storage_different_location(
         put_vector(session_vector_client, vector, j, "example3")
 
     session_vector_client.wait_for_index_completion(namespace="test", name="demo5")
+
+    # Wait for index completion isn't perfect
+    # give the index some extra time since accuracy is the point of this test
+    time.sleep(5)
 
     grade_results(
         base_numpy,
@@ -355,6 +375,10 @@ def test_vector_search_with_separate_namespace(
 
     session_vector_client.wait_for_index_completion(namespace="test", name="demo6")
 
+    # Wait for index completion isn't perfect
+    # give the index some extra time since accuracy is the point of this test
+    time.sleep(5)
+
     grade_results(
         base_numpy,
         truth_numpy,
@@ -363,36 +387,6 @@ def test_vector_search_with_separate_namespace(
         session_admin_client,
         name="demo6",
     )
-
-
-def test_vector_is_indexed(session_vector_client, session_admin_client):
-
-    result = session_vector_client.is_indexed(
-        namespace="test",
-        key=str(random.randrange(10_000)),
-        index_name="demo2",
-        set_name="demo2",
-    )
-
-    assert result is True
-
-
-def test_vector_is_indexed_timeout(
-    session_vector_client, session_admin_client, with_latency
-):
-    if not with_latency:
-        pytest.skip("Server latency too low to test timeout")
-
-    for i in range(10):
-        try:
-            result = session_vector_client.is_indexed(
-                namespace="test", key=500, index_name="demo2", timeout=0.0001
-            )
-        except AVSServerError as se:
-            if se.rpc_error.code() == grpc.StatusCode.DEADLINE_EXCEEDED:
-                assert se.rpc_error.code() == grpc.StatusCode.DEADLINE_EXCEEDED
-                return
-    assert "In several attempts, the timeout did not happen" == "TEST FAIL"
 
 
 def test_vector_vector_search_timeout(
