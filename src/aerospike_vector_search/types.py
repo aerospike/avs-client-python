@@ -43,6 +43,13 @@ class Key(object):
         self.set = set
         self.key = key
 
+    def __repr__(self) -> str:
+        return (
+            f"namespace={self.namespace}, "
+            f"set={self.set}, "
+            f"key={self.key}"
+        )
+
     def __str__(self):
         """
         Returns a string representation of the key.
@@ -128,6 +135,13 @@ class Neighbor(object):
         self.fields = fields
         self.distance = distance
 
+    def __repr__(self) -> str:
+        return (
+            f"key={self.key}, "
+            f"fields={self.fields}, "
+            f"distance={self.distance}"
+        )
+
     def __str__(self):
         """
         Returns a string representation of the neighboring record.
@@ -159,6 +173,30 @@ class Neighbor(object):
             and self.key == other.key
             and self.fields == other.fields
         )
+    
+    def __lt__(self, other) -> bool:
+        if not isinstance(other, Neighbor):
+            return NotImplemented
+
+        return self.distance < other.distance
+    
+    def __le__(self, other) -> bool:
+        if not isinstance(other, Neighbor):
+            return NotImplemented
+
+        return self.distance <= other.distance
+    
+    def __gt__(self, other) -> bool:
+        if not isinstance(other, Neighbor):
+            return NotImplemented
+
+        return self.distance > other.distance
+    
+    def __ge__(self, other) -> bool:
+        if not isinstance(other, Neighbor):
+            return NotImplemented
+
+        return self.distance >= other.distance
 
 
 

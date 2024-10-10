@@ -1,6 +1,5 @@
 import numpy as np
 import pytest
-import random
 import time
 from aerospike_vector_search import types
 from aerospike_vector_search import AVSServerError
