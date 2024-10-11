@@ -45,9 +45,9 @@ class Key(object):
 
     def __repr__(self) -> str:
         return (
-            f"namespace={self.namespace}, "
+            f"Key(namespace={self.namespace}, "
             f"set={self.set}, "
-            f"key={self.key}"
+            f"key={self.key})"
         )
 
     def __str__(self):
@@ -137,9 +137,9 @@ class Neighbor(object):
 
     def __repr__(self) -> str:
         return (
-            f"key={self.key}, "
+            f"Neighbor(key={self.key}, "
             f"fields={self.fields}, "
-            f"distance={self.distance}"
+            f"distance={self.distance})"
         )
 
     def __str__(self):
@@ -167,7 +167,6 @@ class Neighbor(object):
     def __eq__(self, other) -> bool:
         if not isinstance(other, Neighbor):
             return NotImplemented
-
         return (
             self.distance == other.distance
             and self.key == other.key
@@ -177,38 +176,22 @@ class Neighbor(object):
     def __lt__(self, other) -> bool:
         if not isinstance(other, Neighbor):
             return NotImplemented
-
-        if self.distance == other.distance:
-            return self.key.key < other.key.key
-
-        return self.distance < other.distance
+        if self.distance != other.distance:
+            return self.distance < other.distance
+        if self.key.set != other.key.set:
+            return self.key.set < other.key.set
+        return str(self.key.key) < str(other.key.key)
     
     def __le__(self, other) -> bool:
-        if not isinstance(other, Neighbor):
-            return NotImplemented
-
-        if self.distance == other.distance:
-            return self.key.key <= other.key.key
-
-        return self.distance <= other.distance
+        return self < other or self == other
     
     def __gt__(self, other) -> bool:
         if not isinstance(other, Neighbor):
             return NotImplemented
-
-        if self.distance == other.distance:
-            return self.key.key > other.key.key
-
-        return self.distance > other.distance
+        return not (self <= other)
     
     def __ge__(self, other) -> bool:
-        if not isinstance(other, Neighbor):
-            return NotImplemented
-
-        if self.distance == other.distance:
-            return self.key.key >= other.key.key
-
-        return self.distance >= other.distance
+        return not (self < other)
 
 
 

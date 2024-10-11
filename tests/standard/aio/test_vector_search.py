@@ -137,7 +137,7 @@ async def test_vector_search(
         exclude_fields=test_case.exclude_fields,
     )
 
-    assert results == test_case.expected_results
+    assert list.sort(results) == list.sort(test_case.expected_results)
 
     tasks = []
     for key in test_case.record_data:

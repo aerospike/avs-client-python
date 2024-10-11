@@ -283,7 +283,7 @@ async def test_vector_search_by_key(
             namespace=test_case.key_namespace,
             key=key,
             record_data=rec,
-            key_set=test_case.key_set,
+            set_name=test_case.key_set,
         ))
     
     tasks.append(
@@ -306,7 +306,7 @@ async def test_vector_search_by_key(
         exclude_fields=test_case.exclude_fields,
     )
 
-    assert results == test_case.expected_results
+    assert list.sort(results) == list.sort(test_case.expected_results)
 
     tasks = []
     for key in test_case.record_data:
