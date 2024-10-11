@@ -349,3 +349,80 @@ async def test_vector_search_by_key(
         namespace=test_case.search_namespace,
         name=test_case.index_name,
     )
+
+
+async def test_vector_search_by_key_different_namespaces(
+    session_vector_client,
+    session_admin_client,
+):
+    
+    await session_admin_client.index_create(
+        namespace="index_storage",
+        name="diff_ns_idx",
+        vector_field="vec",
+        dimensions=3,
+    )
+
+    await session_vector_client.upsert(
+        namespace="test",
+        key="search_by",
+        record_data={
+            "bin": 1,
+            "vec": [1.0, 1.0, 1.0],
+        },
+    )
+
+    await session_vector_client.upsert(
+        namespace="index_storage",
+        key="search_for",
+        record_data={
+            "bin": 2,
+            "vec": [2.0, 2.0, 2.0],
+        },
+    )
+    
+    await session_vector_client.wait_for_index_completion(
+        namespace="index_storage",
+        name="diff_ns_idx",
+    )
+
+    results = await session_vector_client.vector_search_by_key(
+        search_namespace="index_storage",
+        index_name="diff_ns_idx",
+        key="search_by",
+        key_namespace="test",
+        vector_field="vec",
+        limit=1,
+    )
+
+    expected = [
+        types.Neighbor(
+            key=types.Key(
+                namespace="index_storage",
+                set="",
+                key="search_for",
+            ),
+            fields={
+                "bin": 2,
+                "vec": [2.0, 2.0, 2.0],
+            },
+            distance=3.0,
+        ),
+    ]
+
+    assert results == expected
+
+    await session_vector_client.delete(
+        namespace="test",
+        key="search_by",
+    )
+
+    await session_vector_client.delete(
+        namespace="index_storage",
+        key="search_for",
+    )
+
+    await session_admin_client.index_drop(
+        namespace="index_storage",
+        name="diff_ns_idx",
+    )
