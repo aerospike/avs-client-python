@@ -492,13 +492,13 @@ class Client(BaseClient):
     async def vector_search_by_key(
         self,
         *,
-        index_namespace: str,
+        search_namespace: str,
         index_name: str,
         key: Union[int, str, bytes, bytearray],
         key_namespace: str,
         vector_field: str,
         limit: int,
-        set_name: Optional[str] = None,
+        key_set: Optional[str] = None,
         search_params: Optional[types.HnswSearchParams] = None,
         include_fields: Optional[list[str]] = None,
         exclude_fields: Optional[list[str]] = None,
@@ -507,10 +507,10 @@ class Client(BaseClient):
         """
         Perform a Hierarchical Navigable Small World (HNSW) vector search in Aerospike Vector Search by primary record key.
 
-        :param index_namespace: The namespace that stores the index.
-        :type index_namespace: str
+        :param search_namespace: The namespace that stores the records to be searched.
+        :type search_namespace: str
 
-        :param index_name: The name of the index.
+        :param index_name: The name of the index to use in the search.
         :type index_name: str
 
         :param key: The primary key of the record that stores the vector to use in the search.
@@ -525,8 +525,8 @@ class Client(BaseClient):
         :param limit: The maximum number of neighbors to return. K value.
         :type limit: int
 
-        :param set_name: The name of the set from which to read the record. Defaults to None.
-        :type set_name: Optional[str]
+        :param key_set: The name of the set from which to read the record to search by. Defaults to None.
+        :type key_set: Optional[str]
         
         :param search_params: Parameters for the HNSW algorithm.
             If None, the default parameters for the index are used. Defaults to None.
@@ -559,14 +559,14 @@ class Client(BaseClient):
         rec_and_key = await self.get(
             namespace=key_namespace,
             key=key,
-            set_name=set_name,
+            set_name=key_set,
             timeout=timeout,
         )
 
         vector = rec_and_key.fields[vector_field]
 
         neighbors = await self.vector_search(
-            namespace=index_namespace,
+            namespace=search_namespace,
             index_name=index_name,
             query=vector,
             limit=limit,

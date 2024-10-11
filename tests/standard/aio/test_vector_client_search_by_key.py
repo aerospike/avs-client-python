@@ -14,10 +14,10 @@ class vector_search_by_key_test_case:
         limit,
         key,
         key_namespace,
-        index_namespace,
+        search_namespace,
         include_fields,
         exclude_fields,
-        set_name,
+        key_set,
         record_data,
         expected_results,
     ):
@@ -26,10 +26,10 @@ class vector_search_by_key_test_case:
         self.vector_field = vector_field
         self.limit = limit
         self.key = key
-        self.index_namespace = index_namespace
+        self.search_namespace = search_namespace
         self.include_fields = include_fields
         self.exclude_fields = exclude_fields
-        self.set_name = set_name
+        self.key_set = key_set
         self.record_data = record_data
         self.expected_results = expected_results
         self.key_namespace = key_namespace
@@ -47,10 +47,10 @@ class vector_search_by_key_test_case:
             limit=2,
             key="rec1",
             key_namespace="test",
-            index_namespace="test",
+            search_namespace="test",
             include_fields=None,
             exclude_fields=None,
-            set_name=None,
+            key_set=None,
             record_data={
                 "rec1": {
                     "bin": 1,
@@ -100,10 +100,10 @@ class vector_search_by_key_test_case:
             limit=3,
             key=1,
             key_namespace="test",
-            index_namespace="test",
+            search_namespace="test",
             include_fields=["bin"],
             exclude_fields=["bin"],
-            set_name=None,
+            key_set=None,
             record_data={
                 1: {
                     "bin": 1,
@@ -143,10 +143,10 @@ class vector_search_by_key_test_case:
             limit=3,
             key=bytes("rec1", "utf-8"),
             key_namespace="test",
-            index_namespace="test",
+            search_namespace="test",
             include_fields=["bin"],
             exclude_fields=["bin"],
-            set_name=None,
+            key_set=None,
             record_data={
                 bytes("rec1", "utf-8"): {
                     "bin": 1,
@@ -190,7 +190,7 @@ class vector_search_by_key_test_case:
         #     namespace="test",
         #     include_fields=["bin"],
         #     exclude_fields=["bin"],
-        #     set_name=None,
+        #     key_set=None,
         #     record_data={
         #         bytearray("rec1", "utf-8"): {
         #             "bin": 1,
@@ -221,10 +221,10 @@ class vector_search_by_key_test_case:
             limit=1,
             key="rec1",
             key_namespace="test",
-            index_namespace="test",
+            search_namespace="test",
             include_fields=None,
             exclude_fields=None,
-            set_name="test_set",
+            key_set="test_set",
             record_data={
                 "rec1": {
                     "bin": 1,
@@ -271,7 +271,7 @@ async def test_vector_search_by_key(
 ):
     
     await session_admin_client.index_create(
-        namespace=test_case.index_namespace,
+        namespace=test_case.search_namespace,
         name=test_case.index_name,
         vector_field=test_case.vector_field,
         dimensions=test_case.index_dimensions,
@@ -283,25 +283,25 @@ async def test_vector_search_by_key(
             namespace=test_case.key_namespace,
             key=key,
             record_data=rec,
-            set_name=test_case.set_name,
+            key_set=test_case.key_set,
         ))
     
     tasks.append(
         session_vector_client.wait_for_index_completion(
-            namespace=test_case.index_namespace,
+            namespace=test_case.search_namespace,
             name=test_case.index_name,
         )
     )
     await asyncio.gather(*tasks)
 
     results = await session_vector_client.vector_search_by_key(
-        index_namespace=test_case.index_namespace,
+        search_namespace=test_case.search_namespace,
         index_name=test_case.index_name,
         key=test_case.key,
         key_namespace=test_case.key_namespace,
         vector_field=test_case.vector_field,
         limit=test_case.limit,
-        set_name=test_case.set_name,
+        key_set=test_case.key_set,
         include_fields=test_case.include_fields,
         exclude_fields=test_case.exclude_fields,
     )
@@ -318,6 +318,6 @@ async def test_vector_search_by_key(
     await asyncio.gather(*tasks)
 
     await session_admin_client.index_drop(
-        namespace=test_case.index_namespace,
+        namespace=test_case.search_namespace,
         name=test_case.index_name,
     )
