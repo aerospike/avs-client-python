@@ -178,11 +178,17 @@ class Neighbor(object):
         if not isinstance(other, Neighbor):
             return NotImplemented
 
+        if self.distance == other.distance:
+            return self.key.key < other.key.key
+
         return self.distance < other.distance
     
     def __le__(self, other) -> bool:
         if not isinstance(other, Neighbor):
             return NotImplemented
+
+        if self.distance == other.distance:
+            return self.key.key <= other.key.key
 
         return self.distance <= other.distance
     
@@ -190,11 +196,17 @@ class Neighbor(object):
         if not isinstance(other, Neighbor):
             return NotImplemented
 
+        if self.distance == other.distance:
+            return self.key.key > other.key.key
+
         return self.distance > other.distance
     
     def __ge__(self, other) -> bool:
         if not isinstance(other, Neighbor):
             return NotImplemented
+
+        if self.distance == other.distance:
+            return self.key.key >= other.key.key
 
         return self.distance >= other.distance
 
