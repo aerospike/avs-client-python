@@ -216,7 +216,7 @@ class vector_search_by_key_test_case:
             index_name="basic_search",
             index_dimensions=3,
             vector_field="vector",
-            limit=1,
+            limit=2,
             key="rec1",
             key_namespace="test",
             search_namespace="test",
@@ -328,11 +328,12 @@ def test_vector_search_by_key(
         exclude_fields=test_case.exclude_fields,
     )
 
-    assert list.sort(results) == list.sort(test_case.expected_results)
+    assert results == test_case.expected_results
 
     for key in test_case.record_data:
         session_vector_client.delete(
             namespace=test_case.key_namespace,
+            set_name=test_case.key_set,
             key=key,
         )
 

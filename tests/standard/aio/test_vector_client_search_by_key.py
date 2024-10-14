@@ -218,7 +218,7 @@ class vector_search_by_key_test_case:
             index_name="basic_search",
             index_dimensions=3,
             vector_field="vector",
-            limit=1,
+            limit=2,
             key="rec1",
             key_namespace="test",
             search_namespace="test",
@@ -334,7 +334,7 @@ async def test_vector_search_by_key(
         exclude_fields=test_case.exclude_fields,
     )
 
-    assert list.sort(results) == list.sort(test_case.expected_results)
+    assert results == test_case.expected_results
 
     tasks = []
     for key in test_case.record_data:
