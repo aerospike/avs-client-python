@@ -205,7 +205,11 @@ async def test_vector_search_with_set_same_as_index(
     query_numpy,
     session_vector_client,
     session_admin_client,
+    extensive_vector_search,
 ):
+
+    if not extensive_vector_search:
+        pytest.skip("Extensive vector tests disabled")
 
     await session_admin_client.index_create(
         namespace="test",
