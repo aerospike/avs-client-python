@@ -340,6 +340,7 @@ async def test_vector_search_by_key(
     for key in test_case.record_data:
         tasks.append(session_vector_client.delete(
             namespace=test_case.key_namespace,
+            set_name=test_case.key_set,
             key=key,
         ))
     
