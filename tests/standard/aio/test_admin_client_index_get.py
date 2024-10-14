@@ -67,8 +67,6 @@ async def test_index_get_no_defaults(session_admin_client, empty_test_case, rand
 
     result = await session_admin_client.index_get(namespace="test", name=random_name, apply_defaults=False)
 
-    # AVS server still returns values for these fields even if apply_defaults is False
-    # this might change in the future if it is fixed in the server
     assert result["id"]["name"] == random_name
     assert result["id"]["namespace"] == "test"
     assert result["dimensions"] == 1024

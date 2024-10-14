@@ -30,8 +30,8 @@ class Key(object):
     :param namespace (str): The namespace for the key.
     :type namespace: str
 
-    :param set: (optional[str]): The set for the key.
-    :type set: optional[str]
+    :param set: str: The set for the key. Use the empty string "" to signify no set.
+    :type set: str
 
     :param key: (Any): The key itself.
     :type key: Union[int, str, bytes, bytearray, np.ndarray, np.generic]
@@ -43,11 +43,29 @@ class Key(object):
         self.set = set
         self.key = key
 
+    def __repr__(self) -> str:
+        return (
+            f"Key(namespace={self.namespace}, "
+            f"set={self.set}, "
+            f"key={self.key})"
+        )
+
     def __str__(self):
         """
         Returns a string representation of the key.
         """
         return f"Key: namespace='{self.namespace}', set='{self.set}', key={self.key}"
+    
+    def __eq__(self, other):
+        if not isinstance(other, Key):
+            return NotImplemented
+
+        return (
+            self.namespace == other.namespace
+            and self.set == other.set
+            and self.key == other.key
+        )
+
 
 
 class RecordWithKey(object):
@@ -117,6 +135,13 @@ class Neighbor(object):
         self.fields = fields
         self.distance = distance
 
+    def __repr__(self) -> str:
+        return (
+            f"Neighbor(key={self.key}, "
+            f"fields={self.fields}, "
+            f"distance={self.distance})"
+        )
+
     def __str__(self):
         """
         Returns a string representation of the neighboring record.
@@ -137,6 +162,15 @@ class Neighbor(object):
             fields_info += "\n\t\t{}: {}".format(key, value_str)
         return "{{\n\t{},\n\tdistance: {},\n\tfields: {{\n{}\n\t}}\n}}".format(
             self.key, self.distance, fields_info
+        )
+    
+    def __eq__(self, other) -> bool:
+        if not isinstance(other, Neighbor):
+            return NotImplemented
+        return (
+            self.distance == other.distance
+            and self.key == other.key
+            and self.fields == other.fields
         )
 
 

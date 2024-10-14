@@ -2,6 +2,7 @@ import logging
 import sys
 import time
 from typing import Any, Optional, Union
+import warnings
 
 import grpc
 
@@ -14,7 +15,7 @@ logger = logging.getLogger(__name__)
 
 class Client(BaseClient):
     """
-    Aerospike Vector Search Vector Client
+    Aerospike Vector Search Client
 
     This client specializes in performing database operations with vector data.
     Moreover, the client supports Hierarchical Navigable Small World (HNSW) vector searches,
@@ -258,9 +259,12 @@ class Client(BaseClient):
         *,
         namespace: str,
         key: Union[int, str, bytes, bytearray],
-        field_names: Optional[list[str]] = None,
+        include_fields: Optional[list[str]] = None,
+        exclude_fields: Optional[list[str]] = None,
         set_name: Optional[str] = None,
         timeout: Optional[int] = None,
+        # field_names is deprecated, use include_fields
+        field_names: Optional[list[str]] = None,
     ) -> types.RecordWithKey:
         """
         Read a record from Aerospike Vector Search.
@@ -271,16 +275,28 @@ class Client(BaseClient):
         :param key: The key for the record.
         :type key: Union[int, str, bytes, bytearray, np.generic, np.ndarray]
 
-
-        :param field_names: A list of field names to retrieve from the record.
+        :param include_fields: A list of field names to retrieve from the record.
+            When used, fields that are not included are not sent by the server,
+            saving on network traffic.
+            If a field is listed in both include_fields and exclude_fields,
+            exclude_fields takes priority, and the field is not returned.
             If None, all fields are retrieved. Defaults to None.
-        :type field_names: Optional[list[str]]
+        :type include_fields: Optional[list[str]]
+
+        :param exclude_fields: A list of field names to exclude from the record.
+            When used, the excluded fields are not sent by the server,
+            saving on network traffic.
+            If None, all fields are retrieved. Defaults to None.
+        :type exclude_fields: Optional[list[str]]
 
         :param set_name: The name of the set from which to read the record. Defaults to None.
         :type set_name: Optional[str]
 
         :param timeout: Time in seconds this operation will wait before raising an :class:`AVSServerError <aerospike_vector_search.types.AVSServerError>`. Defaults to None.
         :type timeout: int
+
+        :param field_names: Deprecated, use include_fields instead.
+        :type field_names: Optional[list[str]]
 
         Returns:
             types.RecordWithKey: A record with its associated key.
@@ -290,8 +306,17 @@ class Client(BaseClient):
             This error could occur due to various reasons such as network issues, server-side failures, or invalid request parameters.
         """
 
+        # TODO remove this when 'field_names' is removed
+        if field_names is not None:
+            warnings.warn(
+                "The 'field_names' argument is deprecated. Use 'include_fields' instead",
+                FutureWarning,
+            )
+            include_fields = field_names
+
+
         (transact_stub, key, get_request, kwargs) = self._prepare_get(
-            namespace, key, field_names, set_name, timeout, logger
+            namespace, key, include_fields, exclude_fields, set_name, timeout, logger
         )
 
         try:
@@ -443,6 +468,100 @@ class Client(BaseClient):
             raise types.AVSServerError(rpc_error=e)
         return self._respond_is_indexed(response)
 
+    def vector_search_by_key(
+        self,
+        *,
+        search_namespace: str,
+        index_name: str,
+        key: Union[int, str, bytes, bytearray],
+        key_namespace: str,
+        vector_field: str,
+        limit: int,
+        key_set: Optional[str] = None,
+        search_params: Optional[types.HnswSearchParams] = None,
+        include_fields: Optional[list[str]] = None,
+        exclude_fields: Optional[list[str]] = None,
+        timeout: Optional[int] = None,
+    ) -> list[types.Neighbor]:
+        """
+        Perform a Hierarchical Navigable Small World (HNSW) vector search in Aerospike Vector Search by primary record key.
+
+        :param search_namespace: The namespace that stores the records to be searched.
+        :type search_namespace: str
+
+        :param index_name: The name of the index to use in the search.
+        :type index_name: str
+
+        :param key: The primary key of the record that stores the vector to use in the search.
+        :type key: Union[int, str, bytes, bytearray]
+
+        :param key_namespace: The namespace that stores the record.
+        :type key_namespace: str
+
+        :param vector_field: The name of the field containing vector data.
+        :type vector_field: str
+
+        :param limit: The maximum number of neighbors to return. K value.
+        :type limit: int
+
+        :param key_set: The name of the set from which to read the record to search by. Defaults to None.
+        :type key_set: Optional[str]
+        
+        :param search_params: Parameters for the HNSW algorithm.
+            If None, the default parameters for the index are used. Defaults to None.
+        :type search_params: Optional[types_pb2.HnswSearchParams]
+
+        :param include_fields: A list of field names to retrieve from the results.
+            When used, fields that are not included are not sent by the server,
+            saving on network traffic.
+            If a field is listed in both include_fields and exclude_fields,
+            exclude_fields takes priority, and the field is not returned.
+            If None, all fields are retrieved. Defaults to None.
+        :type include_fields: Optional[list[str]]
+
+        :param exclude_fields: A list of field names to exclude from the results.
+            When used, the excluded fields are not sent by the server,
+            saving on network traffic.
+            If None, all fields are retrieved. Defaults to None.
+        :type exclude_fields: Optional[list[str]]
+
+        :param timeout: Time in seconds this operation will wait before raising an :class:`AVSServerError <aerospike_vector_search.types.AVSServerError>`. Defaults to None.
+        :type timeout: int
+
+        :param field_names: Deprecated, use include_fields instead.
+        :type field_names: Optional[list[str]]
+
+        Returns:
+            list[types.Neighbor]: A list of neighbors records found by the search.
+
+        Raises:
+            AVSServerError: Raised if an error occurs during the RPC communication with the server while attempting to vector search.
+            This error could occur due to various reasons such as network issues, server-side failures, or invalid request parameters.
+        """
+        rec_and_key = self.get(
+            namespace=key_namespace,
+            key=key,
+            set_name=key_set,
+            timeout=timeout,
+        )
+
+        vector = rec_and_key.fields[vector_field]
+
+        neighbors = self.vector_search(
+            namespace=search_namespace,
+            index_name=index_name,
+            query=vector,
+            limit=limit,
+            search_params=search_params,
+            include_fields=include_fields,
+            exclude_fields=exclude_fields,
+            timeout=timeout,
+        )
+
+        return neighbors
+
+        
+
     def vector_search(
         self,
         *,
@@ -451,8 +570,11 @@ class Client(BaseClient):
         query: list[Union[bool, float]],
         limit: int,
         search_params: Optional[types.HnswSearchParams] = None,
-        field_names: Optional[list[str]] = None,
+        include_fields: Optional[list[str]] = None,
+        exclude_fields: Optional[list[str]] = None,
         timeout: Optional[int] = None,
+        # field_names is deprecated, use include_fields
+        field_names: Optional[list[str]] = None,
     ) -> list[types.Neighbor]:
         """
         Perform a Hierarchical Navigable Small World (HNSW) vector search in Aerospike Vector Search.
@@ -473,12 +595,25 @@ class Client(BaseClient):
             If None, the default parameters for the index are used. Defaults to None.
         :type search_params: Optional[types_pb2.HnswSearchParams]
 
-        :param field_names: A list of field names to retrieve from the results.
+        :param include_fields: A list of field names to retrieve from the results.
+            When used, fields that are not included are not sent by the server,
+            saving on network traffic.
+            If a field is listed in both include_fields and exclude_fields,
+            exclude_fields takes priority, and the field is not returned.
             If None, all fields are retrieved. Defaults to None.
-        :type field_names: Optional[list[str]]
+        :type include_fields: Optional[list[str]]
+
+        :param exclude_fields: A list of field names to exclude from the results.
+            When used, the excluded fields are not sent by the server,
+            saving on network traffic.
+            If None, all fields are retrieved. Defaults to None.
+        :type exclude_fields: Optional[list[str]]
 
         :param timeout: Time in seconds this operation will wait before raising an :class:`AVSServerError <aerospike_vector_search.types.AVSServerError>`. Defaults to None.
         :type timeout: int
+
+        :param field_names: Deprecated, use include_fields instead.
+        :type field_names: Optional[list[str]]
 
         Returns:
             list[types.Neighbor]: A list of neighbors records found by the search.
@@ -488,13 +623,22 @@ class Client(BaseClient):
             This error could occur due to various reasons such as network issues, server-side failures, or invalid request parameters.
         """
 
+        # TODO remove this when 'field_names' is removed
+        if field_names is not None:
+            warnings.warn(
+                "The 'field_names' argument is deprecated. Use 'include_fields' instead",
+                FutureWarning,
+            )
+            include_fields = field_names
+
         (transact_stub, vector_search_request, kwargs) = self._prepare_vector_search(
             namespace,
             index_name,
             query,
             limit,
             search_params,
-            field_names,
+            include_fields,
+            exclude_fields,
             timeout,
             logger,
         )
@@ -579,7 +723,7 @@ class Client(BaseClient):
 
     def close(self):
         """
-        Close the Aerospike Vector Search Vector Client.
+        Close the Aerospike Vector Search Client.
 
         This method closes gRPC channels connected to Aerospike Vector Search.
 
@@ -590,15 +734,15 @@ class Client(BaseClient):
 
     def __enter__(self):
         """
-        Enter a context manager for the vector client.
+        Enter a context manager for the client.
 
         Returns:
-            VectorDbClient: Aerospike Vector Search Vector Client instance.
+            VectorDbClient: Aerospike Vector Search Client instance.
         """
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         """
-        Exit a context manager for the vector client.
+        Exit a context manager for the client.
         """
         self.close()
