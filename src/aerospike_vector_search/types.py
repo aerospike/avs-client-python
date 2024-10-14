@@ -172,27 +172,6 @@ class Neighbor(object):
             and self.key == other.key
             and self.fields == other.fields
         )
-    
-    def __lt__(self, other) -> bool:
-        if not isinstance(other, Neighbor):
-            return NotImplemented
-        if self.distance != other.distance:
-            return self.distance < other.distance
-        if self.key.set != other.key.set:
-            return self.key.set < other.key.set
-        return str(self.key.key) < str(other.key.key)
-    
-    def __le__(self, other) -> bool:
-        return self < other or self == other
-    
-    def __gt__(self, other) -> bool:
-        if not isinstance(other, Neighbor):
-            return NotImplemented
-        return not (self <= other)
-    
-    def __ge__(self, other) -> bool:
-        return not (self < other)
-
 
 
 class VectorDistanceMetric(enum.Enum):
