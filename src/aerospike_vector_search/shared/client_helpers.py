@@ -8,6 +8,7 @@ from .proto_generated import transact_pb2_grpc
 from .. import types
 from .proto_generated import types_pb2
 from . import helpers
+from ..types import AVSClientError
 
 
 class BaseClient(object):

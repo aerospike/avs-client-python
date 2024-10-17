@@ -22,10 +22,10 @@ async def test_index_get_status(session_admin_client, empty_test_case, random_na
     except Exception as e:
         pass
 
-    result = await session_admin_client.index_get_status(
+    result : types.IndexStatusResponse = await session_admin_client.index_get_status(
         namespace="test", name=random_name
     )
-    assert result == 0
+    assert result.unmerged_record_count == 0
     await drop_specified_index(session_admin_client, "test", random_name)
 
 

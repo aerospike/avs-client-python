@@ -2,6 +2,7 @@ import enum
 from typing import Any, Optional
 
 from .shared.proto_generated import types_pb2
+from .shared.proto_generated import  index_pb2
 
 
 class HostPort(object):
@@ -532,6 +533,7 @@ class HnswParams(object):
         caching_params: Optional[HnswCachingParams] = HnswCachingParams(),
         healer_params: Optional[HnswHealerParams] = HnswHealerParams(),
         merge_params: Optional[HnswIndexMergeParams] = HnswIndexMergeParams(),
+        enable_vector_integrity_check : Optional[bool] = True
     ) -> None:
         self.m = m
         self.ef_construction = ef_construction
@@ -541,6 +543,7 @@ class HnswParams(object):
         self.caching_params = caching_params
         self.healer_params = healer_params
         self.merge_params = merge_params
+        self.enable_vector_integrity_check = enable_vector_integrity_check
 
     def _to_pb2(self):
         params = types_pb2.HnswParams()
@@ -555,6 +558,9 @@ class HnswParams(object):
 
         if self.max_mem_queue_size:
             params.maxMemQueueSize = self.max_mem_queue_size
+
+        if self.enableVectorIntegrityCheck:
+            params.enableVectorIntegrityCheck = self.enable_vector_integrity_check
 
         params.batchingParams.CopyFrom(self.batching_params._to_pb2())
         params.cachingParams.CopyFrom(self.caching_params._to_pb2())
@@ -573,7 +579,7 @@ class HnswParams(object):
         return (
             f"HnswParams(m={self.m}, ef_construction={self.ef_construction}, "
             f"ef={self.ef}, batching_params={batching_repr}, max_mem_queue_size={self.max_mem_queue_size}, "
-            f"caching_params={caching_repr}, healer_repr={healer_repr}, merge_repr={merge_repr})"
+            f"caching_params={caching_repr}, healer_repr={healer_repr}, merge_repr={merge_repr}, enableVectorIntegrityCheck={self.enable_vector_integrity_check} )"
         )
 
     def __str__(self) -> str:
@@ -591,6 +597,7 @@ class HnswParams(object):
             f"  {caching_str}\n"
             f"  {healer_str}\n"
             f"  {merge_str}\n"
+            f"  {self.enable_vector_integrity_check}\n"
             f"}}"
         )
 
@@ -731,7 +738,7 @@ class IndexDefinition(object):
     :type dimensions: int
 
     :param vector_distance_metric: Metric used to evaluate vector searches on the given index
-    :type vector_distance_metric: VectorDistanceMetric
+    :type vector_distance_metric: Optional[VectorDistanceMetric] default VectorDistanceMetric.SQUARED_EUCLIDEAN
 
     :param field: Field name.
     :type field: str
@@ -743,7 +750,7 @@ class IndexDefinition(object):
     :type hnsw_params: HnswParams
 
     :param storage: Index storage details.
-    :type storage: IndexStorage
+    :type storage: Optional[IndexStorage] default None
 
     :param index_labels: Meta data associated with the index. Defaults to None.
     :type index_labels: Optional[dict[str, str]]
@@ -754,11 +761,11 @@ class IndexDefinition(object):
         *,
         id: str,
         dimensions: int,
-        vector_distance_metric: types_pb2.VectorDistanceMetric,
+        vector_distance_metric: Optional[types_pb2.VectorDistanceMetric] = types_pb2.VectorDistanceMetric.SQUARED_EUCLIDEAN ,
         field: str,
         sets: str,
         hnsw_params: HnswParams,
-        storage: IndexStorage,
+        storage: Optional[IndexStorage] = None,
         index_labels: dict[str, str],
     ) -> None:
         self.id = id
@@ -847,3 +854,90 @@ class AVSClientError(AVSError):
 
     def __str__(self):
         return f"AVSClientError(message={self.message})"
+
+
+class IndexStatusResponse:
+    """
+    Represents the response containing index status information.
+
+    Attributes:
+    -----------
+    unmerged_record_count : int
+        The number of unmerged index records.
+
+    index_healer_vector_records_indexed : int
+        The number of vector records indexed (0 if the healer has not yet run).
+
+    index_healer_vertices_valid : int
+        The number of vertices in the main index (0 if the healer has not yet run).
+    """
+
+    def __init__(self,
+                 unmerged_record_count: int = 0,
+                 index_healer_vector_records_indexed: int = 0,
+                 index_healer_vertices_valid: int = 0) -> None:
+        """
+        Initializes the IndexStatusResponse with the provided values.
+
+        Parameters:
+        -----------
+        unmerged_record_count : int, optional
+            The number of unmerged index records (default is 0).
+
+        index_healer_vector_records_indexed : int, optional
+            The number of vector records indexed (default is 0).
+
+        index_healer_vertices_valid : int, optional
+            The number of vertices in the main index (default is 0).
+        """
+        self.unmerged_record_count: int = unmerged_record_count
+        self.index_healer_vector_records_indexed: int = index_healer_vector_records_indexed
+        self.index_healer_vertices_valid: int = index_healer_vertices_valid
+
+    def __str__(self) -> str:
+        """
+        Provides a human-readable string representation of the IndexStatusResponse object.
+
+        Returns:
+        --------
+        str
+            A string containing the current status of the index with unmerged records, vector records indexed, and vertices valid.
+        """
+        return (f"IndexStatusResponse("
+                f"unmerged_record_count={self.unmerged_record_count}, "
+                f"index_healer_vector_records_indexed={self.index_healer_vector_records_indexed}, "
+                f"index_healer_vertices_valid={self.index_healer_vertices_valid})")
+
+    def __repr__(self) -> str:
+        """
+        Provides the official string representation of the IndexStatusResponse object.
+
+        Returns:
+        --------
+        str
+            A string with the class name and its attributes for debugging and logging purposes.
+        """
+        return (f"IndexStatusResponse(unmerged_record_count={self.unmerged_record_count}, "
+                f"index_healer_vector_records_indexed={self.index_healer_vector_records_indexed}, "
+                f"index_healer_vertices_valid={self.index_healer_vertices_valid})")
+
+    @staticmethod
+    def from_proto_response(response: 'index_pb2.IndexStatusResponse') -> 'IndexStatusResponse':
+        """
+        Converts a protobuf IndexStatusResponse into an IndexStatusResponse object.
+
+        Parameters:
+        -----------
+        response : index_pb2.IndexStatusResponse
+            A protobuf IndexStatusResponse object.
+
+        Returns:
+        --------
+        IndexStatusResponse
+            An instance of IndexStatusResponse with the values from the protobuf message.
+        """
+        result = IndexStatusResponse()
+        result.unmerged_record_count = response.unmergedRecordCount
+        result.index_healer_vector_records_indexed = response.indexHealerVectorRecordsIndexed
+        result.index_healer_vertices_valid = response.indexHealerVerticesValid
+        return result
