@@ -673,7 +673,7 @@ jobs:
     - name: Build and install aerospike-vector-search
       run: |
         python -m build
-        pip install dist/aerospike_vector_search-2.1.0-py3-none-any.whl
+        pip install dist/aerospike_vector_search-3.0.0-py3-none-any.whl
 
     - name: Upload to Codecov
       uses: codecov/codecov-action@v4

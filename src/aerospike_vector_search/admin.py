@@ -298,7 +298,7 @@ class Client(BaseClient):
 
     def index_get_status(
         self, *, namespace: str, name: str, timeout: Optional[int] = None
-    ) -> int:
+    ) -> types.IndexStatusResponse:
         """
         Retrieve the number of records queued to be merged into an index.
 
@@ -311,7 +311,7 @@ class Client(BaseClient):
         :param timeout: Time in seconds this operation will wait before raising an :class:`AVSServerError <aerospike_vector_search.types.AVSServerError>`. Defaults to None.
         :type timeout: int
 
-        Returns: int: Records queued to be merged into an index.
+        Returns: IndexStatusResponse: AVS response containing index status information.
 
         Raises:
             AVSServerError: Raised if an error occurs during the RPC communication with the server while attempting to get the index status.
@@ -337,7 +337,7 @@ class Client(BaseClient):
             logger.error("Failed to get index status with error: %s", e)
             raise types.AVSServerError(rpc_error=e)
 
-        return self._respond_index_get_status(response)
+        return types.IndexStatusResponse.from_proto_response(response)
 
     def add_user(
         self,
