@@ -738,7 +738,7 @@ class IndexDefinition(object):
     :type dimensions: int
 
     :param vector_distance_metric: Metric used to evaluate vector searches on the given index
-    :type vector_distance_metric: Optional[VectorDistanceMetric] default VectorDistanceMetric.SQUARED_EUCLIDEAN
+    :type vector_distance_metric: VectorDistanceMetric default VectorDistanceMetric.SQUARED_EUCLIDEAN
 
     :param field: Field name.
     :type field: str
@@ -761,7 +761,7 @@ class IndexDefinition(object):
         *,
         id: str,
         dimensions: int,
-        vector_distance_metric: Optional[types_pb2.VectorDistanceMetric] = None,
+        vector_distance_metric: types_pb2.VectorDistanceMetric = types_pb2.VectorDistanceMetric.SQUARED_EUCLIDEAN,
         field: str,
         sets: str,
         hnsw_params: HnswParams,
@@ -770,9 +770,6 @@ class IndexDefinition(object):
     ) -> None:
         self.id = id
         self.dimensions = dimensions
-        if vector_distance_metric is None:
-            vector_distance_metric = types_pb2.VectorDistanceMetric.SQUARED_EUCLIDEAN
-
         self.vector_distance_metric = vector_distance_metric
         self.field = field
         self.sets = sets
