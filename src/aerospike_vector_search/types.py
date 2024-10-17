@@ -559,7 +559,7 @@ class HnswParams(object):
         if self.max_mem_queue_size:
             params.maxMemQueueSize = self.max_mem_queue_size
 
-        if self.enableVectorIntegrityCheck:
+        if self.enable_vector_integrity_check:
             params.enableVectorIntegrityCheck = self.enable_vector_integrity_check
 
         params.batchingParams.CopyFrom(self.batching_params._to_pb2())
