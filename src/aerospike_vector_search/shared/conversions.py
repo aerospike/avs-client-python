@@ -2,6 +2,7 @@ from typing import Any
 
 from .. import types
 from .proto_generated import types_pb2
+from ..types import IndexStatusResponse
 
 
 def toVectorDbValue(value: Any) -> types_pb2.Value:
@@ -158,3 +159,23 @@ def fromVectorDbValue(input: types_pb2.Value) -> Any:
             return [v for v in vector.boolData.value]
 
     return None
+
+def fromIndexStatusResponse(response: 'index_pb2.IndexStatusResponse') -> 'IndexStatusResponse':
+        """
+        Converts a protobuf IndexStatusResponse into an IndexStatusResponse object.
+
+        Parameters:
+        -----------
+        response : index_pb2.IndexStatusResponse
+            A protobuf IndexStatusResponse object.
+
+        Returns:
+        --------
+        IndexStatusResponse
+            An instance of IndexStatusResponse with the values from the protobuf message.
+        """
+        result = IndexStatusResponse()
+        result.unmerged_record_count = response.unmergedRecordCount
+        result.index_healer_vector_records_indexed = response.indexHealerVectorRecordsIndexed
+        result.index_healer_vertices_valid = response.indexHealerVerticesValid
+        return result

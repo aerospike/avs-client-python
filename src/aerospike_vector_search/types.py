@@ -920,24 +920,3 @@ class IndexStatusResponse:
         return (f"IndexStatusResponse(unmerged_record_count={self.unmerged_record_count}, "
                 f"index_healer_vector_records_indexed={self.index_healer_vector_records_indexed}, "
                 f"index_healer_vertices_valid={self.index_healer_vertices_valid})")
-
-    @staticmethod
-    def from_proto_response(response: 'index_pb2.IndexStatusResponse') -> 'IndexStatusResponse':
-        """
-        Converts a protobuf IndexStatusResponse into an IndexStatusResponse object.
-
-        Parameters:
-        -----------
-        response : index_pb2.IndexStatusResponse
-            A protobuf IndexStatusResponse object.
-
-        Returns:
-        --------
-        IndexStatusResponse
-            An instance of IndexStatusResponse with the values from the protobuf message.
-        """
-        result = IndexStatusResponse()
-        result.unmerged_record_count = response.unmergedRecordCount
-        result.index_healer_vector_records_indexed = response.indexHealerVectorRecordsIndexed
-        result.index_healer_vertices_valid = response.indexHealerVerticesValid
-        return result

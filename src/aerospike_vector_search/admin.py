@@ -8,6 +8,7 @@ import grpc
 from . import types
 from .internal import channel_provider
 from .shared.admin_helpers import BaseClient
+from .shared.conversions import fromIndexStatusResponse
 
 logger = logging.getLogger(__name__)
 
@@ -337,7 +338,8 @@ class Client(BaseClient):
             logger.error("Failed to get index status with error: %s", e)
             raise types.AVSServerError(rpc_error=e)
 
-        return types.IndexStatusResponse.from_proto_response(response)
+
+        return fromIndexStatusResponse(response)
 
     def add_user(
         self,

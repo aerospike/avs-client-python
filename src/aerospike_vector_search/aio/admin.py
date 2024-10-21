@@ -1,13 +1,17 @@
 import asyncio
 import logging
 import sys
-from typing import Any, Optional, Union
+from http.client import responses
+from typing import Optional, Union
+
 import grpc
 
-from .. import types
 from .internal import channel_provider
+from .. import types
+from ..shared.conversions import fromIndexStatusResponse
 from ..shared.admin_helpers import BaseClient
 from ..types import IndexStatusResponse
+
 
 logger = logging.getLogger(__name__)
 
@@ -351,6 +355,7 @@ class Client(BaseClient):
             raise types.AVSServerError(rpc_error=e)
 
         return IndexStatusResponse.from_proto_response(response)
+        return fromIndexStatusResponse(responses)
 
     async def add_user(
         self,
