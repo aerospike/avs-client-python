@@ -334,12 +334,13 @@ class Client(BaseClient):
                 credentials=self._channel_provider.get_token(),
                 **kwargs,
             )
+            return fromIndexStatusResponse(response)
         except grpc.RpcError as e:
             logger.error("Failed to get index status with error: %s", e)
             raise types.AVSServerError(rpc_error=e)
 
 
-        return fromIndexStatusResponse(response)
+
 
     def add_user(
         self,
