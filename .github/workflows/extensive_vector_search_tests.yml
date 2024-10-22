@@ -65,13 +65,13 @@ jobs:
     - name: Run unit tests
       run: |
 
-        docker run -d --name aerospike-vector-search --network=host -p 5000:5000  -v $(pwd):/etc/aerospike-vector-search aerospike/aerospike-vector-search:0.10.0
-        docker run -d --name aerospike -p 3000:3000 -v .:/etc/aerospike aerospike/aerospike-server-enterprise:latest 
-
+        docker run -d --name aerospike-vector-search --network=host -p 5000:5000 -v $(pwd):/etc/aerospike-vector-search aerospike/aerospike-vector-search:0.10.0
+        docker run -d --name aerospike -p 3000:3000 -v .:/etc/aerospike aerospike/aerospike-server-enterprise:latest
+        
         sleep 5
-
-        python -m pytest standard -s --host 0.0.0.0 --port 5000 --extensive_vector_search -vs
-
+        
+        python -m pytest --cov=aerospike_vector_search standard -s --host 0.0.0.0 --port 5000 --extensive_vector_search -vs
+        
         mv .coverage coverage_data
       working-directory: tests
 

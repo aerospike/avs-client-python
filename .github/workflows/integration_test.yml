@@ -70,6 +70,7 @@ jobs:
         sleep 5
 
         docker ps
+        
         python -m pytest standard -s --host 0.0.0.0 --port 5000 --cov=aerospike_vector_search
 
         mv .coverage coverage_data
