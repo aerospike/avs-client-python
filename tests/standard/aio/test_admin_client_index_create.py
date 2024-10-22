@@ -327,7 +327,7 @@ async def test_index_create_with_sets(session_admin_client, test_case, random_na
                 m=32,
                 ef_construction=200,
                 ef=400,
-                enable_vector_integrity_check= False,
+                enable_vector_integrity_check= True,
             ),
             index_labels=None,
             index_storage=None,

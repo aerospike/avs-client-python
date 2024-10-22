@@ -362,7 +362,7 @@ def test_index_create_with_sets(session_admin_client, test_case, random_name):
             vector_distance_metric=None,
             sets="demo",
             index_params=types.HnswParams(
-                m=8, ef_construction=50, ef=25, max_mem_queue_size=16384, enable_vector_integrity_check = False,
+                m=8, ef_construction=50, ef=25, max_mem_queue_size=16384, enable_vector_integrity_check = True,
             ),
             index_labels=None,
             index_storage=None,
