@@ -24,7 +24,7 @@ def test_index_get_status(session_admin_client, empty_test_case, random_name):
     except AVSServerError as se:
         if se.rpc_error.code() != grpc.StatusCode.ALREADY_EXISTS:
             raise se
-    result  = session_admin_client.index_get_status(namespace="test", name=random_name)
+    result = session_admin_client.index_get_status(namespace="test", name=random_name)
 
     assert result.unmerged_record_count == 0
     drop_specified_index(session_admin_client, "test", random_name)
