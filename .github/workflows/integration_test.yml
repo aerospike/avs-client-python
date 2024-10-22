@@ -32,9 +32,7 @@ jobs:
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
-#       Install dependencies using pyproject.toml
         pip install .
-
       working-directory: tests
 
 
