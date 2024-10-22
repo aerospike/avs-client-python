@@ -354,7 +354,6 @@ class Client(BaseClient):
             logger.error("Failed to get index status with error: %s", e)
             raise types.AVSServerError(rpc_error=e)
 
-        return IndexStatusResponse.from_proto_response(response)
         return fromIndexStatusResponse(responses)
 
     async def add_user(
