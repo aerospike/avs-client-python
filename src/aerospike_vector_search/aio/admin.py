@@ -326,7 +326,7 @@ class Client(BaseClient):
         :param timeout: Time in seconds this operation will wait before raising an :class:`AVSServerError <aerospike_vector_search.types.AVSServerError>`. Defaults to None.
         :type timeout: int
 
-        Returns: int: Records queued to be merged into an index.
+        Returns: IndexStatusResponse: object containing index status information.
 
         Raises:
             AVSServerError: Raised if an error occurs during the RPC communication with the server while attempting to get the index status.
