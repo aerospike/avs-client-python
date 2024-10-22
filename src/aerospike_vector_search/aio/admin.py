@@ -1,7 +1,7 @@
 import asyncio
 import logging
 import sys
-from http.client import responses
+
 from typing import Optional, Union
 
 import grpc
@@ -10,7 +10,6 @@ from .internal import channel_provider
 from .. import types
 from ..shared.conversions import fromIndexStatusResponse
 from ..shared.admin_helpers import BaseClient
-from ..types import IndexStatusResponse
 
 
 logger = logging.getLogger(__name__)
