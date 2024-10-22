@@ -12,6 +12,7 @@ from .proto_generated import index_pb2_grpc, user_admin_pb2_grpc
 from .proto_generated import types_pb2, user_admin_pb2, index_pb2
 from .. import types
 from . import conversions
+from ..types import AVSClientError
 
 logger = logging.getLogger(__name__)
 

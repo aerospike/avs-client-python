@@ -1,12 +1,17 @@
 import asyncio
 import logging
 import sys
-from typing import Any, Optional, Union
+from http.client import responses
+from typing import Optional, Union
+
 import grpc
 
-from .. import types
 from .internal import channel_provider
+from .. import types
+from ..shared.conversions import fromIndexStatusResponse
 from ..shared.admin_helpers import BaseClient
+from ..types import IndexStatusResponse
+
 
 logger = logging.getLogger(__name__)
 
@@ -308,7 +313,7 @@ class Client(BaseClient):
 
     async def index_get_status(
         self, *, namespace: str, name: str, timeout: Optional[int] = None
-    ) -> int:
+    ) -> types.IndexStatusResponse:
         """
         Retrieve the number of records queued to be merged into an index.
 
@@ -349,7 +354,8 @@ class Client(BaseClient):
             logger.error("Failed to get index status with error: %s", e)
             raise types.AVSServerError(rpc_error=e)
 
-        return self._respond_index_get_status(response)
+        return IndexStatusResponse.from_proto_response(response)
+        return fromIndexStatusResponse(responses)
 
     async def add_user(
         self,
