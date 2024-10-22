@@ -28,6 +28,9 @@ jobs:
     - name: Clean old build artifacts
       run: find . -name "*.egg-info" -exec rm -rf {} +
 
+    - name: Install Poetry
+      run: curl -sSL https://install.python-poetry.org | python -
+
     - name: Generate requirements.txt from pyproject.toml
       run: |
         poetry export -f requirements.txt --output requirements.txt --without-hashes --extras "test"

@@ -36,7 +36,8 @@ jobs:
         poetry export -f requirements.txt --output requirements.txt --without-hashes --extras "test"
 
     - name: Install Poetry
-      run: curl -sSL https://install.python-poetry.org | python3 -
+      run: curl -sSL https://install.python-poetry.org | python -
+      run: curl -sSL https://install.python-poetry.org | python -
 
     - name: Install dependencies
       run: |
