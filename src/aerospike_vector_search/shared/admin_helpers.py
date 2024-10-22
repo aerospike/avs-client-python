@@ -311,8 +311,6 @@ class BaseClient(object):
             role_list.append(types.Role(id=role.id))
         return role_list
 
-    def _respond_index_get_status(self, response) -> None:
-        return response.unmergedRecordCount
 
     def _get_index_stub(self):
         return index_pb2_grpc.IndexServiceStub(self._channel_provider.get_channel())

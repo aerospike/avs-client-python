@@ -160,7 +160,7 @@ def fromVectorDbValue(input: types_pb2.Value) -> Any:
 
     return None
 
-def fromIndexStatusResponse(response: 'index_pb2.IndexStatusResponse') -> 'IndexStatusResponse':
+def fromIndexStatusResponse(response: 'index_pb2.IndexStatusResponse') -> IndexStatusResponse:
         """
         Converts a protobuf IndexStatusResponse into an IndexStatusResponse object.
 
