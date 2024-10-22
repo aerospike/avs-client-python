@@ -32,6 +32,11 @@ dependencies = [
     "sphinx_rtd_theme"
 ]
 
+[project.optional-dependencies]
+test = [
+    "pytest"
+]
+
 [project.urls]
 "Homepage" = "https://aerospike.com"
 
