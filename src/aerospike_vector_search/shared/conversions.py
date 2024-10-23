@@ -111,8 +111,8 @@ def fromIndexDefintion(input: types_pb2.IndexDefinition) -> types.IndexDefinitio
             ),
             max_mem_queue_size=input.hnswParams.maxMemQueueSize,
             caching_params=types.HnswCachingParams(
-                max_entries=input.hnswParams.cachingParams.maxEntries,
-                expiry=input.hnswParams.cachingParams.expiry,
+                max_entries=input.hnswParams.indexCachingParams.maxEntries,
+                expiry=input.hnswParams.indexCachingParams.expiry,
             ),
             healer_params=types.HnswHealerParams(
                 max_scan_rate_per_node=input.hnswParams.healerParams.maxScanRatePerNode,

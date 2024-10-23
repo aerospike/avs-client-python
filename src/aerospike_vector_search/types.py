@@ -532,7 +532,8 @@ class HnswParams(object):
         caching_params: Optional[HnswCachingParams] = HnswCachingParams(),
         healer_params: Optional[HnswHealerParams] = HnswHealerParams(),
         merge_params: Optional[HnswIndexMergeParams] = HnswIndexMergeParams(),
-        enable_vector_integrity_check : Optional[bool] = True
+        enable_vector_integrity_check : Optional[bool] = True,
+        record_caching_params : Optional[HnswCachingParams] = None
     ) -> None:
         self.m = m
         self.ef_construction = ef_construction
@@ -543,6 +544,7 @@ class HnswParams(object):
         self.healer_params = healer_params
         self.merge_params = merge_params
         self.enable_vector_integrity_check = enable_vector_integrity_check
+        self.record_caching_params = record_caching_params
 
     def _to_pb2(self):
         params = types_pb2.HnswParams()
@@ -561,12 +563,15 @@ class HnswParams(object):
         if self.enable_vector_integrity_check:
             params.enableVectorIntegrityCheck = self.enable_vector_integrity_check
 
+
         params.batchingParams.CopyFrom(self.batching_params._to_pb2())
-        params.cachingParams.CopyFrom(self.caching_params._to_pb2())
+        params.indexCachingParams.CopyFrom(self.caching_params._to_pb2())
 
         params.healerParams.CopyFrom(self.healer_params._to_pb2())
 
         params.mergeParams.CopyFrom(self.merge_params._to_pb2())
+
+        params.recordCachingParams.CopyFrom(self.record_caching_params._to_pb2())
 
         return params
 
@@ -578,7 +583,8 @@ class HnswParams(object):
         return (
             f"HnswParams(m={self.m}, ef_construction={self.ef_construction}, "
             f"ef={self.ef}, batching_params={batching_repr}, max_mem_queue_size={self.max_mem_queue_size}, "
-            f"caching_params={caching_repr}, healer_repr={healer_repr}, merge_repr={merge_repr}, enableVectorIntegrityCheck={self.enable_vector_integrity_check} )"
+            f"caching_params={caching_repr}, healer_repr={healer_repr}, merge_repr={merge_repr}, enableVectorIntegrityCheck={self.enable_vector_integrity_check}, "
+            f"record_caching_params={self.record_caching_params}  )"
         )
 
     def __str__(self) -> str:
@@ -597,6 +603,7 @@ class HnswParams(object):
             f"  {healer_str}\n"
             f"  {merge_str}\n"
             f"  {self.enable_vector_integrity_check}\n"
+            f"  {self.record_caching_params}\n"
             f"}}"
         )
 
