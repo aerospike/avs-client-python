@@ -106,11 +106,13 @@ def fromIndexDefintion(input: types_pb2.IndexDefinition) -> types.IndexDefinitio
             ef_construction=input.hnswParams.efConstruction,
             ef=input.hnswParams.ef,
             batching_params=types.HnswBatchingParams(
-                max_records=input.hnswParams.batchingParams.maxRecords,
-                interval=input.hnswParams.batchingParams.interval,
+                max_index_records=input.hnswParams.batchingParams.maxIndexRecords,
+                index_interval=input.hnswParams.batchingParams.indexInterval,
+                max_reindex_records = input.hnswParams.batchingParams.maxReindexRecords,
+                reindex_interval = input.hnswParams.batchingParams.reindexInterval
             ),
             max_mem_queue_size=input.hnswParams.maxMemQueueSize,
-            caching_params=types.HnswCachingParams(
+            index_caching_params=types.HnswCachingParams(
                 max_entries=input.hnswParams.indexCachingParams.maxEntries,
                 expiry=input.hnswParams.indexCachingParams.expiry,
             ),
