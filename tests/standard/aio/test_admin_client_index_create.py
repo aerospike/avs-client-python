@@ -390,7 +390,7 @@ async def test_index_create_with_sets(session_admin_client, test_case, random_na
             vector_distance_metric=None,
             sets="demo",
             index_params=types.HnswParams(
-                caching_params=types.HnswCachingParams(max_entries=10, expiry=3000),
+                index_caching_params=types.HnswCachingParams(max_entries=10, expiry=3000),
                 healer_params=types.HnswHealerParams(
                     max_scan_rate_per_node=80,
                     max_scan_page_size=40,

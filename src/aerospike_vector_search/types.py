@@ -602,7 +602,7 @@ class HnswParams(object):
         return (
             f"HnswParams(m={self.m}, ef_construction={self.ef_construction}, "
             f"ef={self.ef}, batching_params={batching_repr}, max_mem_queue_size={self.max_mem_queue_size}, "
-            f"caching_params={caching_repr}, healer_repr={healer_repr}, merge_repr={merge_repr}, enableVectorIntegrityCheck={self.enable_vector_integrity_check}, "
+            f"index_caching_params={caching_repr}, healer_repr={healer_repr}, merge_repr={merge_repr}, enableVectorIntegrityCheck={self.enable_vector_integrity_check}, "
             f"record_caching_params={self.record_caching_params}  )"
         )
 

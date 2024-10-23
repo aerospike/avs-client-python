@@ -405,7 +405,7 @@ def test_index_create_with_sets(session_admin_client, test_case, random_name):
             vector_distance_metric=None,
             sets="demo",
             index_params=types.HnswParams(
-                caching_params=types.HnswCachingParams(max_entries=10, expiry=3000),
+                index_caching_params=types.HnswCachingParams(max_entries=10, expiry=3000),
                 healer_params=types.HnswHealerParams(
                     max_scan_rate_per_node=80,
                     max_scan_page_size=40,
@@ -483,15 +483,15 @@ def test_index_create_with_index_params(session_admin_client, test_case, random_
             assert result["hnsw_params"][
                        "enable_vector_integrity_check"] == test_case.index_params.enable_vector_integrity_check or server_defaults
             """
-            if getattr(result.hnsw_params, 'caching_params', None) is not None:
+            if getattr(result.hnsw_params, 'index_caching_params', None) is not None:
 
                 assert (
-                    int(result["hnsw_params"]["caching_params"]["max_entries"])
-                    == test_case.index_params.caching_params.max_entries
+                    int(result["hnsw_params"]["index_caching_params"]["max_entries"])
+                    == test_case.index_params.index_caching_params.max_entries
                 )
                 assert (
-                    int(result["hnsw_params"]["caching_params"]["expiry"])
-                    == test_case.index_params.caching_params.expiry
+                    int(result["hnsw_params"]["index_caching_params"]["expiry"])
+                    == test_case.index_params.index_caching_params.expiry
                 )
             if getattr(result.hnsw_params, 'merge_params', None) is not None:
                 assert (
