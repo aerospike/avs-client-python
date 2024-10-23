@@ -8,6 +8,7 @@ import grpc
 from . import types
 from .internal import channel_provider
 from .shared.admin_helpers import BaseClient
+from .shared.conversions import fromIndexStatusResponse
 
 logger = logging.getLogger(__name__)
 
@@ -298,7 +299,7 @@ class Client(BaseClient):
 
     def index_get_status(
         self, *, namespace: str, name: str, timeout: Optional[int] = None
-    ) -> int:
+    ) -> types.IndexStatusResponse:
         """
         Retrieve the number of records queued to be merged into an index.
 
@@ -311,7 +312,7 @@ class Client(BaseClient):
         :param timeout: Time in seconds this operation will wait before raising an :class:`AVSServerError <aerospike_vector_search.types.AVSServerError>`. Defaults to None.
         :type timeout: int
 
-        Returns: int: Records queued to be merged into an index.
+        Returns: IndexStatusResponse: AVS response containing index status information.
 
         Raises:
             AVSServerError: Raised if an error occurs during the RPC communication with the server while attempting to get the index status.
@@ -333,11 +334,13 @@ class Client(BaseClient):
                 credentials=self._channel_provider.get_token(),
                 **kwargs,
             )
+            return fromIndexStatusResponse(response)
         except grpc.RpcError as e:
             logger.error("Failed to get index status with error: %s", e)
             raise types.AVSServerError(rpc_error=e)
 
-        return self._respond_index_get_status(response)
+
+
 
     def add_user(
         self,
