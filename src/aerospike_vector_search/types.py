@@ -583,7 +583,7 @@ class HnswParams(object):
         healer_params: Optional[HnswHealerParams] = HnswHealerParams(),
         merge_params: Optional[HnswIndexMergeParams] = HnswIndexMergeParams(),
         enable_vector_integrity_check : Optional[bool] = True,
-        record_caching_params : Optional[HnswCachingParams] = None
+        record_caching_params : Optional[HnswCachingParams] = HnswCachingParams()
     ) -> None:
         self.m = m
         self.ef_construction = ef_construction
@@ -613,7 +613,6 @@ class HnswParams(object):
         if self.enable_vector_integrity_check:
             params.enableVectorIntegrityCheck = self.enable_vector_integrity_check
 
-
         params.batchingParams.CopyFrom(self.batching_params._to_pb2())
         params.indexCachingParams.CopyFrom(self.index_caching_params._to_pb2())
 
@@ -621,8 +620,7 @@ class HnswParams(object):
 
         params.mergeParams.CopyFrom(self.merge_params._to_pb2())
 
-        if self.record_caching_params is not None:
-            params.recordCachingParams.CopyFrom(self.record_caching_params._to_pb2())
+        params.recordCachingParams.CopyFrom(self.record_caching_params._to_pb2())
 
         return params
 
@@ -797,7 +795,7 @@ class IndexDefinition(object):
     :type dimensions: int
 
     :param vector_distance_metric: Metric used to evaluate vector searches on the given index
-    :type vector_distance_metric: Optional VectorDistanceMetric default VectorDistanceMetric.SQUARED_EUCLIDEAN
+    :type vector_distance_metric: VectorDistanceMetric default VectorDistanceMetric.SQUARED_EUCLIDEAN
 
     :param field: Field name.
     :type field: str
@@ -820,7 +818,7 @@ class IndexDefinition(object):
         *,
         id: str,
         dimensions: int,
-        vector_distance_metric: Optional[types_pb2.VectorDistanceMetric] = types_pb2.VectorDistanceMetric.SQUARED_EUCLIDEAN,
+        vector_distance_metric: types_pb2.VectorDistanceMetric = types_pb2.VectorDistanceMetric.SQUARED_EUCLIDEAN,
         field: str,
         sets: str,
         hnsw_params: HnswParams,
