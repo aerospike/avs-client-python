@@ -12,8 +12,8 @@ server_defaults = {
     "ef_construction": 100,
     "ef": 100,
     "batching_params": {
-        "max_records": 10000,
-        "interval": 10000,
+        "max_index_records": 10000,
+        "index_interval": 10000,
     }
 }
 
@@ -94,8 +94,10 @@ def test_index_create(session_admin_client, test_case, random_name):
             assert result["hnsw_params"]["m"] == 16
             assert result["hnsw_params"]["ef_construction"] == 100
             assert result["hnsw_params"]["ef"] == 100
-            assert result["hnsw_params"]["batching_params"]["max_records"] == 100000
-            assert result["hnsw_params"]["batching_params"]["interval"] == 30000
+            assert result["hnsw_params"]["batching_params"]["max_index_records"] == 100000
+            assert result["hnsw_params"]["batching_params"]["index_interval"] == 30000
+            assert result["hnsw_params"]["batching_params"]["max_reindex_records"] == max(100000/10, 1000)
+            assert result["hnsw_params"]["batching_params"]["reindex_interval"] == 30000
             assert result["storage"]["namespace"] == test_case.namespace
             assert result["storage"]["set_name"] == random_name
     assert found == True
@@ -165,8 +167,10 @@ def test_index_create_with_dimnesions(session_admin_client, test_case, random_na
             assert result["hnsw_params"]["m"] == 16
             assert result["hnsw_params"]["ef_construction"] == 100
             assert result["hnsw_params"]["ef"] == 100
-            assert result["hnsw_params"]["batching_params"]["max_records"] == 100000
-            assert result["hnsw_params"]["batching_params"]["interval"] == 30000
+            assert result["hnsw_params"]["batching_params"]["max_index_records"] == 100000
+            assert result["hnsw_params"]["batching_params"]["index_interval"] == 30000
+            assert result["hnsw_params"]["batching_params"]["max_reindex_records"] == max(100000 / 10, 1000)
+            assert result["hnsw_params"]["batching_params"]["reindex_interval"] == 30000
             assert result["storage"]["namespace"] == test_case.namespace
             assert result["storage"]["set_name"] == random_name
     assert found == True
@@ -258,8 +262,10 @@ def test_index_create_with_vector_distance_metric(
             assert result["hnsw_params"]["m"] == 16
             assert result["hnsw_params"]["ef_construction"] == 100
             assert result["hnsw_params"]["ef"] == 100
-            assert result["hnsw_params"]["batching_params"]["max_records"] == 100000
-            assert result["hnsw_params"]["batching_params"]["interval"] == 30000
+            assert result["hnsw_params"]["batching_params"]["max_index_records"] == 100000
+            assert result["hnsw_params"]["batching_params"]["index_interval"] == 30000
+            assert result["hnsw_params"]["batching_params"]["max_reindex_records"] == max(100000 / 10, 1000)
+            assert result["hnsw_params"]["batching_params"]["reindex_interval"] == 30000
             assert result["storage"]["namespace"] == test_case.namespace
             assert result["storage"]["set_name"] == random_name
     assert found == True
@@ -326,8 +332,10 @@ def test_index_create_with_sets(session_admin_client, test_case, random_name):
             assert result["hnsw_params"]["m"] == 16
             assert result["hnsw_params"]["ef_construction"] == 100
             assert result["hnsw_params"]["ef"] == 100
-            assert result["hnsw_params"]["batching_params"]["max_records"] == 100000
-            assert result["hnsw_params"]["batching_params"]["interval"] == 30000
+            assert result["hnsw_params"]["batching_params"]["max_index_records"] == 100000
+            assert result["hnsw_params"]["batching_params"]["index_interval"] == 30000
+            assert result["hnsw_params"]["batching_params"]["max_reindex_records"] == max(100000 / 10, 1000)
+            assert result["hnsw_params"]["batching_params"]["reindex_interval"] == 30000
             assert result["storage"]["namespace"] == test_case.namespace
             assert result["storage"]["set_name"] == random_name
     assert found == True
@@ -388,7 +396,7 @@ def test_index_create_with_sets(session_admin_client, test_case, random_name):
             vector_distance_metric=None,
             sets="demo",
             index_params=types.HnswParams(
-                batching_params=types.HnswBatchingParams(max_records=2000, interval=20000),
+                batching_params=types.HnswBatchingParams(max_index_records=2000, index_interval=20000, max_reindex_records=1500, reindex_interval=70000),
             ),
             index_labels=None,
             index_storage=None,
@@ -401,7 +409,7 @@ def test_index_create_with_sets(session_admin_client, test_case, random_name):
             vector_distance_metric=None,
             sets="demo",
             index_params=types.HnswParams(
-                caching_params=types.HnswCachingParams(max_entries=10, expiry=3000),
+                index_caching_params=types.HnswCachingParams(max_entries=10, expiry=3000),
                 healer_params=types.HnswHealerParams(
                     max_scan_rate_per_node=80,
                     max_scan_page_size=40,
@@ -460,26 +468,34 @@ def test_index_create_with_index_params(session_admin_client, test_case, random_
                 )
 
             assert (
-                result["hnsw_params"]["batching_params"]["max_records"]
-                == test_case.index_params.batching_params.max_records or server_defaults
+                    result["hnsw_params"]["batching_params"]["max_index_records"]
+                    == test_case.index_params.batching_params.max_index_records or server_defaults
             )
             assert (
-                result["hnsw_params"]["batching_params"]["interval"]
-                == test_case.index_params.batching_params.interval or server_defaults
+                    result["hnsw_params"]["batching_params"]["index_interval"]
+                    == test_case.index_params.batching_params.index_interval or server_defaults
+            )
+            assert (
+                    result["hnsw_params"]["batching_params"]["max_reindex_records"]
+                    == test_case.index_params.batching_params.max_reindex_records or server_defaults
+            )
+            assert (
+                    result["hnsw_params"]["batching_params"]["reindex_interval"]
+                    == test_case.index_params.batching_params.reindex_interval or server_defaults
             )
 
             assert result["hnsw_params"][
                        "enable_vector_integrity_check"] == test_case.index_params.enable_vector_integrity_check or server_defaults
             """
-            if getattr(result.hnsw_params, 'caching_params', None) is not None:
+            if getattr(result.hnsw_params, 'index_caching_params', None) is not None:
 
                 assert (
-                    int(result["hnsw_params"]["caching_params"]["max_entries"])
-                    == test_case.index_params.caching_params.max_entries
+                    int(result["hnsw_params"]["index_caching_params"]["max_entries"])
+                    == test_case.index_params.index_caching_params.max_entries
                 )
                 assert (
-                    int(result["hnsw_params"]["caching_params"]["expiry"])
-                    == test_case.index_params.caching_params.expiry
+                    int(result["hnsw_params"]["index_caching_params"]["expiry"])
+                    == test_case.index_params.index_caching_params.expiry
                 )
             if getattr(result.hnsw_params, 'merge_params', None) is not None:
                 assert (
@@ -570,8 +586,11 @@ def test_index_create_index_labels(session_admin_client, test_case, random_name)
             assert result["hnsw_params"]["m"] == 16
             assert result["hnsw_params"]["ef_construction"] == 100
             assert result["hnsw_params"]["ef"] == 100
-            assert result["hnsw_params"]["batching_params"]["max_records"] == 100000
-            assert result["hnsw_params"]["batching_params"]["interval"] == 30000
+            assert result["hnsw_params"]["batching_params"]["max_index_records"] == 100000
+            assert result["hnsw_params"]["batching_params"]["index_interval"] == 30000
+            assert result["hnsw_params"]["batching_params"]["max_reindex_records"] == max(100000 / 10, 1000)
+            assert result["hnsw_params"]["batching_params"]["reindex_interval"] == 30000
+
             assert result["storage"]["namespace"] == test_case.namespace
             assert result["storage"]["set_name"] == random_name
     assert found == True
@@ -626,8 +645,10 @@ def test_index_create_index_storage(session_admin_client, test_case, random_name
             assert result["hnsw_params"]["m"] == 16
             assert result["hnsw_params"]["ef_construction"] == 100
             assert result["hnsw_params"]["ef"] == 100
-            assert result["hnsw_params"]["batching_params"]["max_records"] == 100000
-            assert result["hnsw_params"]["batching_params"]["interval"] == 30000
+            assert result["hnsw_params"]["batching_params"]["max_index_records"] == 100000
+            assert result["hnsw_params"]["batching_params"]["index_interval"] == 30000
+            assert result["hnsw_params"]["batching_params"]["max_reindex_records"] == max(100000 / 10, 1000)
+            assert result["hnsw_params"]["batching_params"]["reindex_interval"] == 30000
             assert result["storage"]["namespace"] == test_case.index_storage.namespace
             assert result["storage"]["set_name"] == test_case.index_storage.set_name
     assert found == True
