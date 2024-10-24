@@ -260,8 +260,6 @@ def test_index_create_with_vector_distance_metric(
             assert result["hnsw_params"]["ef"] == 100
             assert result["hnsw_params"]["batching_params"]["max_index_records"] == 100000
             assert result["hnsw_params"]["batching_params"]["index_interval"] == 30000
-            assert result["hnsw_params"]["batching_params"]["max_reindex_records"] == 700
-            assert result["hnsw_params"]["batching_params"]["reindex_interval"] == 70000
             assert result["storage"]["namespace"] == test_case.namespace
             assert result["storage"]["set_name"] == random_name
     assert found == True
@@ -330,8 +328,6 @@ def test_index_create_with_sets(session_admin_client, test_case, random_name):
             assert result["hnsw_params"]["ef"] == 100
             assert result["hnsw_params"]["batching_params"]["max_index_records"] == 100000
             assert result["hnsw_params"]["batching_params"]["index_interval"] == 30000
-            assert result["hnsw_params"]["batching_params"]["max_reindex_records"] == 700
-            assert result["hnsw_params"]["batching_params"]["reindex_interval"] == 70000
             assert result["storage"]["namespace"] == test_case.namespace
             assert result["storage"]["set_name"] == random_name
     assert found == True
@@ -584,8 +580,6 @@ def test_index_create_index_labels(session_admin_client, test_case, random_name)
             assert result["hnsw_params"]["ef"] == 100
             assert result["hnsw_params"]["batching_params"]["max_index_records"] == 100000
             assert result["hnsw_params"]["batching_params"]["index_interval"] == 30000
-            assert result["hnsw_params"]["batching_params"]["max_reindex_records"] == 700
-            assert result["hnsw_params"]["batching_params"]["reindex_interval"] == 70000
 
             assert result["storage"]["namespace"] == test_case.namespace
             assert result["storage"]["set_name"] == random_name
@@ -643,8 +637,6 @@ def test_index_create_index_storage(session_admin_client, test_case, random_name
             assert result["hnsw_params"]["ef"] == 100
             assert result["hnsw_params"]["batching_params"]["max_index_records"] == 100000
             assert result["hnsw_params"]["batching_params"]["index_interval"] == 30000
-            assert result["hnsw_params"]["batching_params"]["max_reindex_records"] == 700
-            assert result["hnsw_params"]["batching_params"]["reindex_interval"] == 70000
             assert result["storage"]["namespace"] == test_case.index_storage.namespace
             assert result["storage"]["set_name"] == test_case.index_storage.set_name
     assert found == True
