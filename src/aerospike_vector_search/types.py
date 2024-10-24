@@ -596,19 +596,20 @@ class HnswParams(object):
 
     def __repr__(self) -> str:
         batching_repr = repr(self.batching_params)
-        caching_repr = repr(self.index_caching_params)
+        index_caching_repr = repr(self.index_caching_params)
         healer_repr = repr(self.healer_params)
         merge_repr = repr(self.merge_params)
+        record_caching_repr = repr(self.record_caching_params)
         return (
             f"HnswParams(m={self.m}, ef_construction={self.ef_construction}, "
             f"ef={self.ef}, batching_params={batching_repr}, max_mem_queue_size={self.max_mem_queue_size}, "
-            f"index_caching_params={caching_repr}, healer_repr={healer_repr}, merge_repr={merge_repr}, enableVectorIntegrityCheck={self.enable_vector_integrity_check}, "
-            f"record_caching_params={self.record_caching_params}  )"
+            f"index_caching_params={index_caching_repr}, healer_repr={healer_repr}, merge_repr={merge_repr}, enableVectorIntegrityCheck={self.enable_vector_integrity_check}, "
+            f"record_caching_params={record_caching_repr}  )"
         )
 
     def __str__(self) -> str:
         batching_str = str(self.batching_params)
-        caching_str = str(self.index_caching_params)
+        index_caching_str = str(self.index_caching_params)
         healer_str = str(self.healer_params)
         merge_str = str(self.merge_params)
         record_caching_params = str(self.record_caching_params)
@@ -619,7 +620,7 @@ class HnswParams(object):
             f"  ef: {self.ef}\n"
             f"  {batching_str}\n"
             f"  maxMemQueueSize: {self.max_mem_queue_size}\n"
-            f"  {caching_str}\n"
+            f"  {index_caching_str}\n"
             f"  {healer_str}\n"
             f"  {merge_str}\n"
             f"  {self.enable_vector_integrity_check}\n"

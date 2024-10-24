@@ -33,6 +33,8 @@ async def test_index_list(session_admin_client, empty_test_case, random_name):
         assert isinstance(index["hnsw_params"]["ef"], int)
         assert isinstance(index["hnsw_params"]["batching_params"]["max_index_records"], int)
         assert isinstance(index["hnsw_params"]["batching_params"]["index_interval"], int)
+        assert isinstance(index["hnsw_params"]["batching_params"]["max_reindex_records"], int)
+        assert isinstance(index["hnsw_params"]["batching_params"]["reindex_interval"], int)
         assert isinstance(index["storage"]["namespace"], str)
         assert isinstance(index["storage"]["set_name"], str)
     await drop_specified_index(session_admin_client, "test", random_name)
