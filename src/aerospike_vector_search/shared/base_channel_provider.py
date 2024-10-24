@@ -78,7 +78,7 @@ class BaseChannelProvider(object):
         self._closed: bool = False
         self._cluster_id: int = 0
         self.current_server_version = ""
-        self.minimum_required_version = "0.10.0"
+        self.minimum_required_version = "0.11.0"
         self.client_server_compatible = False
 
     def get_token(self) -> grpc.access_token_call_credentials:
