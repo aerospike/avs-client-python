@@ -2,6 +2,7 @@ from typing import Any
 
 from .. import types
 from .proto_generated import types_pb2
+from ..types import IndexStatusResponse
 
 
 def toVectorDbValue(value: Any) -> types_pb2.Value:
@@ -105,13 +106,15 @@ def fromIndexDefintion(input: types_pb2.IndexDefinition) -> types.IndexDefinitio
             ef_construction=input.hnswParams.efConstruction,
             ef=input.hnswParams.ef,
             batching_params=types.HnswBatchingParams(
-                max_records=input.hnswParams.batchingParams.maxRecords,
-                interval=input.hnswParams.batchingParams.interval,
+                max_index_records=input.hnswParams.batchingParams.maxIndexRecords,
+                index_interval=input.hnswParams.batchingParams.indexInterval,
+                max_reindex_records = input.hnswParams.batchingParams.maxReindexRecords,
+                reindex_interval = input.hnswParams.batchingParams.reindexInterval
             ),
             max_mem_queue_size=input.hnswParams.maxMemQueueSize,
-            caching_params=types.HnswCachingParams(
-                max_entries=input.hnswParams.cachingParams.maxEntries,
-                expiry=input.hnswParams.cachingParams.expiry,
+            index_caching_params=types.HnswCachingParams(
+                max_entries=input.hnswParams.indexCachingParams.maxEntries,
+                expiry=input.hnswParams.indexCachingParams.expiry,
             ),
             healer_params=types.HnswHealerParams(
                 max_scan_rate_per_node=input.hnswParams.healerParams.maxScanRatePerNode,
@@ -158,3 +161,23 @@ def fromVectorDbValue(input: types_pb2.Value) -> Any:
             return [v for v in vector.boolData.value]
 
     return None
+
+def fromIndexStatusResponse(response: 'index_pb2.IndexStatusResponse') -> IndexStatusResponse:
+        """
+        Converts a protobuf IndexStatusResponse into an IndexStatusResponse object.
+
+        Parameters:
+        -----------
+        response : index_pb2.IndexStatusResponse
+            A protobuf IndexStatusResponse object.
+
+        Returns:
+        --------
+        IndexStatusResponse
+            An instance of IndexStatusResponse with the values from the protobuf message.
+        """
+        result = IndexStatusResponse()
+        result.unmerged_record_count = response.unmergedRecordCount
+        result.index_healer_vector_records_indexed = response.indexHealerVectorRecordsIndexed
+        result.index_healer_vertices_valid = response.indexHealerVerticesValid
+        return result

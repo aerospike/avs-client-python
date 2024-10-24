@@ -12,6 +12,7 @@ from .proto_generated import index_pb2_grpc, user_admin_pb2_grpc
 from .proto_generated import types_pb2, user_admin_pb2, index_pb2
 from .. import types
 from . import conversions
+from ..types import AVSClientError
 
 logger = logging.getLogger(__name__)
 
@@ -310,8 +311,6 @@ class BaseClient(object):
             role_list.append(types.Role(id=role.id))
         return role_list
 
-    def _respond_index_get_status(self, response) -> None:
-        return response.unmergedRecordCount
 
     def _get_index_stub(self):
         return index_pb2_grpc.IndexServiceStub(self._channel_provider.get_channel())

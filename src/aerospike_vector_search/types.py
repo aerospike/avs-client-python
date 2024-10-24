@@ -258,38 +258,58 @@ class HnswBatchingParams(object):
     """
     Parameters for configuring batching behaviour for batch based index update.
 
-    :param max_records: Maximum number of records to fit in a batch. Defaults to server default..
-    :param interval: The maximum amount of time in milliseconds to wait before finalizing a batch. Defaults to server default..
+    :param max_index_records: Maximum number of index records to fit in a batch.
+                              Must be >= 1000. Defaults to 100,000.
+    :param index_interval: The maximum amount of time in milliseconds to wait before
+                           finalizing a batch of index records. Must be >= 10,000. Defaults to 30,000.
+    :param max_reindex_records: Maximum number of reindex records to fit in a batch.
+                                Defaults to max(max_index_records / 10, 1000).
+    :param reindex_interval: The maximum amount of time in milliseconds to wait before
+                             finalizing a batch of reindex records. Must be >= 10,000. Defaults to index_interval.
     """
 
     def __init__(
         self,
         *,
-        max_records: Optional[int] = None,
-        interval: Optional[int] = None,
+        max_index_records: Optional[int] = None,
+        index_interval: Optional[int] = None,
+        max_reindex_records: Optional[int] = None,
+        reindex_interval: Optional[int] = None,
     ) -> None:
-        self.max_records = max_records
-        self.interval = interval
+
+        self.max_index_records = max_index_records
+        self.index_interval = index_interval
+        self.max_reindex_records = max_reindex_records
+        self.reindex_interval = reindex_interval
+
 
     def _to_pb2(self):
         params = types_pb2.HnswBatchingParams()
-        if self.max_records:
-            params.maxRecords = self.max_records
-        if self.interval:
-            params.interval = self.interval
+        if self.max_index_records:
+            params.maxIndexRecords = self.max_index_records
+        if self.index_interval:
+            params.indexInterval = self.index_interval
+        if self.max_reindex_records:
+            params.maxReindexRecords = self.max_reindex_records
+        if self.reindex_interval:
+            params.reindexInterval = self.reindex_interval
         return params
 
     def __repr__(self) -> str:
         return (
-            f"batchingParams(max_records={self.max_records}, "
-            f"interval={self.interval})"
+            f"HnswBatchingParams(max_index_records={self.max_index_records}, "
+            f"index_interval={self.index_interval}, "
+            f"max_reindex_records={self.max_reindex_records}, "
+            f"reindex_interval={self.reindex_interval})"
         )
 
     def __str__(self) -> str:
         return (
-            f"batchingParams {{\n"
-            f"  maxRecords: {self.max_records}\n"
-            f"  interval: {self.interval}\n"
+            f"HnswBatchingParams {{\n"
+            f"  max_index_records: {self.max_index_records}\n"
+            f"  index_interval: {self.index_interval}\n"
+            f"  max_reindex_records: {self.max_reindex_records}\n"
+            f"  reindex_interval: {self.reindex_interval}\n"
             f"}}"
         )
 
@@ -529,18 +549,22 @@ class HnswParams(object):
         ef: Optional[int] = None,
         batching_params: Optional[HnswBatchingParams] = HnswBatchingParams(),
         max_mem_queue_size: Optional[int] = None,
-        caching_params: Optional[HnswCachingParams] = HnswCachingParams(),
+        index_caching_params: Optional[HnswCachingParams] = HnswCachingParams(),
         healer_params: Optional[HnswHealerParams] = HnswHealerParams(),
         merge_params: Optional[HnswIndexMergeParams] = HnswIndexMergeParams(),
+        enable_vector_integrity_check : Optional[bool] = True,
+        record_caching_params : Optional[HnswCachingParams] = HnswCachingParams()
     ) -> None:
         self.m = m
         self.ef_construction = ef_construction
         self.ef = ef
         self.batching_params = batching_params
         self.max_mem_queue_size = max_mem_queue_size
-        self.caching_params = caching_params
+        self.index_caching_params = index_caching_params
         self.healer_params = healer_params
         self.merge_params = merge_params
+        self.enable_vector_integrity_check = enable_vector_integrity_check
+        self.record_caching_params = record_caching_params
 
     def _to_pb2(self):
         params = types_pb2.HnswParams()
@@ -556,31 +580,39 @@ class HnswParams(object):
         if self.max_mem_queue_size:
             params.maxMemQueueSize = self.max_mem_queue_size
 
+        if self.enable_vector_integrity_check:
+            params.enableVectorIntegrityCheck = self.enable_vector_integrity_check
+
         params.batchingParams.CopyFrom(self.batching_params._to_pb2())
-        params.cachingParams.CopyFrom(self.caching_params._to_pb2())
+        params.indexCachingParams.CopyFrom(self.index_caching_params._to_pb2())
 
         params.healerParams.CopyFrom(self.healer_params._to_pb2())
 
         params.mergeParams.CopyFrom(self.merge_params._to_pb2())
 
+        params.recordCachingParams.CopyFrom(self.record_caching_params._to_pb2())
+
         return params
 
     def __repr__(self) -> str:
         batching_repr = repr(self.batching_params)
-        caching_repr = repr(self.caching_params)
+        index_caching_repr = repr(self.index_caching_params)
         healer_repr = repr(self.healer_params)
         merge_repr = repr(self.merge_params)
+        record_caching_repr = repr(self.record_caching_params)
         return (
             f"HnswParams(m={self.m}, ef_construction={self.ef_construction}, "
             f"ef={self.ef}, batching_params={batching_repr}, max_mem_queue_size={self.max_mem_queue_size}, "
-            f"caching_params={caching_repr}, healer_repr={healer_repr}, merge_repr={merge_repr})"
+            f"index_caching_params={index_caching_repr}, healer_repr={healer_repr}, merge_repr={merge_repr}, enableVectorIntegrityCheck={self.enable_vector_integrity_check}, "
+            f"record_caching_params={record_caching_repr}  )"
         )
 
     def __str__(self) -> str:
         batching_str = str(self.batching_params)
-        caching_str = str(self.caching_params)
+        index_caching_str = str(self.index_caching_params)
         healer_str = str(self.healer_params)
         merge_str = str(self.merge_params)
+        record_caching_params = str(self.record_caching_params)
         return (
             f"hnswParams {{\n"
             f"  m: {self.m}\n"
@@ -588,9 +620,11 @@ class HnswParams(object):
             f"  ef: {self.ef}\n"
             f"  {batching_str}\n"
             f"  maxMemQueueSize: {self.max_mem_queue_size}\n"
-            f"  {caching_str}\n"
+            f"  {index_caching_str}\n"
             f"  {healer_str}\n"
             f"  {merge_str}\n"
+            f"  {self.enable_vector_integrity_check}\n"
+            f"  {record_caching_params}\n"
             f"}}"
         )
 
@@ -685,7 +719,7 @@ class IndexStorage(object):
 
 class IndexId(object):
     """
-    AVS IndexId used in :class:`IndexDefintion`
+    AVS IndexId used in :class:`IndexDefinition`
 
     :param namespace: The name of the namespace in which to index records.
     :type namespace: str
@@ -720,6 +754,7 @@ class IndexId(object):
         return setattr(self, key, value)
 
 
+# TBD add index type in future refactoring
 class IndexDefinition(object):
     """
     AVS Index Definition
@@ -731,7 +766,7 @@ class IndexDefinition(object):
     :type dimensions: int
 
     :param vector_distance_metric: Metric used to evaluate vector searches on the given index
-    :type vector_distance_metric: VectorDistanceMetric
+    :type vector_distance_metric: VectorDistanceMetric default VectorDistanceMetric.SQUARED_EUCLIDEAN
 
     :param field: Field name.
     :type field: str
@@ -743,7 +778,7 @@ class IndexDefinition(object):
     :type hnsw_params: HnswParams
 
     :param storage: Index storage details.
-    :type storage: IndexStorage
+    :type storage: Optional[IndexStorage] default None
 
     :param index_labels: Meta data associated with the index. Defaults to None.
     :type index_labels: Optional[dict[str, str]]
@@ -754,11 +789,11 @@ class IndexDefinition(object):
         *,
         id: str,
         dimensions: int,
-        vector_distance_metric: types_pb2.VectorDistanceMetric,
+        vector_distance_metric: types_pb2.VectorDistanceMetric = types_pb2.VectorDistanceMetric.SQUARED_EUCLIDEAN,
         field: str,
         sets: str,
         hnsw_params: HnswParams,
-        storage: IndexStorage,
+        storage: Optional[IndexStorage] = None,
         index_labels: dict[str, str],
     ) -> None:
         self.id = id
@@ -847,3 +882,53 @@ class AVSClientError(AVSError):
 
     def __str__(self):
         return f"AVSClientError(message={self.message})"
+
+
+class IndexStatusResponse:
+    """
+    Represents the response containing index status information.
+
+    Attributes:
+    -----------
+    unmerged_record_count : int
+        The number of unmerged index records.
+
+    index_healer_vector_records_indexed : int
+        The number of vector records indexed (0 if the healer has not yet run).
+
+    index_healer_vertices_valid : int
+        The number of vertices in the main index (0 if the healer has not yet run).
+    """
+
+    def __init__(self,
+                 unmerged_record_count: int = 0,
+                 index_healer_vector_records_indexed: int = 0,
+                 index_healer_vertices_valid: int = 0) -> None:
+        """
+        Initializes the IndexStatusResponse with the provided values.
+
+        Parameters:
+        -----------
+        unmerged_record_count : int, optional
+            The number of unmerged index records (default is 0).
+
+        index_healer_vector_records_indexed : int, optional
+            The number of vector records indexed (default is 0).
+
+        index_healer_vertices_valid : int, optional
+            The number of vertices in the main index (default is 0).
+        """
+        self.unmerged_record_count: int = unmerged_record_count
+        self.index_healer_vector_records_indexed: int = index_healer_vector_records_indexed
+        self.index_healer_vertices_valid: int = index_healer_vertices_valid
+
+    def __str__(self) -> str:
+        return (f"IndexStatusResponse("
+                f"unmerged_record_count={self.unmerged_record_count}, "
+                f"index_healer_vector_records_indexed={self.index_healer_vector_records_indexed}, "
+                f"index_healer_vertices_valid={self.index_healer_vertices_valid})")
+
+    def __repr__(self) -> str:
+        return (f"IndexStatusResponse(unmerged_record_count={self.unmerged_record_count}, "
+                f"index_healer_vector_records_indexed={self.index_healer_vector_records_indexed}, "
+                f"index_healer_vertices_valid={self.index_healer_vertices_valid})")
