@@ -3,7 +3,7 @@ name: Run long running vector search tests
 on:
   push:
     branches:
-      - main
+      - dev
 
 jobs:
   test-exhaustive-vector-search:
