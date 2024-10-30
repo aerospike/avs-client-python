@@ -3,7 +3,7 @@ name: Run Unit Tests
 on:
   pull_request:
     branches:
-      - dev
+      - main
   push:
     branches:
       - main
