@@ -3,7 +3,7 @@
 cd "$(dirname "$0")"
 
 # Generate the gRPC client code
-python3 -m pip install grpcio-tools
+python3 -m pip install grpcio-tools --upgrade
 python3 -m grpc_tools.protoc \
   --proto_path=. \
   --python_out=../src/aerospike_vector_search/shared/proto_generated/ \
