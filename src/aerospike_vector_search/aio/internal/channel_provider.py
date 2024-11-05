@@ -5,7 +5,7 @@ from logging import Logger
 
 import jwt
 from jwt.exceptions import InvalidTokenError
-from typing import Optional, Union, final, Final
+from typing import Optional, Union, Final
 
 import google.protobuf.empty_pb2
 import grpc
@@ -16,9 +16,12 @@ from ...shared.proto_generated import vector_db_pb2
 from ...shared.proto_generated import vector_db_pb2_grpc
 from ...shared import base_channel_provider
 
-empty: Final = google.protobuf.empty_pb2.Empty()
-logger: Final[logging.Logger] = logging.getLogger(__name__)
-TEND_INTERVAL: Final[int] = 1
+empty = google.protobuf.empty_pb2.Empty()
+
+logger = logging.getLogger(__name__)
+
+TEND_INTERVAL : int = 1
+
 
 class ChannelProvider(base_channel_provider.BaseChannelProvider):
     """AVS Channel Provider"""

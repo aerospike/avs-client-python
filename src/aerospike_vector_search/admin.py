@@ -1,7 +1,7 @@
 import logging
 import sys
 import time
-from typing import Optional, Union, Final
+from typing import Optional, Union
 
 import grpc
 
@@ -10,7 +10,7 @@ from .internal import channel_provider
 from .shared.admin_helpers import BaseClient
 from .shared.conversions import fromIndexStatusResponse
 
-logger : Final[logging.Logger] = logging.getLogger(__name__)
+logger = logging.getLogger(__name__)
 
 
 class Client(BaseClient):
@@ -510,7 +510,7 @@ class Client(BaseClient):
         except grpc.RpcError as e:
             logger.error("Failed to list user with error: %s", e)
             raise types.AVSServerError(rpc_error=e)
-        return _respond_list_users(response)
+        return self._respond_list_users(response)
 
     def grant_roles(
         self, *, username: str, roles: list[str], timeout: Optional[int] = None

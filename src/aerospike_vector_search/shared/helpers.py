@@ -13,7 +13,7 @@ def _prepare_seeds(seeds: Union[types.HostPort, Tuple[types.HostPort, ...]]) -> 
     if isinstance(seeds, types.HostPort):
         seeds = (seeds,)
 
-    return tuple(seeds)
+    return seeds
 
 
 def _prepare_wait_for_index_waiting(client, namespace: str, name: str, wait_interval: Optional[int]) -> (

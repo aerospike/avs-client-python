@@ -2,7 +2,7 @@ import logging
 import random
 import time
 
-from typing import Optional, Union, Final
+from typing import Optional, Union
 
 import json
 import jwt
@@ -17,7 +17,7 @@ from .proto_generated import vector_db_pb2, auth_pb2
 from .proto_generated import auth_pb2_grpc
 from .proto_generated import vector_db_pb2_grpc
 
-logger: Final[logging.Logger] = logging.getLogger(__name__)
+logger = logging.getLogger(__name__)
 
 
 class ChannelAndEndpoints(object):

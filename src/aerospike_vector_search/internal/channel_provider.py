@@ -2,7 +2,7 @@ import re
 import time
 import logging
 import threading
-from typing import Optional, Union, Final
+from typing import Optional, Union
 
 import google.protobuf.empty_pb2
 import grpc
@@ -12,11 +12,11 @@ from ..shared.proto_generated import vector_db_pb2
 from ..shared.proto_generated import vector_db_pb2_grpc
 from ..shared import base_channel_provider
 
-empty: Final = google.protobuf.empty_pb2.Empty()
+empty = google.protobuf.empty_pb2.Empty()
 
-logger: Final[logging.Logger] = logging.getLogger(__name__)
+logger = logging.getLogger(__name__)
 
-TEND_INTERVAL: Final[int] = 1
+TEND_INTERVAL: int = 1
 
 
 class ChannelProvider(base_channel_provider.BaseChannelProvider):

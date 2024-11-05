@@ -11,8 +11,6 @@ import grpc
 from . import helpers
 from .proto_generated import index_pb2_grpc, user_admin_pb2_grpc
 from .proto_generated import types_pb2, user_admin_pb2, index_pb2
-from .proto_generated.index_pb2_grpc import IndexServiceStub
-from .proto_generated.user_admin_pb2_grpc import UserAdminServiceStub
 from .. import types
 from . import conversions
 from ..types import AVSClientError, IndexDefinition, User, HostPort
@@ -40,7 +38,7 @@ class BaseClient(object):
             index_storage: Optional[types.IndexStorage],
             timeout: Optional[int],
             logger: logging.Logger
-    ) -> Tuple[IndexServiceStub, index_pb2.IndexCreateRequest, Dict[str, Any]] :
+    ) -> Tuple[index_pb2_grpc.IndexServiceStub, index_pb2.IndexCreateRequest, Dict[str, Any]] :
 
         logger.debug(
             "Creating index: namespace=%s, name=%s, vector_field=%s, dimensions=%d, vector_distance_metric=%s, "
@@ -122,7 +120,7 @@ class BaseClient(object):
 
     def _prepare_index_get(
         self, namespace: str, name: str, timeout: Optional[int], logger: logging.Logger, apply_defaults: Optional[bool]
-    ) -> tuple[IndexServiceStub, index_pb2.IndexGetRequest, dict[str, Any]]:
+    ) -> tuple[index_pb2_grpc.IndexServiceStub, index_pb2.IndexGetRequest, dict[str, Any]]:
 
         logger.debug(
             "Getting index information: namespace=%s, name=%s, timeout=%s, apply_defaults=%s",
@@ -144,7 +142,7 @@ class BaseClient(object):
         return (index_stub, index_get_request, kwargs)
 
     def _prepare_index_get_status(self, namespace: str, name: str, timeout: Optional[int], logger: logging.Logger) -> tuple[
-        IndexServiceStub, index_pb2.IndexStatusRequest, dict[str, Any]]:
+        index_pb2_grpc.IndexServiceStub, index_pb2.IndexStatusRequest, dict[str, Any]]:
 
         logger.debug(
             "Getting index status: namespace=%s, name=%s, timeout=%s",
@@ -163,7 +161,7 @@ class BaseClient(object):
         return (index_stub, index_get_status_request, kwargs)
 
     def _prepare_add_user(self, username: str, password: str, roles: list[str], timeout: Optional[int], logger: logging.Logger) -> tuple[
-        UserAdminServiceStub, user_admin_pb2.AddUserRequest, dict[str, Any]]:
+        user_admin_pb2_grpc.UserAdminServiceStub, user_admin_pb2.AddUserRequest, dict[str, Any]]:
         logger.debug(
             "Getting index status: username=%s, password=%s, roles=%s, timeout=%s",
             username,
@@ -185,7 +183,7 @@ class BaseClient(object):
         return (user_admin_stub, add_user_request, kwargs)
 
     def _prepare_update_credentials(self, username: str, password: str, timeout: Optional[int], logger: logging.Logger) -> tuple[
-        UserAdminServiceStub, user_admin_pb2.UpdateCredentialsRequest, dict[str, Any]]:
+        user_admin_pb2_grpc.UserAdminServiceStub, user_admin_pb2.UpdateCredentialsRequest, dict[str, Any]]:
         logger.debug(
             "Getting index status: username=%s, password=%s, timeout=%s",
             username,
@@ -205,7 +203,7 @@ class BaseClient(object):
 
         return (user_admin_stub, update_user_request, kwargs)
 
-    def _prepare_drop_user(self, username: str, timeout: Optional[int], logger: logging.Logger) -> tuple[UserAdminServiceStub, user_admin_pb2.DropUserRequest, dict[str, Any]]:
+    def _prepare_drop_user(self, username: str, timeout: Optional[int], logger: logging.Logger) -> tuple[user_admin_pb2_grpc.UserAdminServiceStub, user_admin_pb2.DropUserRequest, dict[str, Any]]:
         logger.debug("Getting index status: username=%s, timeout=%s", username, timeout)
 
         kwargs = {}
@@ -217,7 +215,7 @@ class BaseClient(object):
 
         return (user_admin_stub, drop_user_request, kwargs)
 
-    def _prepare_get_user(self, username: str, timeout : Optional[int], logger: logging.Logger) -> tuple[UserAdminServiceStub, user_admin_pb2.GetUserRequest, dict[str, Any]]:
+    def _prepare_get_user(self, username: str, timeout : Optional[int], logger: logging.Logger) -> tuple[user_admin_pb2_grpc.UserAdminServiceStub, user_admin_pb2.GetUserRequest, dict[str, Any]]:
         logger.debug("Getting index status: username=%s, timeout=%s", username, timeout)
 
         kwargs = {}
@@ -229,7 +227,7 @@ class BaseClient(object):
 
         return (user_admin_stub, get_user_request, kwargs)
 
-    def _prepare_list_users(self, timeout : Optional[int], logger: logging.Logger) -> tuple[UserAdminServiceStub, Any, dict[str, Any]]:
+    def _prepare_list_users(self, timeout : Optional[int], logger: logging.Logger) -> tuple[user_admin_pb2_grpc.UserAdminServiceStub, Any, dict[str, Any]]:
         logger.debug("Getting index status")
 
         kwargs = {}
@@ -242,7 +240,7 @@ class BaseClient(object):
         return (user_admin_stub, list_users_request, kwargs)
 
     def _prepare_grant_roles(self, username: str, roles: list[str], timeout: Optional[int], logger: logging.Logger) -> tuple[
-        UserAdminServiceStub, user_admin_pb2.GrantRolesRequest, dict[str, Any]]:
+        user_admin_pb2_grpc.UserAdminServiceStub, user_admin_pb2.GrantRolesRequest, dict[str, Any]]:
         logger.debug(
             "Getting index status: username=%s, roles=%s, timeout=%s",
             username,
@@ -262,7 +260,7 @@ class BaseClient(object):
         return (user_admin_stub, grant_roles_request, kwargs)
 
     def _prepare_revoke_roles(self, username: str, roles: list[str], timeout: Optional[int], logger) -> tuple[
-        UserAdminServiceStub, user_admin_pb2.RevokeRolesRequest, dict[str, Any]]:
+        user_admin_pb2_grpc.UserAdminServiceStub, user_admin_pb2.RevokeRolesRequest, dict[str, Any]]:
         logger.debug(
             "Getting index status: username=%s, roles=%s, timeout=%s",
             username,
@@ -281,7 +279,7 @@ class BaseClient(object):
 
         return (user_admin_stub, revoke_roles_request, kwargs)
 
-    def _prepare_list_roles(self, timeout: Optional[int], logger: logging.Logger) -> tuple[UserAdminServiceStub, Any, dict[str, Any]]:
+    def _prepare_list_roles(self, timeout: Optional[int], logger: logging.Logger) -> tuple[user_admin_pb2_grpc.UserAdminServiceStub, Any, dict[str, Any]]:
         logger.debug("Getting index status: timeout=%s", timeout)
 
         kwargs = {}
@@ -321,7 +319,7 @@ class BaseClient(object):
     def _get_index_stub(self) -> index_pb2_grpc.IndexServiceStub:
         return index_pb2_grpc.IndexServiceStub(self._channel_provider.get_channel())
 
-    def _get_user_admin_stub(self) -> UserAdminServiceStub:
+    def _get_user_admin_stub(self) -> user_admin_pb2_grpc.UserAdminServiceStub:
         return user_admin_pb2_grpc.UserAdminServiceStub(
             self._channel_provider.get_channel()
         )

@@ -1,4 +1,3 @@
-import logging
 from logging import Logger
 from typing import Any, Optional, Union, Tuple, Dict, List
 import time
@@ -7,8 +6,7 @@ from . import conversions
 
 from .proto_generated import transact_pb2, index_pb2, index_pb2_grpc
 from .proto_generated import transact_pb2_grpc
-from .proto_generated.transact_pb2_grpc import TransactServiceStub
-from .. import types, RecordWithKey, Neighbor
+from .. import types
 from .proto_generated import types_pb2
 from . import helpers
 from ..types import AVSClientError
@@ -25,11 +23,11 @@ class BaseClient(object):
         key: Union[int, str, bytes, bytearray, np.generic, np.ndarray],
         record_data: Dict[str, Any],
         set_name: Optional[str],
-        write_type: transact_pb2.WriteType,  # Adjust based on the specific type if available
+        write_type: transact_pb2.WriteType,
         ignore_mem_queue_full: Optional[bool],
         timeout: Optional[int],
-        logger: logging.Logger,
-    ) -> tuple[TransactServiceStub, transact_pb2.PutRequest, dict[str, Any]]:
+        logger: Logger,
+    ) -> tuple[transact_pb2_grpc.TransactServiceStub, transact_pb2.PutRequest, dict[str, Any]]:
 
         logger.debug(
             "Putting record: namespace=%s, key=%s, record_data:%s, set_name:%s, ignore_mem_queue_full %s, timeout:%s",
@@ -79,8 +77,8 @@ class BaseClient(object):
         set_name: Optional[str],
         ignore_mem_queue_full: Optional[bool],
         timeout: Optional[int],
-        logger: logging.Logger,
-    ) -> tuple[TransactServiceStub, transact_pb2.PutRequest, dict[str, Any]]:
+        logger: Logger,
+    ) -> tuple[transact_pb2_grpc.TransactServiceStub, transact_pb2.PutRequest, dict[str, Any]]:
         return self._prepare_put(
             namespace,
             key,
@@ -92,11 +90,6 @@ class BaseClient(object):
             logger,
         )
 
-
-    set_name: Optional[str] = None,
-    ignore_mem_queue_full: Optional[bool] = False,
-    timeout: Optional[int] = None,
-
     def _prepare_update(
         self,
         namespace: str,
@@ -105,8 +98,8 @@ class BaseClient(object):
         set_name: Optional[str],
         ignore_mem_queue_full: Optional[bool],
         timeout: Optional[int],
-        logger: logging.Logger,
-    ) -> tuple[TransactServiceStub, transact_pb2.PutRequest, dict[str, Any]]:
+        logger: Logger,
+    ) -> tuple[transact_pb2_grpc.TransactServiceStub, transact_pb2.PutRequest, dict[str, Any]]:
         return self._prepare_put(
             namespace,
             key,
@@ -128,7 +121,7 @@ class BaseClient(object):
         ignore_mem_queue_full: Optional[bool],
         timeout: Optional[int],
         logger: Logger,
-    ) -> tuple[TransactServiceStub, transact_pb2.PutRequest, dict[str, Any]]:
+    ) -> tuple[transact_pb2_grpc.TransactServiceStub, transact_pb2.PutRequest, dict[str, Any]]:
         return self._prepare_put(
             namespace,
             key,
@@ -142,7 +135,7 @@ class BaseClient(object):
 
     def _prepare_get(
         self, namespace, key, include_fields, exclude_fields, set_name, timeout, logger
-    ) -> tuple[TransactServiceStub, types_pb2.Key, transact_pb2.GetRequest, dict[str, Any]]:
+    ) -> tuple[transact_pb2_grpc.TransactServiceStub, types_pb2.Key, transact_pb2.GetRequest, dict[str, Any]]:
 
         logger.debug(
             "Getting record: namespace=%s, key=%s, include_fields:%s, exclude_fields:%s, set_name:%s, timeout:%s",
@@ -158,7 +151,7 @@ class BaseClient(object):
         if timeout is not None:
             kwargs["timeout"] = timeout
 
-        key: types_pb2.Key = self._get_key(namespace, set_name, key)
+        key = self._get_key(namespace, set_name, key)
         projection_spec = self._get_projection_spec(include_fields=include_fields, exclude_fields=exclude_fields)
 
         transact_stub = self._get_transact_stub()
@@ -167,7 +160,7 @@ class BaseClient(object):
         return (transact_stub, key, get_request, kwargs)
 
     def _prepare_exists(self, namespace, key, set_name, timeout, logger) -> tuple[
-        TransactServiceStub, transact_pb2.ExistsRequest, dict[str, Any]]:
+        transact_pb2_grpc.TransactServiceStub, transact_pb2.ExistsRequest, dict[str, Any]]:
 
         logger.debug(
             "Getting record existence: namespace=%s, key=%s, set_name:%s, timeout:%s",
@@ -189,7 +182,7 @@ class BaseClient(object):
         return (transact_stub, exists_request, kwargs)
 
     def _prepare_delete(self, namespace, key, set_name, timeout, logger) -> tuple[
-        TransactServiceStub, transact_pb2.DeleteRequest, dict[str, Any]]:
+        transact_pb2_grpc.TransactServiceStub, transact_pb2.DeleteRequest, dict[str, Any]]:
 
         logger.debug(
             "Deleting record: namespace=%s, key=%s, set_name=%s, timeout:%s",
@@ -212,7 +205,7 @@ class BaseClient(object):
 
     def _prepare_is_indexed(
         self, namespace: str, key: Union[int, str, bytes, bytearray, np.generic, np.ndarray], index_name: str, index_namespace: Optional[str], set_name: Optional[str], timeout: Optional[int],logger: logging.Logger
-    ) -> tuple[TransactServiceStub, transact_pb2.IsIndexedRequest, dict[str, Any]]:
+    ) -> tuple[transact_pb2_grpc.TransactServiceStub, transact_pb2.IsIndexedRequest, dict[str, Any]]:
 
         kwargs = {}
         if timeout is not None:
@@ -248,8 +241,8 @@ class BaseClient(object):
         include_fields: Optional[List[str]],
         exclude_fields: Optional[List[str]],
         timeout: Optional[int],
-        logger: logging.Logger,
-    ) -> tuple[TransactServiceStub, Any, dict[str, Any]]:
+        logger: Logger,
+    ) -> tuple[transact_pb2_grpc.TransactServiceStub, Any, dict[str, Any]]:
 
         kwargs = {}
         if timeout is not None:
@@ -296,7 +289,7 @@ class BaseClient(object):
             self._channel_provider.get_channel()
         )
 
-    def _respond_get(self, response, key) -> RecordWithKey:
+    def _respond_get(self, response, key) -> types.RecordWithKey:
         return types.RecordWithKey(
             key=conversions.fromVectorDbKey(key),
             fields=conversions.fromVectorDbRecord(response),
@@ -308,7 +301,7 @@ class BaseClient(object):
     def _respond_is_indexed(self, response) -> None:
         return response.value
 
-    def _respond_neighbor(self, response) -> Neighbor:
+    def _respond_neighbor(self, response) -> types.Neighbor:
         return conversions.fromVectorDbNeighbor(response)
 
     def _get_projection_spec(
