@@ -660,7 +660,7 @@ class HnswSearchParams(object):
 
         self.ef = ef
 
-    def _to_pb2(self):
+    def _to_pb2(self) -> types_pb2.HnswSearchParams:
         params = types_pb2.HnswSearchParams()
         params.ef = self.ef
         return params

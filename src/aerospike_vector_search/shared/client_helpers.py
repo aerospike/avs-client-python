@@ -1,11 +1,14 @@
-from typing import Any, Optional, Union
+import logging
+from logging import Logger
+from typing import Any, Optional, Union, Tuple, Dict, List
 import time
 import numpy as np
 from . import conversions
 
-from .proto_generated import transact_pb2
+from .proto_generated import transact_pb2, index_pb2, index_pb2_grpc
 from .proto_generated import transact_pb2_grpc
-from .. import types
+from .proto_generated.transact_pb2_grpc import TransactServiceStub
+from .. import types, RecordWithKey, Neighbor
 from .proto_generated import types_pb2
 from . import helpers
 from ..types import AVSClientError
@@ -18,15 +21,15 @@ class BaseClient(object):
 
     def _prepare_put(
         self,
-        namespace,
-        key,
-        record_data,
-        set_name,
-        write_type,
-        ignore_mem_queue_full,
-        timeout,
-        logger,
-    ) -> None:
+        namespace: str,
+        key: Union[int, str, bytes, bytearray, np.generic, np.ndarray],
+        record_data: Dict[str, Any],
+        set_name: Optional[str],
+        write_type: transact_pb2.WriteType,  # Adjust based on the specific type if available
+        ignore_mem_queue_full: Optional[bool],
+        timeout: Optional[int],
+        logger: logging.Logger,
+    ) -> tuple[TransactServiceStub, transact_pb2.PutRequest, dict[str, Any]]:
 
         logger.debug(
             "Putting record: namespace=%s, key=%s, record_data:%s, set_name:%s, ignore_mem_queue_full %s, timeout:%s",
@@ -70,14 +73,14 @@ class BaseClient(object):
 
     def _prepare_insert(
         self,
-        namespace,
-        key,
-        record_data,
-        set_name,
-        ignore_mem_queue_full,
-        timeout,
-        logger,
-    ) -> None:
+        namespace: str,
+        key: Union[int, str, bytes, bytearray, np.generic, np.ndarray],
+        record_data: Dict[str, Any],
+        set_name: Optional[str],
+        ignore_mem_queue_full: Optional[bool],
+        timeout: Optional[int],
+        logger: logging.Logger,
+    ) -> tuple[TransactServiceStub, transact_pb2.PutRequest, dict[str, Any]]:
         return self._prepare_put(
             namespace,
             key,
@@ -89,16 +92,21 @@ class BaseClient(object):
             logger,
         )
 
+
+    set_name: Optional[str] = None,
+    ignore_mem_queue_full: Optional[bool] = False,
+    timeout: Optional[int] = None,
+
     def _prepare_update(
         self,
-        namespace,
-        key,
-        record_data,
-        set_name,
-        ignore_mem_queue_full,
-        timeout,
-        logger,
-    ) -> None:
+        namespace: str,
+        key: Union[int, str, bytes, bytearray, np.generic, np.ndarray],
+        record_data: dict[str, Any],
+        set_name: Optional[str],
+        ignore_mem_queue_full: Optional[bool],
+        timeout: Optional[int],
+        logger: logging.Logger,
+    ) -> tuple[TransactServiceStub, transact_pb2.PutRequest, dict[str, Any]]:
         return self._prepare_put(
             namespace,
             key,
@@ -110,16 +118,17 @@ class BaseClient(object):
             logger,
         )
 
+
     def _prepare_upsert(
         self,
-        namespace,
-        key,
-        record_data,
-        set_name,
-        ignore_mem_queue_full,
-        timeout,
-        logger,
-    ) -> None:
+        namespace: str,
+        key: Union[int, str, bytes, bytearray],
+        record_data: dict[str, Any],
+        set_name: Optional[str],
+        ignore_mem_queue_full: Optional[bool],
+        timeout: Optional[int],
+        logger: Logger,
+    ) -> tuple[TransactServiceStub, transact_pb2.PutRequest, dict[str, Any]]:
         return self._prepare_put(
             namespace,
             key,
@@ -133,7 +142,7 @@ class BaseClient(object):
 
     def _prepare_get(
         self, namespace, key, include_fields, exclude_fields, set_name, timeout, logger
-    ) -> None:
+    ) -> tuple[TransactServiceStub, types_pb2.Key, transact_pb2.GetRequest, dict[str, Any]]:
 
         logger.debug(
             "Getting record: namespace=%s, key=%s, include_fields:%s, exclude_fields:%s, set_name:%s, timeout:%s",
@@ -149,7 +158,7 @@ class BaseClient(object):
         if timeout is not None:
             kwargs["timeout"] = timeout
 
-        key = self._get_key(namespace, set_name, key)
+        key: types_pb2.Key = self._get_key(namespace, set_name, key)
         projection_spec = self._get_projection_spec(include_fields=include_fields, exclude_fields=exclude_fields)
 
         transact_stub = self._get_transact_stub()
@@ -157,7 +166,8 @@ class BaseClient(object):
 
         return (transact_stub, key, get_request, kwargs)
 
-    def _prepare_exists(self, namespace, key, set_name, timeout, logger) -> None:
+    def _prepare_exists(self, namespace, key, set_name, timeout, logger) -> tuple[
+        TransactServiceStub, transact_pb2.ExistsRequest, dict[str, Any]]:
 
         logger.debug(
             "Getting record existence: namespace=%s, key=%s, set_name:%s, timeout:%s",
@@ -178,7 +188,8 @@ class BaseClient(object):
 
         return (transact_stub, exists_request, kwargs)
 
-    def _prepare_delete(self, namespace, key, set_name, timeout, logger) -> None:
+    def _prepare_delete(self, namespace, key, set_name, timeout, logger) -> tuple[
+        TransactServiceStub, transact_pb2.DeleteRequest, dict[str, Any]]:
 
         logger.debug(
             "Deleting record: namespace=%s, key=%s, set_name=%s, timeout:%s",
@@ -200,8 +211,8 @@ class BaseClient(object):
         return (transact_stub, delete_request, kwargs)
 
     def _prepare_is_indexed(
-        self, namespace, key, index_name, index_namespace, set_name, timeout, logger
-    ) -> None:
+        self, namespace: str, key: Union[int, str, bytes, bytearray, np.generic, np.ndarray], index_name: str, index_namespace: Optional[str], set_name: Optional[str], timeout: Optional[int],logger: logging.Logger
+    ) -> tuple[TransactServiceStub, transact_pb2.IsIndexedRequest, dict[str, Any]]:
 
         kwargs = {}
         if timeout is not None:
@@ -229,16 +240,16 @@ class BaseClient(object):
 
     def _prepare_vector_search(
         self,
-        namespace,
-        index_name,
-        query,
-        limit,
-        search_params,
-        include_fields,
-        exclude_fields,
-        timeout,
-        logger,
-    ) -> None:
+        namespace: str,
+        index_name: str,
+        query: Union[List[Union[bool, float]], np.ndarray],
+        limit: int,
+        search_params: Optional[types.HnswSearchParams],
+        include_fields: Optional[List[str]],
+        exclude_fields: Optional[List[str]],
+        timeout: Optional[int],
+        logger: logging.Logger,
+    ) -> tuple[TransactServiceStub, Any, dict[str, Any]]:
 
         kwargs = {}
         if timeout is not None:
@@ -285,7 +296,7 @@ class BaseClient(object):
             self._channel_provider.get_channel()
         )
 
-    def _respond_get(self, response, key) -> None:
+    def _respond_get(self, response, key) -> RecordWithKey:
         return types.RecordWithKey(
             key=conversions.fromVectorDbKey(key),
             fields=conversions.fromVectorDbRecord(response),
@@ -297,7 +308,7 @@ class BaseClient(object):
     def _respond_is_indexed(self, response) -> None:
         return response.value
 
-    def _respond_neighbor(self, response) -> None:
+    def _respond_neighbor(self, response) -> Neighbor:
         return conversions.fromVectorDbNeighbor(response)
 
     def _get_projection_spec(
@@ -305,7 +316,7 @@ class BaseClient(object):
         *,
         include_fields: Optional[list] = None,
         exclude_fields: Optional[list] = None,
-    ):
+    ) -> transact_pb2.ProjectionSpec:
         # include all fields by default
         if include_fields is None:
             include = transact_pb2.ProjectionFilter(
@@ -331,7 +342,7 @@ class BaseClient(object):
 
     def _get_key(
         self, namespace: str, set: str, key: Union[int, str, bytes, bytearray]
-    ):
+    ) -> types_pb2.Key:
 
         if isinstance(key, np.ndarray):
             key = key.tobytes()
@@ -349,17 +360,18 @@ class BaseClient(object):
             raise Exception("Invalid key type" + str(type(key)))
         return key
 
-    def _prepare_wait_for_index_waiting(self, namespace, name, wait_interval):
+    def _prepare_wait_for_index_waiting(self, namespace: str, name: str, wait_interval: int) -> (
+        Tuple)[index_pb2_grpc.IndexServiceStub, float, float, bool, int, index_pb2.IndexGetRequest]:
         return helpers._prepare_wait_for_index_waiting(
             self, namespace, name, wait_interval
         )
 
-    def _check_timeout(self, start_time, timeout):
+    def _check_timeout(self, start_time: int, timeout: int):
         if start_time + timeout < time.monotonic():
             raise AVSClientError(message="timed-out waiting for index creation")
 
     def _check_completion_condition(
-        self, start_time, timeout, index_status, unmerged_record_initialized
+        self, start_time: int, timeout:int , index_status, unmerged_record_initialized
     ):
         self._check_timeout(start_time, timeout)
 

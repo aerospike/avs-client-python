@@ -2,7 +2,7 @@ import logging
 import random
 import time
 
-from typing import Optional, Union
+from typing import Optional, Union, Final
 
 import json
 import jwt
@@ -17,7 +17,7 @@ from .proto_generated import vector_db_pb2, auth_pb2
 from .proto_generated import auth_pb2_grpc
 from .proto_generated import vector_db_pb2_grpc
 
-logger = logging.getLogger(__name__)
+logger: Final[logging.Logger] = logging.getLogger(__name__)
 
 
 class ChannelAndEndpoints(object):
@@ -183,7 +183,7 @@ class BaseChannelProvider(object):
     def _get_auth_stub(self):
         return auth_pb2_grpc.AuthServiceStub(self.get_channel())
 
-    def _get_authenticate_request(self, credentials):
+    def _get_authenticate_request(self, credentials) -> auth_pb2.AuthRequest:
         return auth_pb2.AuthRequest(credentials=credentials)
 
     def _respond_authenticate(self, token):

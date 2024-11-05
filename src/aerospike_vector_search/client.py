@@ -1,7 +1,7 @@
 import logging
 import sys
 import time
-from typing import Any, Optional, Union
+from typing import Any, Optional, Union, Final
 import warnings
 
 import grpc
@@ -10,7 +10,7 @@ from . import types
 from .internal import channel_provider
 from .shared.client_helpers import BaseClient
 
-logger = logging.getLogger(__name__)
+logger : Final[logging.Logger] = logging.getLogger(__name__)
 
 
 class Client(BaseClient):

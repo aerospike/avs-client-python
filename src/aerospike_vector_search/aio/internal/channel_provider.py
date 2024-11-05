@@ -1,9 +1,11 @@
 import re
 import asyncio
 import logging
+from logging import Logger
+
 import jwt
 from jwt.exceptions import InvalidTokenError
-from typing import Optional, Union
+from typing import Optional, Union, final, Final
 
 import google.protobuf.empty_pb2
 import grpc
@@ -14,12 +16,9 @@ from ...shared.proto_generated import vector_db_pb2
 from ...shared.proto_generated import vector_db_pb2_grpc
 from ...shared import base_channel_provider
 
-empty = google.protobuf.empty_pb2.Empty()
-
-logger = logging.getLogger(__name__)
-
-TEND_INTERVAL = 1
-
+empty: Final = google.protobuf.empty_pb2.Empty()
+logger: Final[logging.Logger] = logging.getLogger(__name__)
+TEND_INTERVAL: Final[int] = 1
 
 class ChannelProvider(base_channel_provider.BaseChannelProvider):
     """AVS Channel Provider"""
@@ -72,7 +71,7 @@ class ChannelProvider(base_channel_provider.BaseChannelProvider):
         self._tend_exception: Exception = None
 
     async def _is_ready(self):
-        # Wait 1 round of cluster tending, auth token initialization, and server client compatiblity verfication
+        # Wait 1 round of cluster tending, auth token initialization, and server client compatibility verification
         await self._ready.wait()
 
         # This propogates any fatal/unexpected errors from client initialization/tending to the client.
