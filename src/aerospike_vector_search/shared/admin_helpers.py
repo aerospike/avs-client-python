@@ -1,7 +1,7 @@
 import asyncio
 import logging
 from logging import Logger
-from typing import Any, Optional, Union, Tuple, Dict, List, Final
+from typing import Any, Optional, Union, Tuple, Dict, List
 import time
 
 import google.protobuf.empty_pb2
@@ -15,9 +15,9 @@ from .. import types
 from . import conversions
 from ..types import AVSClientError, IndexDefinition, User, HostPort
 
-logger : Final[logging.Logger] = logging.getLogger(__name__)
+logger = logging.getLogger(__name__)
 
-empty: Final = google.protobuf.empty_pb2.Empty()
+empty = google.protobuf.empty_pb2.Empty()
 
 
 class BaseClient(object):
@@ -84,7 +84,7 @@ class BaseClient(object):
         index_create_request = index_pb2.IndexCreateRequest(definition=index_definition)
         return (index_stub, index_create_request, kwargs)
 
-    def _prepare_index_drop(self, namespace: str, name: str, timeout: Optional[int], logger: logging.Logger) -> tuple[IndexServiceStub, index_pb2.IndexDropRequest, dict[str, Any]]:
+    def _prepare_index_drop(self, namespace: str, name: str, timeout: Optional[int], logger: logging.Logger) -> tuple[index_pb2_grpc.IndexServiceStub, index_pb2.IndexDropRequest, dict[str, Any]]:
 
         logger.debug(
             "Dropping index: namespace=%s, name=%s, timeout=%s",
@@ -102,7 +102,7 @@ class BaseClient(object):
         index_drop_request = index_pb2.IndexDropRequest(indexId=index_id)
         return (index_stub, index_drop_request, kwargs)
 
-    def _prepare_index_list(self, timeout: Optional[int], logger: logging.Logger, apply_defaults: Optional[bool]) -> tuple[IndexServiceStub, index_pb2.IndexListRequest, dict[str, Any]]:
+    def _prepare_index_list(self, timeout: Optional[int], logger: logging.Logger, apply_defaults: Optional[bool]) -> tuple[index_pb2_grpc.IndexServiceStub, index_pb2.IndexListRequest, dict[str, Any]]:
 
         logger.debug(
             "Getting index list: timeout=%s, apply_defaults=%s",

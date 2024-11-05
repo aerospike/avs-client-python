@@ -1,6 +1,5 @@
-import re
-import time
 import logging
+import re
 import threading
 from typing import Optional, Union
 
@@ -8,9 +7,9 @@ import google.protobuf.empty_pb2
 import grpc
 
 from .. import types
+from ..shared import base_channel_provider
 from ..shared.proto_generated import vector_db_pb2
 from ..shared.proto_generated import vector_db_pb2_grpc
-from ..shared import base_channel_provider
 
 empty = google.protobuf.empty_pb2.Empty()
 

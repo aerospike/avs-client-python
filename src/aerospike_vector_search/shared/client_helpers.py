@@ -204,7 +204,7 @@ class BaseClient(object):
         return (transact_stub, delete_request, kwargs)
 
     def _prepare_is_indexed(
-        self, namespace: str, key: Union[int, str, bytes, bytearray, np.generic, np.ndarray], index_name: str, index_namespace: Optional[str], set_name: Optional[str], timeout: Optional[int],logger: logging.Logger
+        self, namespace: str, key: Union[int, str, bytes, bytearray, np.generic, np.ndarray], index_name: str, index_namespace: Optional[str], set_name: Optional[str], timeout: Optional[int],logger: Logger
     ) -> tuple[transact_pb2_grpc.TransactServiceStub, transact_pb2.IsIndexedRequest, dict[str, Any]]:
 
         kwargs = {}

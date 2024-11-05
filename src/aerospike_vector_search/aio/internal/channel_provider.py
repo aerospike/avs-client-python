@@ -1,20 +1,15 @@
-import re
 import asyncio
 import logging
-from logging import Logger
-
-import jwt
-from jwt.exceptions import InvalidTokenError
-from typing import Optional, Union, Final
+import re
+from typing import Optional, Union
 
 import google.protobuf.empty_pb2
 import grpc
-import random
 
 from ... import types
+from ...shared import base_channel_provider
 from ...shared.proto_generated import vector_db_pb2
 from ...shared.proto_generated import vector_db_pb2_grpc
-from ...shared import base_channel_provider
 
 empty = google.protobuf.empty_pb2.Empty()
 
