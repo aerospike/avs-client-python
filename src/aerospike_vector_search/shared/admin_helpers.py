@@ -1,7 +1,6 @@
 import asyncio
 import logging
-from logging import Logger
-from typing import Any, Optional, Union, Tuple, Dict, List
+from typing import Any, Optional, Tuple, Dict, List
 import time
 
 import google.protobuf.empty_pb2
@@ -13,9 +12,7 @@ from .proto_generated import index_pb2_grpc, user_admin_pb2_grpc
 from .proto_generated import types_pb2, user_admin_pb2, index_pb2
 from .. import types
 from . import conversions
-from ..types import AVSClientError, IndexDefinition, User, HostPort
-
-logger = logging.getLogger(__name__)
+from ..types import AVSClientError, IndexDefinition, HostPort
 
 empty = google.protobuf.empty_pb2.Empty()
 

@@ -14,7 +14,7 @@ from ..types import AVSClientError
 
 class BaseClient(object):
 
-    def _prepare_seeds(self, seeds) -> None:
+    def _prepare_seeds(self, seeds) ->  Tuple[types.HostPort, ...]:
         return helpers._prepare_seeds(seeds)
 
     def _prepare_put(
@@ -284,7 +284,7 @@ class BaseClient(object):
 
         return (transact_stub, vector_search_request, kwargs)
 
-    def _get_transact_stub(self):
+    def _get_transact_stub(self) -> transact_pb2_grpc.TransactServiceStub:
         return transact_pb2_grpc.TransactServiceStub(
             self._channel_provider.get_channel()
         )
@@ -295,10 +295,10 @@ class BaseClient(object):
             fields=conversions.fromVectorDbRecord(response),
         )
 
-    def _respond_exists(self, response) -> None:
+    def _respond_exists(self, response) -> bool:
         return response.value
 
-    def _respond_is_indexed(self, response) -> None:
+    def _respond_is_indexed(self, response) -> bool:
         return response.value
 
     def _respond_neighbor(self, response) -> types.Neighbor:

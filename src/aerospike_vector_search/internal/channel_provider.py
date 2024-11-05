@@ -1,5 +1,6 @@
-import logging
 import re
+import time
+import logging
 import threading
 from typing import Optional, Union
 
@@ -7,9 +8,9 @@ import google.protobuf.empty_pb2
 import grpc
 
 from .. import types
-from ..shared import base_channel_provider
 from ..shared.proto_generated import vector_db_pb2
 from ..shared.proto_generated import vector_db_pb2_grpc
+from ..shared import base_channel_provider
 
 empty = google.protobuf.empty_pb2.Empty()
 
@@ -108,7 +109,7 @@ class ChannelProvider(base_channel_provider.BaseChannelProvider):
                 "While tending, failed to get cluster id with error: " + str(e)
             )
 
-    def _call_get_cluster_endpoints(self, stub):
+    def _call_get_cluster_endpoints(self, stub) -> vector_db_pb2.ServerEndpointList:
         try:
             return (
                 stub.GetClusterEndpoints(

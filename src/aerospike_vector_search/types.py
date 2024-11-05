@@ -50,13 +50,13 @@ class Key(object):
             f"key={self.key})"
         )
 
-    def __str__(self):
+    def __str__(self) -> str:
         """
         Returns a string representation of the key.
         """
         return f"Key: namespace='{self.namespace}', set='{self.set}', key={self.key}"
     
-    def __eq__(self, other):
+    def __eq__(self, other) -> bool:
         if not isinstance(other, Key):
             return NotImplemented
 
@@ -84,7 +84,7 @@ class RecordWithKey(object):
         self.key = key
         self.fields = fields
 
-    def __str__(self):
+    def __str__(self) -> str:
         """
         Returns a string representation of the record, including a key and fields.
         """
@@ -142,7 +142,7 @@ class Neighbor(object):
             f"distance={self.distance})"
         )
 
-    def __str__(self):
+    def __str__(self) -> str:
         """
         Returns a string representation of the neighboring record.
         """
@@ -864,7 +864,7 @@ class AVSServerError(AVSError):
     def __init__(self, *, rpc_error) -> None:
         self.rpc_error = rpc_error
 
-    def __str__(self):
+    def __str__(self) -> str:
         return f"AVSServerError(rpc_error={self.rpc_error})"
 
 
@@ -880,7 +880,7 @@ class AVSClientError(AVSError):
     def __init__(self, *, message) -> None:
         self.message = message
 
-    def __str__(self):
+    def __str__(self) -> str:
         return f"AVSClientError(message={self.message})"
 
 

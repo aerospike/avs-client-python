@@ -48,7 +48,7 @@ def toVectorDbValue(value: Any) -> types_pb2.Value:
         raise Exception("Invalid type " + str(type(value)))
 
 
-def toMapKey(value):
+def toMapKey(value) -> types_pb2.MapKey:
     if isinstance(value, str):
         return types_pb2.MapKey(stringValue=value)
     elif isinstance(value, int):
