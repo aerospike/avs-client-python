@@ -9,6 +9,7 @@ from . import types
 from .internal import channel_provider
 from .shared.admin_helpers import BaseClient
 from .shared.conversions import fromIndexStatusResponse
+from .types import IndexDefinition
 
 logger = logging.getLogger(__name__)
 
@@ -172,6 +173,64 @@ class Client(BaseClient):
             logger.error("Failed waiting for creation with error: %s", e)
             raise types.AVSServerError(rpc_error=e)
 
+    def index_update(
+            self,
+            *,
+            namespace: str,
+            name: str,
+            index_labels: Optional[dict[str, str]] = None,
+            hnsw_update_params: Optional[types.HnswIndexUpdate] = None,
+            timeout: Optional[int] = None,
+    ) -> None:
+        """
+        Update an existing index.
+
+        :param namespace: The namespace for the index.
+        :type namespace: str
+
+        :param name: The name of the index.
+        :type name: str
+
+        :param index_labels: Optional labels associated with the index. Defaults to None.
+        :type index_labels: Optional[dict[str, str]]
+
+        :param hnsw_update_params: Parameters for updating HNSW index settings.
+        :type hnsw_update_params: Optional[types.HnswIndexUpdate]
+
+        :param timeout: Time in seconds this operation will wait before raising an error.
+        :type timeout: int
+
+        Raises:
+            AVSServerError: Raised if an error occurs during the RPC communication with the server while attempting to update the index.
+        """
+
+        (index_stub, index_update_request, kwargs) = self._prepare_index_update(
+            namespace,
+            name,
+            index_labels,
+            hnsw_update_params,
+            timeout,
+            logger,
+        )
+
+        try:
+            index_stub.Update(
+                index_update_request,
+                credentials=self._channel_provider.get_token(),
+                **kwargs,
+            )
+        except grpc.RpcError as e:
+            logger.error("Failed to update index with error: %s", e)
+            raise types.AVSServerError(rpc_error=e)
+
+        try:
+            self._wait_for_index_creation(
+                namespace=namespace, name=name, timeout=100_000
+            )
+        except grpc.RpcError as e:
+            logger.error("Failed waiting for update completion with error: %s", e)
+            raise types.AVSServerError(rpc_error=e)
+
     def index_drop(
         self, *, namespace: str, name: str, timeout: Optional[int] = None
     ) -> None:
@@ -219,7 +278,7 @@ class Client(BaseClient):
 
     def index_list(
         self, timeout: Optional[int] = None, apply_defaults: Optional[bool] = True
-    ) -> list[dict]:
+    ) -> list[IndexDefinition]:
         """
         List all indices.
 
@@ -338,7 +397,6 @@ class Client(BaseClient):
         except grpc.RpcError as e:
             logger.error("Failed to get index status with error: %s", e)
             raise types.AVSServerError(rpc_error=e)
-
 
 
 
@@ -580,7 +638,7 @@ class Client(BaseClient):
             logger.error("Failed to revoke roles with error: %s", e)
             raise types.AVSServerError(rpc_error=e)
 
-    def list_roles(self, timeout: Optional[int] = None) -> list[dict]:
+    def list_roles(self, timeout: Optional[int] = None) -> list[types.Role]:
         """
         List roles available on the AVS server.
 
