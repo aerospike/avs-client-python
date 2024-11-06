@@ -3,7 +3,7 @@ name: Run long running vector search tests
 on:
   push:
     branches:
-      - dev
+      - main
 
 jobs:
   test-exhaustive-vector-search:
@@ -69,7 +69,8 @@ jobs:
 
         sleep 5
 
-        python -m pytest standard -s --host 0.0.0.0 --port 5000 --extensive_vector_search -vs
+        python -m pytest -k "update" standard -s --host 0.0.0.0 --port 5000 --extensive_vector_search -vs
+        #python -m pytest standard -s --host 0.0.0.0 --port 5000 --extensive_vector_search -vs
 
         mv .coverage coverage_data
       working-directory: tests

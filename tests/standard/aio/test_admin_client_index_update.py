@@ -42,7 +42,7 @@ class index_update_test_case:
     [
         index_update_test_case(
             namespace="test",
-            vector_field="example_update_1",
+            vector_field="update_1",
             dimensions=512,
             initial_labels={"environment": "staging"},
             update_labels={"environment": "production", "priority": "high"},
