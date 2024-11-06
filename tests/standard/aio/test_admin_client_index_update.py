@@ -70,7 +70,7 @@ async def test_index_update_async(session_admin_client, test_case, random_name):
         namespace=test_case.namespace,
         name=random_name,
         index_labels=test_case.update_labels,
-        hnsw_index_update=test_case.hnsw_index_update,
+        hnsw_update_params=test_case.hnsw_index_update,
         timeout=test_case.timeout,
     )
 
