@@ -2,7 +2,6 @@ import pytest
 from aerospike_vector_search import types, AVSServerError
 import grpc
 
-from ...utils import random_name
 from .aio_utils import drop_specified_index
 
 server_defaults = {
@@ -54,9 +53,9 @@ class index_update_test_case:
         ),
     ],
 )
-async def test_index_update_async(session_admin_client, test_case, random_name):
+async def test_index_update_async(session_admin_client, test_case):
     # Create the index
-    trimmed_random = random_name[:10]
+    trimmed_random = "nzhAS"
     await session_admin_client.index_create(
         namespace=test_case.namespace,
         name=trimmed_random,
@@ -81,6 +80,7 @@ async def test_index_update_async(session_admin_client, test_case, random_name):
     for result in results:
         if result["id"]["name"] == trimmed_random:
             found = True
+            print("Found Result test_index_update_async: ", result)
             assert result["id"]["namespace"] == test_case.namespace
             assert result["index_labels"] == test_case.update_labels
             assert result["hnsw_params"]["batching_params"][

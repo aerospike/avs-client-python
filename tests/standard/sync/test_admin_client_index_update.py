@@ -44,15 +44,15 @@ class index_update_test_case:
         ),
     ],
 )
-def test_index_update(session_admin_client, test_case, random_name):
-    trimmed_random = random_name[:10]
+def test_index_update(session_admin_client, test_case):
+    trimmed_random ="ASdf12"
     try:
         session_admin_client.index_drop(namespace="test", name=trimmed_random)
     except AVSServerError as se:
         if se.rpc_error.code() != grpc.StatusCode.NOT_FOUND:
             pass
 
-    # Step 1: Create the index
+    # Create the index
     session_admin_client.index_create(
         namespace=test_case.namespace,
         name=trimmed_random,
@@ -62,7 +62,7 @@ def test_index_update(session_admin_client, test_case, random_name):
         timeout=test_case.timeout,
     )
 
-    # Step 2: Update the index with new labels and parameters
+    # Update the index with new labels and parameters
     session_admin_client.index_update(
         namespace=test_case.namespace,
         name=trimmed_random,
@@ -71,12 +71,13 @@ def test_index_update(session_admin_client, test_case, random_name):
         timeout=test_case.timeout,
     )
 
-    # Step 3: Verify the update
+    # Verify the update
     results = session_admin_client.index_list()
     found = False
     for result in results:
         if result["id"]["name"] == trimmed_random:
             found = True
+            print("Found Result test_index_update:", result)
             assert result["id"]["namespace"] == test_case.namespace
             assert result["index_labels"] == test_case.update_labels
             assert result["hnsw_params"]["batching_params"][
@@ -104,15 +105,15 @@ def test_index_update(session_admin_client, test_case, random_name):
         ),
     ],
 )
-def test_index_update_with_healer_params(session_admin_client, test_case, random_name):
-    trimmed_random= random_name[:10]
+def test_index_update_with_healer_params(session_admin_client, test_case):
+    trimmed_random= "aBXDF1"
     try:
         session_admin_client.index_drop(namespace="test", name=trimmed_random)
     except AVSServerError as se:
         if se.rpc_error.code() != grpc.StatusCode.NOT_FOUND:
             pass
 
-    # Step 1: Create the index
+    # Create the index
     session_admin_client.index_create(
         namespace=test_case.namespace,
         name=trimmed_random,
@@ -122,7 +123,7 @@ def test_index_update_with_healer_params(session_admin_client, test_case, random
         timeout=test_case.timeout,
     )
 
-    # Step 2: Update the index with healer parameters
+    # Update the index with healer parameters
     session_admin_client.index_update(
         namespace=test_case.namespace,
         name=trimmed_random,
@@ -131,12 +132,13 @@ def test_index_update_with_healer_params(session_admin_client, test_case, random
         timeout=test_case.timeout,
     )
 
-    # Step 3: Verify the update
+    # Verify the update
     results = session_admin_client.index_list()
     found = False
     for result in results:
         if result["id"]["name"] == trimmed_random:
             found = True
+            print("Found Result test_index_update_with_healer_params:", result)
             assert result["id"]["namespace"] == test_case.namespace
             assert result["index_labels"] == test_case.update_labels
             assert result["hnsw_params"]["healer_params"][
