@@ -76,7 +76,7 @@ async def test_index_update_async(session_admin_client, test_case):
         timeout=test_case.timeout,
     )
 
-    time.sleep(100_000)
+    time.sleep(10)
 
     # Verify the update
     results = await session_admin_client.index_list()
