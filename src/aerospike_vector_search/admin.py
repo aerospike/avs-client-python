@@ -212,7 +212,7 @@ class Client(BaseClient):
             timeout,
             logger,
         )
-        print("sync index update request: ", index_update_request)
+        print("sync index_update_request: ", index_update_request)
 
         try:
             index_stub.Update(
@@ -224,13 +224,6 @@ class Client(BaseClient):
             logger.error("Failed to update index with error: %s", e)
             raise types.AVSServerError(rpc_error=e)
 
-        try:
-            self._wait_for_index_creation(
-                namespace=namespace, name=name, timeout=100_000
-            )
-        except grpc.RpcError as e:
-            logger.error("Failed waiting for update completion with error: %s", e)
-            raise types.AVSServerError(rpc_error=e)
 
     def index_drop(
         self, *, namespace: str, name: str, timeout: Optional[int] = None

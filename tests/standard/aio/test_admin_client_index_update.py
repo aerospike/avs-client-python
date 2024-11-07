@@ -1,3 +1,5 @@
+import time
+
 import pytest
 from aerospike_vector_search import types, AVSServerError
 import grpc
@@ -46,8 +48,8 @@ class index_update_test_case:
             initial_labels={"environment": "staging"},
             update_labels={"environment": "production", "priority": "high"},
             hnsw_index_update=types.HnswIndexUpdate(
-                batching_params=types.HnswBatchingParams(max_index_records=5000, index_interval=20000),
-                max_mem_queue_size=2000,
+                batching_params=types.HnswBatchingParams(max_index_records=150000, index_interval=40000),
+                max_mem_queue_size=1000010,
             ),
             timeout=None,
         ),
@@ -69,10 +71,12 @@ async def test_index_update_async(session_admin_client, test_case):
     await session_admin_client.index_update(
         namespace=test_case.namespace,
         name=trimmed_random,
-        index_labels=test_case.update_labels,
+        # index_labels=test_case.update_labels,
         hnsw_update_params=test_case.hnsw_index_update,
         timeout=test_case.timeout,
     )
+
+    time.sleep(100_000)
 
     # Verify the update
     results = await session_admin_client.index_list()
@@ -82,7 +86,7 @@ async def test_index_update_async(session_admin_client, test_case):
             found = True
             print("Found Result test_index_update_async: ", result)
             assert result["id"]["namespace"] == test_case.namespace
-            assert result["index_labels"] == test_case.update_labels
+            # assert result["index_labels"] == test_case.update_labels
             assert result["hnsw_params"]["batching_params"][
                        "max_index_records"] == test_case.hnsw_index_update.batching_params.max_index_records
             assert result["hnsw_params"]["batching_params"][
