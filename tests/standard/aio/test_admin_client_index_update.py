@@ -81,7 +81,7 @@ async def test_index_update_async(session_admin_client, test_case, random_name):
         if result["id"]["name"] == random_name:
             found = True
             assert result["id"]["namespace"] == test_case.namespace
-            assert result["labels"] == test_case.update_labels
+            assert result["index_labels"] == test_case.update_labels
             assert result["hnsw_params"]["batching_params"][
                        "max_index_records"] == test_case.hnsw_index_update.batching_params.max_index_records
             assert result["hnsw_params"]["batching_params"][
