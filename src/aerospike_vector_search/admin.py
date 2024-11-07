@@ -212,6 +212,7 @@ class Client(BaseClient):
             timeout,
             logger,
         )
+        print("sync index update request: ", index_update_request)
 
         try:
             index_stub.Update(
