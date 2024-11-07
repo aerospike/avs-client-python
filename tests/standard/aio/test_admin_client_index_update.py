@@ -56,9 +56,10 @@ class index_update_test_case:
 )
 async def test_index_update_async(session_admin_client, test_case, random_name):
     # Create the index
+    trimmed_random = random_name[:10]
     await session_admin_client.index_create(
         namespace=test_case.namespace,
-        name=random_name,
+        name=trimmed_random,
         vector_field=test_case.vector_field,
         dimensions=test_case.dimensions,
         index_labels=test_case.initial_labels,
@@ -68,7 +69,7 @@ async def test_index_update_async(session_admin_client, test_case, random_name):
     # Update the index with new labels and parameters
     await session_admin_client.index_update(
         namespace=test_case.namespace,
-        name=random_name,
+        name=trimmed_random,
         index_labels=test_case.update_labels,
         hnsw_update_params=test_case.hnsw_index_update,
         timeout=test_case.timeout,
@@ -78,7 +79,7 @@ async def test_index_update_async(session_admin_client, test_case, random_name):
     results = await session_admin_client.index_list()
     found = False
     for result in results:
-        if result["id"]["name"] == random_name:
+        if result["id"]["name"] == trimmed_random:
             found = True
             assert result["id"]["namespace"] == test_case.namespace
             assert result["index_labels"] == test_case.update_labels
@@ -88,4 +89,4 @@ async def test_index_update_async(session_admin_client, test_case, random_name):
                        "index_interval"] == test_case.hnsw_index_update.batching_params.index_interval
             assert result["hnsw_params"]["max_mem_queue_size"] == test_case.hnsw_index_update.max_mem_queue_size
     assert found is True
-    await drop_specified_index(session_admin_client, test_case.namespace, random_name)
+    await drop_specified_index(session_admin_client, test_case.namespace, trimmed_random)

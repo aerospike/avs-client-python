@@ -104,8 +104,9 @@ def test_index_update(session_admin_client, test_case, random_name):
     ],
 )
 def test_index_update_with_healer_params(session_admin_client, test_case, random_name):
+    trimmed_random= random_name[:10]
     try:
-        session_admin_client.index_drop(namespace="test", name=random_name)
+        session_admin_client.index_drop(namespace="test", name=trimmed_random)
     except AVSServerError as se:
         if se.rpc_error.code() != grpc.StatusCode.NOT_FOUND:
             pass
@@ -113,7 +114,7 @@ def test_index_update_with_healer_params(session_admin_client, test_case, random
     # Step 1: Create the index
     session_admin_client.index_create(
         namespace=test_case.namespace,
-        name=random_name,
+        name=trimmed_random,
         vector_field=test_case.vector_field,
         dimensions=test_case.dimensions,
         index_labels=test_case.initial_labels,
@@ -123,7 +124,7 @@ def test_index_update_with_healer_params(session_admin_client, test_case, random
     # Step 2: Update the index with healer parameters
     session_admin_client.index_update(
         namespace=test_case.namespace,
-        name=random_name,
+        name=trimmed_random,
         index_labels=test_case.update_labels,
         hnsw_update_params=test_case.hnsw_index_update,
         timeout=test_case.timeout,
@@ -133,11 +134,11 @@ def test_index_update_with_healer_params(session_admin_client, test_case, random
     results = session_admin_client.index_list()
     found = False
     for result in results:
-        if result["id"]["name"] == random_name:
+        if result["id"]["name"] == trimmed_random:
             found = True
             assert result["id"]["namespace"] == test_case.namespace
             assert result["index_labels"] == test_case.update_labels
             assert result["hnsw_params"]["healer_params"][
                        "max_scan_rate_per_node"] == test_case.hnsw_index_update.healer_params.max_scan_rate_per_node
     assert found is True
-    drop_specified_index(session_admin_client, test_case.namespace, random_name)
+    drop_specified_index(session_admin_client, test_case.namespace, trimmed_random)
