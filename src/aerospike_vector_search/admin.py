@@ -9,7 +9,9 @@ from . import types
 from .internal import channel_provider
 from .shared.admin_helpers import BaseClient
 from .shared.conversions import fromIndexStatusResponse
-from .types import IndexDefinition
+from .shared.proto_generated import index_pb2_grpc
+from .types import IndexDefinition, AVSClientError
+from typing import Optional, Dict, Any
 
 logger = logging.getLogger(__name__)
 
@@ -94,7 +96,7 @@ class Client(BaseClient):
         index_params: Optional[types.HnswParams] = None,
         index_labels: Optional[dict[str, str]] = None,
         index_storage: Optional[types.IndexStorage] = None,
-        timeout: Optional[int] = None,
+        timeout: Optional[int] = 100_000,
     ) -> None:
         """
         Create an index.
@@ -180,7 +182,7 @@ class Client(BaseClient):
             name: str,
             index_labels: Optional[dict[str, str]] = None,
             hnsw_update_params: Optional[types.HnswIndexUpdate] = None,
-            timeout: Optional[int] = None,
+            timeout: Optional[int] = 100_000,
     ) -> None:
         """
         Update an existing index.
@@ -197,13 +199,12 @@ class Client(BaseClient):
         :param hnsw_update_params: Parameters for updating HNSW index settings.
         :type hnsw_update_params: Optional[types.HnswIndexUpdate]
 
-        :param timeout: Time in seconds this operation will wait before raising an error.
+        :param timeout: Time in seconds (default 100_000) this operation will wait before raising an error.
         :type timeout: int
 
         Raises:
             AVSServerError: Raised if an error occurs during the RPC communication with the server while attempting to update the index.
         """
-
         (index_stub, index_update_request, kwargs) = self._prepare_index_update(
             namespace,
             name,
@@ -212,7 +213,6 @@ class Client(BaseClient):
             timeout,
             logger,
         )
-        print("sync index_update_request: ", index_update_request)
 
         try:
             index_stub.Update(
@@ -311,7 +311,7 @@ class Client(BaseClient):
         name: str,
         timeout: Optional[int] = None,
         apply_defaults: Optional[bool] = True,
-    ) -> dict[str, Union[int, str]]:
+    ) -> IndexDefinition:
         """
         Retrieve the information related with an index.
 
@@ -665,7 +665,7 @@ class Client(BaseClient):
         *,
         namespace: str,
         name: str,
-        timeout: Optional[int] = sys.maxsize,
+        timeout: int = 100_000,
         wait_interval: Optional[int] = 0.1,
     ) -> None:
         """
@@ -693,6 +693,7 @@ class Client(BaseClient):
                 else:
                     logger.error("Failed waiting for index creation with error: %s", e)
                     raise types.AVSServerError(rpc_error=e)
+
 
     def _wait_for_index_deletion(
         self,

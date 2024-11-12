@@ -184,7 +184,6 @@ class Client(BaseClient):
         name: str,
         index_labels: Optional[dict[str, str]] = None,
         hnsw_update_params: Optional[types.HnswIndexUpdate] = None,
-        timeout: Optional[int] = None,
     ) -> None:
         """
         Update an existing index.
@@ -201,9 +200,6 @@ class Client(BaseClient):
         :param hnsw_update_params: Parameters for updating HNSW index settings.
         :type hnsw_update_params: Optional[types.HnswIndexUpdate]
 
-        :param timeout: Time in seconds this operation will wait before raising an error.
-        :type timeout: int
-
         Raises:
             AVSServerError: Raised if an error occurs during the RPC communication with the server while attempting to update the index.
         """
@@ -215,7 +211,6 @@ class Client(BaseClient):
             name,
             index_labels,
             hnsw_update_params,
-            timeout,
             logger,
         )
 
@@ -227,14 +222,6 @@ class Client(BaseClient):
             )
         except grpc.RpcError as e:
             logger.error("Failed to update index with error: %s", e)
-            raise types.AVSServerError(rpc_error=e)
-
-        try:
-            await self._wait_for_index_creation(
-                namespace=namespace, name=name, timeout=100_000
-            )
-        except grpc.RpcError as e:
-            logger.error("Failed waiting for update completion with error: %s", e)
             raise types.AVSServerError(rpc_error=e)
 
 

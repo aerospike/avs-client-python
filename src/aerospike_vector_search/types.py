@@ -715,7 +715,7 @@ class HnswIndexUpdate:
         """
         Converts the HnswIndexUpdate instance to its protobuf representation.
         """
-        params = types_pb2.HnswIndexUpdate()
+        params: types_pb2.HnswIndexUpdate = types_pb2.HnswIndexUpdate()
 
         if self.batching_params:
             params.batchingParams.CopyFrom(self.batching_params._to_pb2())
