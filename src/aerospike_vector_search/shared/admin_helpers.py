@@ -31,7 +31,7 @@ class BaseClient(object):
             vector_distance_metric: types.VectorDistanceMetric,
             sets: Optional[str],
             index_params: Optional[types.HnswParams],
-            index_labels: Optional[Dict[str, str]],
+            index_labels: Optional[dict[str, str]],
             index_storage: Optional[types.IndexStorage],
             timeout: Optional[int],
             logger: logging.Logger
