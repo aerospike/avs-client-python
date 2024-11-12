@@ -21,10 +21,10 @@ jobs:
         
     steps:
     - name: Checkout code
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
 
     - name: Set up Python
-      uses: actions/setup-python@v2
+      uses: actions/setup-python@v5
       with:
         python-version: ${{ matrix.python-version }}
 
@@ -70,7 +70,7 @@ jobs:
         sleep 5
 
         docker ps
-        python -m pytest -k "update" standard -s --host 0.0.0.0 --port 5000 --cov=aerospike_vector_search
+        python -m pytest standard -s --host 0.0.0.0 --port 5000 --cov=aerospike_vector_search
 
         mv .coverage coverage_data
       working-directory: tests
