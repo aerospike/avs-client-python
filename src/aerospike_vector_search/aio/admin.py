@@ -95,7 +95,7 @@ class Client(BaseClient):
         index_params: Optional[types.HnswParams] = None,
         index_labels: Optional[dict[str, str]] = None,
         index_storage: Optional[types.IndexStorage] = None,
-        timeout: Optional[int] = None,
+        timeout: Optional[int] = 100_000,
     ) -> None:
         """
         Create an index.
@@ -140,7 +140,7 @@ class Client(BaseClient):
 
         Note:
             This method creates an index with the specified parameters and waits for the index creation to complete.
-            It waits for up to 100,000 seconds for the index creation to complete.
+            It waits for up to default 100,000 seconds or specificed seconds for the index creation to complete.
         """
 
         await self._channel_provider._is_ready()
@@ -201,7 +201,7 @@ class Client(BaseClient):
         :param hnsw_update_params: Parameters for updating HNSW index settings.
         :type hnsw_update_params: Optional[types.HnswIndexUpdate]
 
-        :param timeout: Time in seconds (default 100_000) this operation will wait before raising an error.
+        :param timeout: Timeout  in seconds for internal index update tasks. Defaults to 100_000.
         :type timeout: int
 
         Raises:

@@ -9,9 +9,7 @@ from . import types
 from .internal import channel_provider
 from .shared.admin_helpers import BaseClient
 from .shared.conversions import fromIndexStatusResponse
-from .shared.proto_generated import index_pb2_grpc
-from .types import IndexDefinition, AVSClientError
-from typing import Optional, Dict, Any
+from .types import IndexDefinition
 
 logger = logging.getLogger(__name__)
 
