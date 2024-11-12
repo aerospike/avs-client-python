@@ -206,12 +206,12 @@ class Client(BaseClient):
             AVSServerError: Raised if an error occurs during the RPC communication with the server while attempting to update the index.
         """
         (index_stub, index_update_request, kwargs) = self._prepare_index_update(
-            namespace,
-            name,
-            index_labels,
-            hnsw_update_params,
-            timeout,
-            logger,
+            namespace = namespace,
+            name = name,
+            index_labels = index_labels,
+            hnsw_update_params = hnsw_update_params,
+            timeout = timeout,
+            logger = logger,
         )
 
         try:

@@ -184,6 +184,7 @@ class Client(BaseClient):
         name: str,
         index_labels: Optional[dict[str, str]] = None,
         hnsw_update_params: Optional[types.HnswIndexUpdate] = None,
+        timeout: Optional[int] = 100_000,
     ) -> None:
         """
         Update an existing index.
@@ -200,6 +201,9 @@ class Client(BaseClient):
         :param hnsw_update_params: Parameters for updating HNSW index settings.
         :type hnsw_update_params: Optional[types.HnswIndexUpdate]
 
+        :param timeout: Time in seconds (default 100_000) this operation will wait before raising an error.
+        :type timeout: int
+
         Raises:
             AVSServerError: Raised if an error occurs during the RPC communication with the server while attempting to update the index.
         """
@@ -212,6 +216,7 @@ class Client(BaseClient):
             index_labels= index_labels,
             hnsw_update_params= hnsw_update_params,
             logger = logger,
+            timeout= timeout
         )
 
         try:

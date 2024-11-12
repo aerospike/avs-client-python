@@ -37,7 +37,6 @@ class index_update_test_case:
         self.timeout = timeout
 
 
-@pytest.mark.asyncio
 @pytest.mark.parametrize(
     "test_case",
     [
