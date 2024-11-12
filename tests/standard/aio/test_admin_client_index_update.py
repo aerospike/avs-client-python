@@ -82,8 +82,7 @@ async def test_index_update_async(session_admin_client, test_case):
         namespace=test_case.namespace,
         name=trimmed_random,
         index_labels=test_case.update_labels,
-        hnsw_update_params=test_case.hnsw_index_update,
-        timeout=test_case.timeout,
+        hnsw_update_params=test_case.hnsw_index_update
     )
 
     # Allow time for update to be applied
