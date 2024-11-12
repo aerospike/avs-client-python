@@ -207,11 +207,11 @@ class Client(BaseClient):
         await self._channel_provider._is_ready()
 
         (index_stub, index_update_request, kwargs) = self._prepare_index_update(
-            namespace,
-            name,
-            index_labels,
-            hnsw_update_params,
-            logger,
+            namespace= namespace,
+            name =name,
+            index_labels= index_labels,
+            hnsw_update_params= hnsw_update_params,
+            logger = logger,
         )
 
         try:
