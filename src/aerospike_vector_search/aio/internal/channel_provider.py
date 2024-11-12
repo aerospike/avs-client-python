@@ -18,7 +18,7 @@ empty = google.protobuf.empty_pb2.Empty()
 
 logger = logging.getLogger(__name__)
 
-TEND_INTERVAL : int = 1
+TEND_INTERVAL = 1
 
 
 class ChannelProvider(base_channel_provider.BaseChannelProvider):
@@ -72,7 +72,7 @@ class ChannelProvider(base_channel_provider.BaseChannelProvider):
         self._tend_exception: Exception = None
 
     async def _is_ready(self):
-        # Wait 1 round of cluster tending, auth token initialization, and server client compatibility verification
+        # Wait 1 round of cluster tending, auth token initialization, and server client compatiblity verfication
         await self._ready.wait()
 
         # This propogates any fatal/unexpected errors from client initialization/tending to the client.

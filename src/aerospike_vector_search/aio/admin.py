@@ -594,7 +594,7 @@ class Client(BaseClient):
 
     async def grant_roles(
         self, *, username: str, roles: list[str], timeout: Optional[int] = None
-    ) :
+    ) -> int:
         """
         Grant roles to existing AVS Users.
 
@@ -630,7 +630,7 @@ class Client(BaseClient):
 
     async def revoke_roles(
         self, *, username: str, roles: list[str], timeout: Optional[int] = None
-    ) :
+    ) -> int:
         """
         Revoke roles from existing AVS Users.
 

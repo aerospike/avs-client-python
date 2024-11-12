@@ -50,13 +50,13 @@ class Key(object):
             f"key={self.key})"
         )
 
-    def __str__(self) -> str:
+    def __str__(self):
         """
         Returns a string representation of the key.
         """
         return f"Key: namespace='{self.namespace}', set='{self.set}', key={self.key}"
     
-    def __eq__(self, other) -> bool:
+    def __eq__(self, other):
         if not isinstance(other, Key):
             return NotImplemented
 
@@ -84,7 +84,7 @@ class RecordWithKey(object):
         self.key = key
         self.fields = fields
 
-    def __str__(self) -> str:
+    def __str__(self):
         """
         Returns a string representation of the record, including a key and fields.
         """
@@ -142,7 +142,7 @@ class Neighbor(object):
             f"distance={self.distance})"
         )
 
-    def __str__(self) -> str:
+    def __str__(self):
         """
         Returns a string representation of the neighboring record.
         """
@@ -283,7 +283,7 @@ class HnswBatchingParams(object):
         self.reindex_interval = reindex_interval
 
 
-    def _to_pb2(self) -> types_pb2.HnswBatchingParams:
+    def _to_pb2(self):
         params = types_pb2.HnswBatchingParams()
         if self.max_index_records:
             params.maxIndexRecords = self.max_index_records
@@ -436,7 +436,7 @@ class HnswCachingParams(object):
         self.max_entries = max_entries
         self.expiry = expiry
 
-    def _to_pb2(self) -> types_pb2.HnswCachingParams:
+    def _to_pb2(self):
         params = types_pb2.HnswCachingParams()
         if self.max_entries:
             params.maxEntries = self.max_entries
@@ -490,7 +490,7 @@ class HnswIndexMergeParams(object):
         self.index_parallelism = index_parallelism
         self.reindex_parallelism = reindex_parallelism
 
-    def _to_pb2(self) -> types_pb2.HnswIndexMergeParams:
+    def _to_pb2(self):
         params = types_pb2.HnswIndexMergeParams()
         if self.index_parallelism:
             params.indexParallelism = self.index_parallelism
@@ -566,7 +566,7 @@ class HnswParams(object):
         self.enable_vector_integrity_check = enable_vector_integrity_check
         self.record_caching_params = record_caching_params
 
-    def _to_pb2(self) -> types_pb2.HnswParams:
+    def _to_pb2(self):
         params = types_pb2.HnswParams()
         if self.m:
             params.m = self.m
@@ -660,7 +660,7 @@ class HnswSearchParams(object):
 
         self.ef = ef
 
-    def _to_pb2(self) -> types_pb2.HnswSearchParams:
+    def _to_pb2(self):
         params = types_pb2.HnswSearchParams()
         params.ef = self.ef
         return params
@@ -804,7 +804,7 @@ class IndexStorage(object):
         self.namespace = namespace
         self.set_name = set_name
 
-    def _to_pb2(self) -> types_pb2.IndexStorage:
+    def _to_pb2(self):
         index_storage = types_pb2.IndexStorage()
         if self.namespace:
 
@@ -984,7 +984,7 @@ class AVSServerError(AVSError):
     def __init__(self, *, rpc_error) -> None:
         self.rpc_error = rpc_error
 
-    def __str__(self) -> str:
+    def __str__(self):
         return f"AVSServerError(rpc_error={self.rpc_error})"
 
 
@@ -1000,7 +1000,7 @@ class AVSClientError(AVSError):
     def __init__(self, *, message) -> None:
         self.message = message
 
-    def __str__(self) -> str:
+    def __str__(self):
         return f"AVSClientError(message={self.message})"
 
 

@@ -66,6 +66,13 @@ async def test_index_update_async(session_admin_client, test_case):
     # Create a unique index name for each test run
     trimmed_random = "aBEd-1"
 
+    # Drop any pre-existing index with the same name
+    try:
+        session_admin_client.index_drop(namespace="test", name=trimmed_random)
+    except AVSServerError as se:
+        if se.rpc_error.code() != grpc.StatusCode.NOT_FOUND:
+            pass
+
     # Create the index
     await session_admin_client.index_create(
         namespace=test_case.namespace,
@@ -91,7 +98,6 @@ async def test_index_update_async(session_admin_client, test_case):
     result = await session_admin_client.index_get(namespace=test_case.namespace, name=trimmed_random, apply_defaults=True)
     assert result, "Expected result to be non-empty but got an empty dictionary."
 
-    print("Found Result in test_index_update:", result)
     assert result["id"]["namespace"] == test_case.namespace
 
     # Assertions based on provided parameters

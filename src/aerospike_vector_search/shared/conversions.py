@@ -48,7 +48,7 @@ def toVectorDbValue(value: Any) -> types_pb2.Value:
         raise Exception("Invalid type " + str(type(value)))
 
 
-def toMapKey(value) -> types_pb2.MapKey:
+def toMapKey(value):
     if isinstance(value, str):
         return types_pb2.MapKey(stringValue=value)
     elif isinstance(value, int):
@@ -83,78 +83,78 @@ def fromVectorDbRecord(record: types_pb2.Record) -> dict[str, Any]:
     return fields
 
 
-def fromVectorDbNeighbor(input_vectordb_neighbor: types_pb2.Neighbor) -> types.Neighbor:
+def fromVectorDbNeighbor(input: types_pb2.Neighbor) -> types.Neighbor:
     return types.Neighbor(
-        key=fromVectorDbKey(input_vectordb_neighbor.key),
-        fields=fromVectorDbRecord(input_vectordb_neighbor.record),
-        distance=input_vectordb_neighbor.distance,
+        key=fromVectorDbKey(input.key),
+        fields=fromVectorDbRecord(input.record),
+        distance=input.distance,
     )
 
 
-def fromIndexDefintion(input_data: types_pb2.IndexDefinition) -> types.IndexDefinition:
+def fromIndexDefintion(input: types_pb2.IndexDefinition) -> types.IndexDefinition:
     return types.IndexDefinition(
         id=types.IndexId(
-            namespace=input_data.id.namespace,
-            name=input_data.id.name,
+            namespace=input.id.namespace,
+            name=input.id.name,
         ),
-        dimensions=input_data.dimensions,
-        vector_distance_metric=input_data.vectorDistanceMetric,
-        field=input_data.field,
-        sets=input_data.setFilter,
+        dimensions=input.dimensions,
+        vector_distance_metric=input.vectorDistanceMetric,
+        field=input.field,
+        sets=input.setFilter,
         hnsw_params=types.HnswParams(
-            m=input_data.hnswParams.m,
-            ef_construction=input_data.hnswParams.efConstruction,
-            ef=input_data.hnswParams.ef,
+            m=input.hnswParams.m,
+            ef_construction=input.hnswParams.efConstruction,
+            ef=input.hnswParams.ef,
             batching_params=types.HnswBatchingParams(
-                max_index_records=input_data.hnswParams.batchingParams.maxIndexRecords,
-                index_interval=input_data.hnswParams.batchingParams.indexInterval,
-                max_reindex_records = input_data.hnswParams.batchingParams.maxReindexRecords,
-                reindex_interval = input_data.hnswParams.batchingParams.reindexInterval
+                max_index_records=input.hnswParams.batchingParams.maxIndexRecords,
+                index_interval=input.hnswParams.batchingParams.indexInterval,
+                max_reindex_records = input.hnswParams.batchingParams.maxReindexRecords,
+                reindex_interval = input.hnswParams.batchingParams.reindexInterval
             ),
-            max_mem_queue_size=input_data.hnswParams.maxMemQueueSize,
+            max_mem_queue_size=input.hnswParams.maxMemQueueSize,
             index_caching_params=types.HnswCachingParams(
-                max_entries=input_data.hnswParams.indexCachingParams.maxEntries,
-                expiry=input_data.hnswParams.indexCachingParams.expiry,
+                max_entries=input.hnswParams.indexCachingParams.maxEntries,
+                expiry=input.hnswParams.indexCachingParams.expiry,
             ),
             healer_params=types.HnswHealerParams(
-                max_scan_rate_per_node=input_data.hnswParams.healerParams.maxScanRatePerNode,
-                max_scan_page_size=input_data.hnswParams.healerParams.maxScanPageSize,
-                re_index_percent=input_data.hnswParams.healerParams.reindexPercent,
-                schedule=input_data.hnswParams.healerParams.schedule,
-                parallelism=input_data.hnswParams.healerParams.parallelism,
+                max_scan_rate_per_node=input.hnswParams.healerParams.maxScanRatePerNode,
+                max_scan_page_size=input.hnswParams.healerParams.maxScanPageSize,
+                re_index_percent=input.hnswParams.healerParams.reindexPercent,
+                schedule=input.hnswParams.healerParams.schedule,
+                parallelism=input.hnswParams.healerParams.parallelism,
             ),
             merge_params=types.HnswIndexMergeParams(
-                index_parallelism=input_data.hnswParams.mergeParams.indexParallelism,
-                reindex_parallelism=input_data.hnswParams.mergeParams.reIndexParallelism,
+                index_parallelism=input.hnswParams.mergeParams.indexParallelism,
+                reindex_parallelism=input.hnswParams.mergeParams.reIndexParallelism,
             ),
         ),
-        index_labels=input_data.labels,
+        index_labels=input.labels,
         storage=types.IndexStorage(
-            namespace=input_data.storage.namespace, set_name=input_data.storage.set
+            namespace=input.storage.namespace, set_name=input.storage.set
         ),
     )
 
 
-def fromVectorDbValue(input_vector: types_pb2.Value) -> Any:
-    if input_vector.HasField("stringValue"):
-        return input_vector.stringValue
-    elif input_vector.HasField("intValue"):
-        return input_vector.intValue
-    elif input_vector.HasField("longValue"):
-        return input_vector.longValue
-    elif input_vector.HasField("bytesValue"):
-        return input_vector.bytesValue
-    elif input_vector.HasField("mapValue"):
-        data = {}
-        for entry in input_vector.mapValue.entries:
+def fromVectorDbValue(input: types_pb2.Value) -> Any:
+    if input.HasField("stringValue"):
+        return input.stringValue
+    elif input.HasField("intValue"):
+        return input.intValue
+    elif input.HasField("longValue"):
+        return input.longValue
+    elif input.HasField("bytesValue"):
+        return input.bytesValue
+    elif input.HasField("mapValue"):
+        dict = {}
+        for entry in input.mapValue.entries:
             k = fromVectorDbValue(entry.key)
             v = fromVectorDbValue(entry.value)
-            data[k] = v
-        return data
-    elif input_vector.HasField("listValue"):
-        return [fromVectorDbValue(v) for v in input_vector.listValue.entries]
-    elif input_vector.HasField("vectorValue"):
-        vector = input_vector.vectorValue
+            dict[k] = v
+        return dict
+    elif input.HasField("listValue"):
+        return [fromVectorDbValue(v) for v in input.listValue.entries]
+    elif input.HasField("vectorValue"):
+        vector = input.vectorValue
         if vector.HasField("floatData"):
             return [v for v in vector.floatData.value]
         if vector.HasField("boolData"):

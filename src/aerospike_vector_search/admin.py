@@ -9,7 +9,6 @@ from . import types
 from .internal import channel_provider
 from .shared.admin_helpers import BaseClient
 from .shared.conversions import fromIndexStatusResponse
-from .types import IndexDefinition
 
 logger = logging.getLogger(__name__)
 
@@ -270,7 +269,7 @@ class Client(BaseClient):
 
     def index_list(
         self, timeout: Optional[int] = None, apply_defaults: Optional[bool] = True
-    ) -> list[IndexDefinition]:
+    ) -> list[dict]:
         """
         List all indices.
 
@@ -309,7 +308,7 @@ class Client(BaseClient):
         name: str,
         timeout: Optional[int] = None,
         apply_defaults: Optional[bool] = True,
-    ) -> IndexDefinition:
+    ) -> dict[str, Union[int, str]]:
         """
         Retrieve the information related with an index.
 
@@ -389,6 +388,7 @@ class Client(BaseClient):
         except grpc.RpcError as e:
             logger.error("Failed to get index status with error: %s", e)
             raise types.AVSServerError(rpc_error=e)
+
 
 
 
@@ -630,7 +630,7 @@ class Client(BaseClient):
             logger.error("Failed to revoke roles with error: %s", e)
             raise types.AVSServerError(rpc_error=e)
 
-    def list_roles(self, timeout: Optional[int] = None) -> list[types.Role]:
+    def list_roles(self, timeout: Optional[int] = None) -> list[dict]:
         """
         List roles available on the AVS server.
 
@@ -663,7 +663,7 @@ class Client(BaseClient):
         *,
         namespace: str,
         name: str,
-        timeout: int = 100_000,
+        timeout: Optional[int] = sys.maxsize,
         wait_interval: Optional[int] = 0.1,
     ) -> None:
         """
@@ -691,7 +691,6 @@ class Client(BaseClient):
                 else:
                     logger.error("Failed waiting for index creation with error: %s", e)
                     raise types.AVSServerError(rpc_error=e)
-
 
     def _wait_for_index_deletion(
         self,
