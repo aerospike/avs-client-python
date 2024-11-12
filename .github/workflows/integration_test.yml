@@ -154,7 +154,7 @@ jobs:
 
 
         docker ps
-        python -m pytest -k "update" standard -s --host 0.0.0.0 --port 5000 --root_certificate tls/root.crt --ssl_target_name_override child -vs --cov=aerospike_vector_search
+        python -m pytest standard -s --host 0.0.0.0 --port 5000 --root_certificate tls/root.crt --ssl_target_name_override child -vs --cov=aerospike_vector_search
 
         mv .coverage coverage_data
       working-directory: tests
@@ -233,7 +233,7 @@ jobs:
 
         sleep 5
 
-        python -m pytest -k "update" standard -s -vv --host 0.0.0.0 --port 5000 --root_certificate tls/root.crt --username admin --password admin  --ssl_target_name_override child --cov=aerospike_vector_search
+        python -m pytest standard -s -vv --host 0.0.0.0 --port 5000 --root_certificate tls/root.crt --username admin --password admin  --ssl_target_name_override child --cov=aerospike_vector_search
 
         mv .coverage coverage_data
       working-directory: tests
@@ -317,7 +317,7 @@ jobs:
 
 
         docker ps
-        python -m pytest -k "update" rbac -s -vv --host 0.0.0.0 --port 5000 --root_certificate tls/root.crt --ssl_target_name_override child --cov=aerospike_vector_search
+        python -m pytest rbac -s -vv --host 0.0.0.0 --port 5000 --root_certificate tls/root.crt --ssl_target_name_override child --cov=aerospike_vector_search
 
         docker logs aerospike-vector-search
         docker logs aerospike
@@ -398,7 +398,7 @@ jobs:
 
         sleep 5
 
-        python -m pytest -k "update" standard -s --host 0.0.0.0 --port 5000 --root_certificate tls/root.crt --private_key tls/brawn.key.pem --certificate_chain tls/brawn.crt --ssl_target_name_override brawn  -vs --cov=aerospike_vector_search
+        python -m pytest standard -s --host 0.0.0.0 --port 5000 --root_certificate tls/root.crt --private_key tls/brawn.key.pem --certificate_chain tls/brawn.crt --ssl_target_name_override brawn  -vs --cov=aerospike_vector_search
 
         mv .coverage coverage_data
       working-directory: tests
@@ -476,7 +476,7 @@ jobs:
 
         sleep 5
 
-        python -m pytest -k "update" standard -s --host 0.0.0.0 --port 5000 --root_certificate tls/root.crt --private_key tls/brawn.key.pem --certificate_chain tls/brawn.crt --username admin --password admin --ssl_target_name_override brawn -vs --cov=aerospike_vector_search
+        python -m pytest standard -s --host 0.0.0.0 --port 5000 --root_certificate tls/root.crt --private_key tls/brawn.key.pem --certificate_chain tls/brawn.crt --username admin --password admin --ssl_target_name_override brawn -vs --cov=aerospike_vector_search
 
         mv .coverage coverage_data
       working-directory: tests
@@ -555,7 +555,7 @@ jobs:
 
         sleep 5
 
-        python -m pytest -k "update" rbac -s --host 0.0.0.0 --port 5000 --root_certificate tls/root.crt --private_key tls/brawn.key.pem --certificate_chain tls/brawn.crt --ssl_target_name_override brawn -vs --cov=aerospike_vector_search
+        python -m pytest rbac -s --host 0.0.0.0 --port 5000 --root_certificate tls/root.crt --private_key tls/brawn.key.pem --certificate_chain tls/brawn.crt --ssl_target_name_override brawn -vs --cov=aerospike_vector_search
       
         mv .coverage coverage_data
       working-directory: tests
@@ -629,7 +629,7 @@ jobs:
 
         sleep 5
 
-        python -m pytest -k "update"  standard -s --host 0.0.0.0 --port 5000 --is_loadbalancer -vs --cov=aerospike_vector_search
+        python -m pytest standard -s --host 0.0.0.0 --port 5000 --is_loadbalancer -vs --cov=aerospike_vector_search
 
         mv .coverage coverage_data
       working-directory: tests
