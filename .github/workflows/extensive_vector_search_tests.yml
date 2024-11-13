@@ -3,7 +3,7 @@ name: Run long running vector search tests
 on:
   push:
     branches:
-      - dev
+      - main
 
 jobs:
   test-exhaustive-vector-search:
@@ -18,10 +18,10 @@ jobs:
         
     steps:
     - name: Checkout code
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
 
     - name: Set up Python
-      uses: actions/setup-python@v2
+      uses: actions/setup-python@v5
       with:
         python-version: ${{ matrix.python-version }}
 

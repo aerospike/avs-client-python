@@ -666,6 +666,126 @@ class HnswSearchParams(object):
         return params
 
 
+class HnswIndexUpdate:
+    """
+    Represents parameters for updating HNSW index settings.
+
+    :param batching_params: Configures batching behavior for batch-based index update.
+    :type batching_params: Optional[HnswBatchingParams]
+
+    :param max_mem_queue_size: Maximum size of in-memory queue for inserted/updated vector records.
+    :type max_mem_queue_size: Optional[int]
+
+    :param index_caching_params: Configures caching for HNSW index.
+    :type index_caching_params: Optional[HnswCachingParams]
+
+    :param healer_params: Configures index healer parameters.
+    :type healer_params: Optional[HnswHealerParams]
+
+    :param merge_params: Configures merging of batch indices to the main index.
+    :type merge_params: Optional[HnswIndexMergeParams]
+
+    :param enable_vector_integrity_check: Verifies if the underlying vector has changed before returning the kANN result.
+    :type enable_vector_integrity_check: Optional[bool]
+
+    :param record_caching_params: Configures caching for vector records.
+    :type record_caching_params: Optional[HnswCachingParams]
+    """
+
+    def __init__(
+            self,
+            *,
+            batching_params: Optional[HnswBatchingParams] = None,
+            max_mem_queue_size: Optional[int] = None,
+            index_caching_params: Optional[HnswCachingParams] = None,
+            healer_params: Optional[HnswHealerParams] = None,
+            merge_params: Optional[HnswIndexMergeParams] = None,
+            enable_vector_integrity_check: Optional[bool] = True,
+            record_caching_params: Optional[HnswCachingParams] = None,
+    ) -> None:
+        self.batching_params = batching_params
+        self.max_mem_queue_size = max_mem_queue_size
+        self.index_caching_params = index_caching_params
+        self.healer_params = healer_params
+        self.merge_params = merge_params
+        self.enable_vector_integrity_check = enable_vector_integrity_check
+        self.record_caching_params = record_caching_params
+
+    def _to_pb2(self) -> types_pb2.HnswIndexUpdate:
+        """
+        Converts the HnswIndexUpdate instance to its protobuf representation.
+        """
+        params: types_pb2.HnswIndexUpdate = types_pb2.HnswIndexUpdate()
+
+        if self.batching_params:
+            params.batchingParams.CopyFrom(self.batching_params._to_pb2())
+
+        if self.max_mem_queue_size is not None:
+            params.maxMemQueueSize = self.max_mem_queue_size
+
+        if self.index_caching_params:
+            params.indexCachingParams.CopyFrom(self.index_caching_params._to_pb2())
+
+        if self.healer_params:
+            params.healerParams.CopyFrom(self.healer_params._to_pb2())
+
+        if self.merge_params:
+            params.mergeParams.CopyFrom(self.merge_params._to_pb2())
+
+        if self.enable_vector_integrity_check is not None:
+            params.enableVectorIntegrityCheck = self.enable_vector_integrity_check
+
+        if self.record_caching_params:
+            params.recordCachingParams.CopyFrom(self.record_caching_params._to_pb2())
+
+        return params
+
+    def __repr__(self) -> str:
+        return (
+            f"HnswIndexUpdate(batching_params={self.batching_params}, "
+            f"max_mem_queue_size={self.max_mem_queue_size}, "
+            f"index_caching_params={self.index_caching_params}, "
+            f"healer_params={self.healer_params}, "
+            f"merge_params={self.merge_params}, "
+            f"enable_vector_integrity_check={self.enable_vector_integrity_check}, "
+            f"record_caching_params={self.record_caching_params})"
+        )
+
+    def __str__(self) -> str:
+        return (
+            f"HnswIndexUpdate {{\n"
+            f"  batching_params: {self.batching_params},\n"
+            f"  max_mem_queue_size: {self.max_mem_queue_size},\n"
+            f"  index_caching_params: {self.index_caching_params},\n"
+            f"  healer_params: {self.healer_params},\n"
+            f"  merge_params: {self.merge_params},\n"
+            f"  enable_vector_integrity_check: {self.enable_vector_integrity_check},\n"
+            f"  record_caching_params: {self.record_caching_params}\n"
+            f"}}"
+        )
+
+    def __eq__(self, other) -> bool:
+        if not isinstance(other, HnswIndexUpdate):
+            return NotImplemented
+        return (
+                self.batching_params == other.batching_params
+                and self.max_mem_queue_size == other.max_mem_queue_size
+                and self.index_caching_params == other.index_caching_params
+                and self.healer_params == other.healer_params
+                and self.merge_params == other.merge_params
+                and self.enable_vector_integrity_check == other.enable_vector_integrity_check
+                and self.record_caching_params == other.record_caching_params
+        )
+
+    def __getitem__(self, key):
+        if not hasattr(self, key):
+            raise AttributeError(f"'HnswIndexUpdate' object has no attribute '{key}'")
+        return getattr(self, key)
+
+    def __setitem__(self, key, value):
+        return setattr(self, key, value)
+
+
 class IndexStorage(object):
     """
     Helper class primarily used to specify which namespace and set to build the index on.
