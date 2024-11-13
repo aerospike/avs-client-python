@@ -1,16 +1,15 @@
 import asyncio
 import logging
 import sys
-
 from typing import Optional, Union
 
 import grpc
 
 from .internal import channel_provider
 from .. import types
-from ..shared.conversions import fromIndexStatusResponse
 from ..shared.admin_helpers import BaseClient
-
+from ..shared.conversions import fromIndexStatusResponse
+from ..types import Role, IndexDefinition
 
 logger = logging.getLogger(__name__)
 
@@ -21,7 +20,7 @@ class Client(BaseClient):
 
     This client is designed to conduct Aerospike Vector Search administrative operation such as creating indexes, querying index information, and dropping indexes.
 
-    :param seeds: Defines the AVS nodes to which you want AVS to connect. AVS iterates through the seed nodes. After connecting to a node, AVS discovers all of the nodes in the cluster.
+    :param seeds: Defines the AVS nodes to which you want AVS to connect. AVS iterates through the seed nodes. After connecting to a node, AVS discovers all the nodes in the cluster.
     :type seeds: Union[types.HostPort, tuple[types.HostPort, ...]]
 
     :param listener_name: An external (NATed) address and port combination that differs from the actual address and port where AVS is listening. Clients can access AVS on a node using the advertised listener address and port. Defaults to None.
@@ -125,7 +124,7 @@ class Client(BaseClient):
             specified for :class:`types.HnswParams` will be used.
         :type index_params: Optional[types.HnswParams]
 
-        :param index_labels: Meta data associated with the index. Defaults to None.
+        :param index_labels: Metadata associated with the index. Defaults to None.
         :type index_labels: Optional[dict[str, str]]
 
         :param index_storage: Namespace and set where index overhead (non-vector data) is stored.
@@ -224,7 +223,7 @@ class Client(BaseClient):
 
     async def index_list(
         self, timeout: Optional[int] = None, apply_defaults: Optional[bool] = True
-    ) -> list[dict]:
+    ) -> list[IndexDefinition]:
         """
         List all indices.
 
@@ -266,7 +265,7 @@ class Client(BaseClient):
         name: str,
         timeout: Optional[int] = None,
         apply_defaults: Optional[bool] = True,
-    ) -> dict[str, Union[int, str]]:
+    ) -> IndexDefinition:
         """
         Retrieve the information related with an index.
 
@@ -547,7 +546,7 @@ class Client(BaseClient):
         :param username: Username of the user which will receive the roles.
         :type username: str
 
-        :param roles: Roles the specified user will recieved.
+        :param roles: Roles the specified user will receive.
         :type roles: list[str]
 
         :param timeout: Time in seconds this operation will wait before raising an :class:`AVSServerError <aerospike_vector_search.types.AVSServerError>`. Defaults to None.
@@ -610,7 +609,7 @@ class Client(BaseClient):
             logger.error("Failed to revoke roles with error: %s", e)
             raise types.AVSServerError(rpc_error=e)
 
-    async def list_roles(self, timeout: Optional[int] = None) -> None:
+    async def list_roles(self, timeout: Optional[int] = None) -> list[Role]:
         """
         list roles of existing AVS Users.
 
@@ -663,7 +662,7 @@ class Client(BaseClient):
                     index_creation_request,
                     credentials=self._channel_provider.get_token(),
                 )
-                logger.debug("Index created succesfully")
+                logger.debug("Index created successfully")
                 # Index has been created
                 return
             except grpc.RpcError as e:
@@ -705,7 +704,7 @@ class Client(BaseClient):
                 await asyncio.sleep(wait_interval)
             except grpc.RpcError as e:
                 if e.code() == grpc.StatusCode.NOT_FOUND:
-                    logger.debug("Index deleted succesfully")
+                    logger.debug("Index deleted successfully")
                     # Index has been created
                     return
                 else:

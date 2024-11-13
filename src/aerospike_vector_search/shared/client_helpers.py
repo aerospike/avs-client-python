@@ -1,5 +1,5 @@
 from logging import Logger
-from typing import Any, Optional, Union, Tuple, Dict, List
+from typing import Any, Optional, Union, Tuple, List
 import time
 import numpy as np
 from . import conversions
@@ -21,7 +21,7 @@ class BaseClient(object):
         self,
         namespace: str,
         key: Union[int, str, bytes, bytearray, np.generic, np.ndarray],
-        record_data: Dict[str, Any],
+        record_data: dict[str, Any],
         set_name: Optional[str],
         write_type: transact_pb2.WriteType,
         ignore_mem_queue_full: Optional[bool],
@@ -73,7 +73,7 @@ class BaseClient(object):
         self,
         namespace: str,
         key: Union[int, str, bytes, bytearray, np.generic, np.ndarray],
-        record_data: Dict[str, Any],
+        record_data: dict[str, Any],
         set_name: Optional[str],
         ignore_mem_queue_full: Optional[bool],
         timeout: Optional[int],
@@ -364,7 +364,7 @@ class BaseClient(object):
             raise AVSClientError(message="timed-out waiting for index creation")
 
     def _check_completion_condition(
-        self, start_time: int, timeout:int , index_status, unmerged_record_initialized
+        self, start_time: float, timeout:int , index_status, unmerged_record_initialized
     ):
         self._check_timeout(start_time, timeout)
 

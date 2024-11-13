@@ -1,13 +1,10 @@
 import re
 import asyncio
 import logging
-import jwt
-from jwt.exceptions import InvalidTokenError
 from typing import Optional, Union
 
 import google.protobuf.empty_pb2
 import grpc
-import random
 
 from ... import types
 from ...shared.proto_generated import vector_db_pb2
@@ -92,7 +89,7 @@ class ChannelProvider(base_channel_provider.BaseChannelProvider):
 
             self._ready.set()
 
-        except Exception as e:
+        except  Exception as e:
             # Set all event to prevent hanging if initial tend fails with error
             self._tend_ended.set()
             self._ready.set()
@@ -185,7 +182,7 @@ class ChannelProvider(base_channel_provider.BaseChannelProvider):
         try:
             if not self._token:
                 return
-            elif self._token != True:
+            elif not self._token:
                 await asyncio.sleep((self._ttl * self._ttl_threshold))
 
             await self._update_token_and_ttl()

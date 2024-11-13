@@ -214,5 +214,5 @@ class ChannelProvider(base_channel_provider.BaseChannelProvider):
                 channelEndpoints.channel.close()
 
         with self._auth_tending_lock:
-            if self._auth_timer != None:
+            if self._auth_timer is not None:
                 self._auth_timer.cancel()

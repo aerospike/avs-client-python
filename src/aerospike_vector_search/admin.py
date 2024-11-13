@@ -9,6 +9,7 @@ from . import types
 from .internal import channel_provider
 from .shared.admin_helpers import BaseClient
 from .shared.conversions import fromIndexStatusResponse
+from .types import IndexDefinition, Role
 
 logger = logging.getLogger(__name__)
 
@@ -19,7 +20,7 @@ class Client(BaseClient):
 
     This client is designed to conduct Aerospike Vector Search administrative operation such as creating indexes, querying index information, and dropping indexes.
 
-    :param seeds: Defines the AVS nodes to which you want AVS to connect. AVS iterates through the seed nodes. After connecting to a node, AVS discovers all of the nodes in the cluster.
+    :param seeds: Defines the AVS nodes to which you want AVS to connect. AVS iterates through the seed nodes. After connecting to a node, AVS discovers all the nodes in the cluster.
     :type seeds: Union[types.HostPort, tuple[types.HostPort, ...]]
 
     :param listener_name: An external (NATed) address and port combination that differs from the actual address and port where AVS is listening. Clients can access AVS on a node using the advertised listener address and port. Defaults to None.
@@ -123,7 +124,7 @@ class Client(BaseClient):
             specified for :class:`types.HnswParams` will be used.
         :type index_params: Optional[types.HnswParams]
 
-        :param index_labels: Meta data associated with the index. Defaults to None.
+        :param index_labels: Metadata associated with the index. Defaults to None.
         :type index_labels: Optional[dict[str, str]]
 
         :param index_storage: Namespace and set where index overhead (non-vector data) is stored.
@@ -219,7 +220,7 @@ class Client(BaseClient):
 
     def index_list(
         self, timeout: Optional[int] = None, apply_defaults: Optional[bool] = True
-    ) -> list[dict]:
+    ) -> list[IndexDefinition]:
         """
         List all indices.
 
@@ -258,7 +259,7 @@ class Client(BaseClient):
         name: str,
         timeout: Optional[int] = None,
         apply_defaults: Optional[bool] = True,
-    ) -> dict[str, Union[int, str]]:
+    ) -> IndexDefinition:
         """
         Retrieve the information related with an index.
 
@@ -580,7 +581,7 @@ class Client(BaseClient):
             logger.error("Failed to revoke roles with error: %s", e)
             raise types.AVSServerError(rpc_error=e)
 
-    def list_roles(self, timeout: Optional[int] = None) -> list[dict]:
+    def list_roles(self, timeout: Optional[int] = None) -> list[Role]:
         """
         List roles available on the AVS server.
 

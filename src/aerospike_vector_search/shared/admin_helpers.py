@@ -1,6 +1,6 @@
 import asyncio
 import logging
-from typing import Any, Optional, Tuple, Dict, List
+from typing import Any, Optional, Tuple, List
 import time
 
 import google.protobuf.empty_pb2
@@ -35,7 +35,7 @@ class BaseClient(object):
             index_storage: Optional[types.IndexStorage],
             timeout: Optional[int],
             logger: logging.Logger
-    ) -> Tuple[index_pb2_grpc.IndexServiceStub, index_pb2.IndexCreateRequest, Dict[str, Any]] :
+    ) -> Tuple[index_pb2_grpc.IndexServiceStub, index_pb2.IndexCreateRequest, dict[str, Any]] :
 
         logger.debug(
             "Creating index: namespace=%s, name=%s, vector_field=%s, dimensions=%d, vector_distance_metric=%s, "
@@ -60,16 +60,16 @@ class BaseClient(object):
             sets = None
         if index_params != None:
             index_params = index_params._to_pb2()
-        if index_storage != None:
+        if index_storage is not None:
             index_storage = index_storage._to_pb2()
 
-        id = self._get_index_id(namespace, name)
+        index_id = self._get_index_id(namespace, name)
         vector_distance_metric = vector_distance_metric.value
 
         index_stub = self._get_index_stub()
 
         index_definition = types_pb2.IndexDefinition(
-            id=id,
+            id=index_id,
             vectorDistanceMetric=vector_distance_metric,
             setFilter=sets,
             hnswParams=index_params,
@@ -333,6 +333,6 @@ class BaseClient(object):
             self, namespace, name, wait_interval
         )
 
-    def _check_timeout(self, start_time, timeout):
+    def _check_timeout(self, start_time: float, timeout: int):
         if start_time + timeout < time.monotonic():
             raise AVSClientError(message="timed-out waiting for index creation")

@@ -7,7 +7,7 @@ from .shared.proto_generated import types_pb2
 class HostPort(object):
     """
     represents host, port and TLS usage information.
-    Used primarily when intializing client.
+    Used primarily when initializing client.
 
     :param host: The host address.
     :type host: str
@@ -76,7 +76,7 @@ class RecordWithKey(object):
     :param key: (Key): The key of the record.
     :type key: Key
 
-    :param fields: : The fields associated with the record.
+    :param fields:  The fields associated with the record.
     :type fields: dict[str, Any]
     """
 
@@ -424,7 +424,7 @@ class HnswCachingParams(object):
     :param max_entries: maximum number of entries to cache.  Default is the global cache config, which is configured in the AVS Server.
     :type max_entries: Optional[int]
 
-    :param expiry: Cache entries will expire after this time in millseconds has expired after the entry was add to the cache.
+    :param expiry: Cache entries will expire after this time in milliseconds has expired after the entry was add to the cache.
         Default is the global cache config, which is configured in the AVS Server.
     :type expiry: Optional[int]
 
@@ -780,7 +780,7 @@ class IndexDefinition(object):
     :param storage: Index storage details.
     :type storage: Optional[IndexStorage] default None
 
-    :param index_labels: Meta data associated with the index. Defaults to None.
+    :param index_labels: Metadata associated with the index. Defaults to None.
     :type index_labels: Optional[dict[str, str]]
     """
 
@@ -870,7 +870,7 @@ class AVSServerError(AVSError):
 
 class AVSClientError(AVSError):
     """
-    Custom exception raised for errors related to AVS client-side failures..
+    Custom exception raised for errors related to AVS client-side failures.
 
     :param message: error messaging raised by the AVS Client. Defaults to None.
     :type set_name: str

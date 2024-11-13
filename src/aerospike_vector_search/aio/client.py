@@ -385,7 +385,7 @@ class Client(BaseClient):
                 exists_request, credentials=self._channel_provider.get_token(), **kwargs
             )
         except grpc.RpcError as e:
-            logger.error("Failed to verfiy vector existence with error: %s", e)
+            logger.error("Failed to verify vector existence with error: %s", e)
             raise types.AVSServerError(rpc_error=e)
 
         return self._respond_exists(response)

@@ -1,22 +1,16 @@
 import logging
 import random
-import time
 from logging import Logger
+from typing import Optional, Union, Tuple
 
-from typing import Optional, Union, Dict, Tuple, List, Any
-
-import json
-import jwt
-import re
 import grpc
+import jwt
 
-
-from .. import types
 from . import helpers
-
-from .proto_generated import vector_db_pb2, auth_pb2, types_pb2
 from .proto_generated import auth_pb2_grpc
+from .proto_generated import vector_db_pb2, auth_pb2, types_pb2
 from .proto_generated import vector_db_pb2_grpc
+from .. import types
 
 logger = logging.getLogger(__name__)
 
@@ -205,7 +199,7 @@ class BaseChannelProvider(object):
         ):
             self._tend_ended.set()
             raise types.AVSClientError(
-                message="This AVS Client version is only compatbile with AVS Servers above the following version number: "
+                message="This AVS Client version is only compatible with AVS Servers above the following version number: "
                 + self.minimum_required_version
             )
         else:
