@@ -140,7 +140,7 @@ class Client(BaseClient):
 
         Note:
             This method creates an index with the specified parameters and waits for the index creation to complete.
-            It waits for up to default 100,000 seconds or specificed seconds for the index creation to complete.
+            It waits for up to 100,000 seconds or the specified timeout for the index creation to complete.
         """
 
         await self._channel_provider._is_ready()
