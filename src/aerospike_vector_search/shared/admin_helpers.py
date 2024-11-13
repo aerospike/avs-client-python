@@ -91,7 +91,7 @@ class BaseClient(object):
             hnsw_update_params: Optional[types.HnswIndexUpdate],
             timeout: Optional[int],
             logger: logging.Logger
-    ) -> Tuple[index_pb2_grpc.IndexServiceStub, index_pb2.IndexUpdateRequest, Dict[str, Any]]:
+    ) -> tuple[index_pb2_grpc.IndexServiceStub, index_pb2.IndexUpdateRequest, dict[str, Any]]:
         """
         Prepares the index update request for updating an existing index.
         """
