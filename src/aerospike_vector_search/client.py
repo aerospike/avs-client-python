@@ -5,6 +5,7 @@ from typing import Any, Optional, Union
 import warnings
 
 import grpc
+import numpy as np
 
 from . import types
 from .internal import channel_provider
@@ -199,7 +200,7 @@ class Client(BaseClient):
         self,
         *,
         namespace: str,
-        key: Union[int, str, bytes, bytearray],
+        key: Union[int, str, bytes, bytearray, np.generic, np.ndarray],
         record_data: dict[str, Any],
         set_name: Optional[str] = None,
         ignore_mem_queue_full: Optional[bool] = False,
@@ -661,9 +662,9 @@ class Client(BaseClient):
         *,
         namespace: str,
         name: str,
-        timeout: Optional[int] = sys.maxsize,
-        wait_interval: Optional[int] = 12,
-        validation_threshold: Optional[int] = 2,
+        timeout: int = sys.maxsize,
+        wait_interval: int = 12,
+        validation_threshold: int = 2,
     ) -> None:
         """
         Wait for the index to have no pending index update operations.
@@ -693,7 +694,7 @@ class Client(BaseClient):
         """
         (
             index_stub,
-            wait_interval,
+            wait_interval_float,
             start_time,
             unmerged_record_initialized,
             validation_count,
@@ -719,7 +720,7 @@ class Client(BaseClient):
                     validation_count += 1
             else:
                 validation_count = 0
-            time.sleep(wait_interval)
+            time.sleep(wait_interval_float)
 
     def close(self):
         """

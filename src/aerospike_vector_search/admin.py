@@ -87,7 +87,7 @@ class Client(BaseClient):
         name: str,
         vector_field: str,
         dimensions: int,
-        vector_distance_metric: Optional[types.VectorDistanceMetric] = (
+        vector_distance_metric: types.VectorDistanceMetric = (
             types.VectorDistanceMetric.SQUARED_EUCLIDEAN
         ),
         sets: Optional[str] = None,
@@ -114,7 +114,7 @@ class Client(BaseClient):
         :param vector_distance_metric:
             The distance metric used to compare when performing a vector search.
             Defaults to :class:`VectorDistanceMetric.SQUARED_EUCLIDEAN`.
-        :type vector_distance_metric: Optional[types.VectorDistanceMetric]
+        :type vector_distance_metric: types.VectorDistanceMetric
 
         :param sets: The set used for the index. Defaults to None.
         :type sets: Optional[str]
@@ -614,8 +614,8 @@ class Client(BaseClient):
         *,
         namespace: str,
         name: str,
-        timeout: Optional[int] = sys.maxsize,
-        wait_interval: Optional[int] = 0.1,
+        timeout: int = sys.maxsize,
+        wait_interval: float = 0.1,
     ) -> None:
         """
         Wait for the index to be created.
@@ -648,8 +648,8 @@ class Client(BaseClient):
         *,
         namespace: str,
         name: str,
-        timeout: Optional[int] = sys.maxsize,
-        wait_interval: Optional[int] = 0.1,
+        timeout: int = sys.maxsize,
+        wait_interval: float = 0.1,
     ) -> None:
         """
         Wait for the index to be deleted.

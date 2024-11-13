@@ -115,7 +115,7 @@ class BaseClient(object):
     def _prepare_upsert(
         self,
         namespace: str,
-        key: Union[int, str, bytes, bytearray],
+        key: Union[int, str, bytes, bytearray, np.generic, np.ndarray],
         record_data: dict[str, Any],
         set_name: Optional[str],
         ignore_mem_queue_full: Optional[bool],
@@ -334,7 +334,7 @@ class BaseClient(object):
         return projection_spec
 
     def _get_key(
-        self, namespace: str, set: str, key: Union[int, str, bytes, bytearray]
+        self, namespace: str, set: Optional[str], key: Union[int, str, bytes, bytearray, np.generic, np.ndarray]
     ) -> types_pb2.Key:
 
         if isinstance(key, np.ndarray):
@@ -359,7 +359,7 @@ class BaseClient(object):
             self, namespace, name, wait_interval
         )
 
-    def _check_timeout(self, start_time: int, timeout: int):
+    def _check_timeout(self, start_time: float, timeout: int):
         if start_time + timeout < time.monotonic():
             raise AVSClientError(message="timed-out waiting for index creation")
 

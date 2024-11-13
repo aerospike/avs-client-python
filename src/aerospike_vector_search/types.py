@@ -547,13 +547,13 @@ class HnswParams(object):
         m: Optional[int] = None,
         ef_construction: Optional[int] = None,
         ef: Optional[int] = None,
-        batching_params: Optional[HnswBatchingParams] = HnswBatchingParams(),
+        batching_params: HnswBatchingParams = HnswBatchingParams(),
         max_mem_queue_size: Optional[int] = None,
-        index_caching_params: Optional[HnswCachingParams] = HnswCachingParams(),
-        healer_params: Optional[HnswHealerParams] = HnswHealerParams(),
-        merge_params: Optional[HnswIndexMergeParams] = HnswIndexMergeParams(),
-        enable_vector_integrity_check : Optional[bool] = True,
-        record_caching_params : Optional[HnswCachingParams] = HnswCachingParams()
+        index_caching_params: HnswCachingParams = HnswCachingParams(),
+        healer_params: HnswHealerParams = HnswHealerParams(),
+        merge_params: HnswIndexMergeParams = HnswIndexMergeParams(),
+        enable_vector_integrity_check : bool = True,
+        record_caching_params : HnswCachingParams = HnswCachingParams()
     ) -> None:
         self.m = m
         self.ef_construction = ef_construction
