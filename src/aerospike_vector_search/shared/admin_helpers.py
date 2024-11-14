@@ -85,7 +85,7 @@ class BaseClient(object):
             self,
             namespace: str,
             name: str,
-            index_labels: Optional[Dict[str, str]],
+            index_labels: Optional[dict[str, str]],
             hnsw_update_params: Optional[types.HnswIndexUpdate],
             timeout: Optional[int],
             logger: logging.Logger
