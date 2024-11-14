@@ -7,7 +7,7 @@ from .shared.proto_generated import types_pb2
 class HostPort(object):
     """
     represents host, port and TLS usage information.
-    Used primarily when intializing client.
+    Used primarily when initializing client.
 
     :param host: The host address.
     :type host: str
@@ -50,13 +50,13 @@ class Key(object):
             f"key={self.key})"
         )
 
-    def __str__(self):
+    def __str__(self) -> str:
         """
         Returns a string representation of the key.
         """
         return f"Key: namespace='{self.namespace}', set='{self.set}', key={self.key}"
     
-    def __eq__(self, other):
+    def __eq__(self, other) -> bool:
         if not isinstance(other, Key):
             return NotImplemented
 
@@ -76,7 +76,7 @@ class RecordWithKey(object):
     :param key: (Key): The key of the record.
     :type key: Key
 
-    :param fields: : The fields associated with the record.
+    :param fields:  The fields associated with the record.
     :type fields: dict[str, Any]
     """
 
@@ -84,7 +84,7 @@ class RecordWithKey(object):
         self.key = key
         self.fields = fields
 
-    def __str__(self):
+    def __str__(self) -> str:
         """
         Returns a string representation of the record, including a key and fields.
         """
@@ -142,7 +142,7 @@ class Neighbor(object):
             f"distance={self.distance})"
         )
 
-    def __str__(self):
+    def __str__(self) -> str:
         """
         Returns a string representation of the neighboring record.
         """
@@ -424,7 +424,7 @@ class HnswCachingParams(object):
     :param max_entries: maximum number of entries to cache.  Default is the global cache config, which is configured in the AVS Server.
     :type max_entries: Optional[int]
 
-    :param expiry: Cache entries will expire after this time in millseconds has expired after the entry was add to the cache.
+    :param expiry: Cache entries will expire after this time in milliseconds has expired after the entry was add to the cache.
         Default is the global cache config, which is configured in the AVS Server.
     :type expiry: Optional[int]
 
@@ -547,13 +547,13 @@ class HnswParams(object):
         m: Optional[int] = None,
         ef_construction: Optional[int] = None,
         ef: Optional[int] = None,
-        batching_params: Optional[HnswBatchingParams] = HnswBatchingParams(),
+        batching_params: HnswBatchingParams = HnswBatchingParams(),
         max_mem_queue_size: Optional[int] = None,
-        index_caching_params: Optional[HnswCachingParams] = HnswCachingParams(),
-        healer_params: Optional[HnswHealerParams] = HnswHealerParams(),
-        merge_params: Optional[HnswIndexMergeParams] = HnswIndexMergeParams(),
-        enable_vector_integrity_check : Optional[bool] = True,
-        record_caching_params : Optional[HnswCachingParams] = HnswCachingParams()
+        index_caching_params: HnswCachingParams = HnswCachingParams(),
+        healer_params: HnswHealerParams = HnswHealerParams(),
+        merge_params: HnswIndexMergeParams = HnswIndexMergeParams(),
+        enable_vector_integrity_check : bool = True,
+        record_caching_params : HnswCachingParams = HnswCachingParams()
     ) -> None:
         self.m = m
         self.ef_construction = ef_construction
@@ -660,7 +660,7 @@ class HnswSearchParams(object):
 
         self.ef = ef
 
-    def _to_pb2(self):
+    def _to_pb2(self) -> types_pb2.HnswSearchParams:
         params = types_pb2.HnswSearchParams()
         params.ef = self.ef
         return params
@@ -900,7 +900,7 @@ class IndexDefinition(object):
     :param storage: Index storage details.
     :type storage: Optional[IndexStorage] default None
 
-    :param index_labels: Meta data associated with the index. Defaults to None.
+    :param index_labels: Metadata associated with the index. Defaults to None.
     :type index_labels: Optional[dict[str, str]]
     """
 
@@ -984,13 +984,13 @@ class AVSServerError(AVSError):
     def __init__(self, *, rpc_error) -> None:
         self.rpc_error = rpc_error
 
-    def __str__(self):
+    def __str__(self) -> str:
         return f"AVSServerError(rpc_error={self.rpc_error})"
 
 
 class AVSClientError(AVSError):
     """
-    Custom exception raised for errors related to AVS client-side failures..
+    Custom exception raised for errors related to AVS client-side failures.
 
     :param message: error messaging raised by the AVS Client. Defaults to None.
     :type set_name: str
@@ -1000,7 +1000,7 @@ class AVSClientError(AVSError):
     def __init__(self, *, message) -> None:
         self.message = message
 
-    def __str__(self):
+    def __str__(self) -> str:
         return f"AVSClientError(message={self.message})"
 
 

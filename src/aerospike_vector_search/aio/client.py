@@ -385,7 +385,7 @@ class Client(BaseClient):
                 exists_request, credentials=self._channel_provider.get_token(), **kwargs
             )
         except grpc.RpcError as e:
-            logger.error("Failed to verfiy vector existence with error: %s", e)
+            logger.error("Failed to verify vector existence with error: %s", e)
             raise types.AVSServerError(rpc_error=e)
 
         return self._respond_exists(response)
@@ -679,9 +679,9 @@ class Client(BaseClient):
         *,
         namespace: str,
         name: str,
-        timeout: Optional[int] = sys.maxsize,
-        wait_interval: Optional[int] = 12,
-        validation_threshold: Optional[int] = 2,
+        timeout: int = sys.maxsize,
+        wait_interval: int = 12,
+        validation_threshold: int = 2,
     ) -> None:
         """
         Wait for the index to have no pending index update operations.
@@ -714,7 +714,7 @@ class Client(BaseClient):
         # Wait interval between polling
         (
             index_stub,
-            wait_interval,
+            wait_interval_float,
             start_time,
             unmerged_record_initialized,
             validation_count,
@@ -740,7 +740,7 @@ class Client(BaseClient):
                     validation_count += 1
             else:
                 validation_count = 0
-            await asyncio.sleep(wait_interval)
+            await asyncio.sleep(wait_interval_float)
 
     async def close(self):
         """

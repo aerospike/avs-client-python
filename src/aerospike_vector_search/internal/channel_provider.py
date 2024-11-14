@@ -16,7 +16,7 @@ empty = google.protobuf.empty_pb2.Empty()
 
 logger = logging.getLogger(__name__)
 
-TEND_INTERVAL = 1
+TEND_INTERVAL: int = 1
 
 
 class ChannelProvider(base_channel_provider.BaseChannelProvider):
@@ -109,7 +109,7 @@ class ChannelProvider(base_channel_provider.BaseChannelProvider):
                 "While tending, failed to get cluster id with error: " + str(e)
             )
 
-    def _call_get_cluster_endpoints(self, stub):
+    def _call_get_cluster_endpoints(self, stub) -> vector_db_pb2.ServerEndpointList:
         try:
             return (
                 stub.GetClusterEndpoints(
@@ -214,5 +214,5 @@ class ChannelProvider(base_channel_provider.BaseChannelProvider):
                 channelEndpoints.channel.close()
 
         with self._auth_tending_lock:
-            if self._auth_timer != None:
+            if self._auth_timer is not None:
                 self._auth_timer.cancel()

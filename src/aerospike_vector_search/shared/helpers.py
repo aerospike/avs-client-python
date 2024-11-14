@@ -2,9 +2,10 @@ import time
 from .. import types
 from .proto_generated import types_pb2, index_pb2
 from .proto_generated import index_pb2_grpc
+from typing import Union, Tuple, Optional
 
 
-def _prepare_seeds(seeds) -> None:
+def _prepare_seeds(seeds: Union[types.HostPort, Tuple[types.HostPort, ...]]) -> Tuple[types.HostPort, ...]:
 
     if not seeds:
         raise types.AVSClientError(message="at least one seed host needed")
@@ -15,7 +16,8 @@ def _prepare_seeds(seeds) -> None:
     return seeds
 
 
-def _prepare_wait_for_index_waiting(client, namespace, name, wait_interval):
+def _prepare_wait_for_index_waiting(client, namespace: str, name: str, wait_interval: Optional[int]) -> (
+        Tuple)[index_pb2_grpc.IndexServiceStub, int, float, bool, int, index_pb2.IndexGetRequest]:
 
     unmerged_record_initialized = False
     start_time = time.monotonic()
@@ -34,7 +36,7 @@ def _prepare_wait_for_index_waiting(client, namespace, name, wait_interval):
     )
 
 
-def _get_credentials(username, password):
+def _get_credentials(username: str, password: str) -> Optional[types_pb2.Credentials]:
     if not username:
         return None
     return types_pb2.Credentials(
