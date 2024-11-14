@@ -94,7 +94,7 @@ class Client(BaseClient):
         index_params: Optional[types.HnswParams] = None,
         index_labels: Optional[dict[str, str]] = None,
         index_storage: Optional[types.IndexStorage] = None,
-        timeout: Optional[int] = None,
+        timeout: Optional[int] = 100_000,
     ) -> None:
         """
         Create an index.
@@ -172,6 +172,56 @@ class Client(BaseClient):
         except grpc.RpcError as e:
             logger.error("Failed waiting for creation with error: %s", e)
             raise types.AVSServerError(rpc_error=e)
+
+    def index_update(
+            self,
+            *,
+            namespace: str,
+            name: str,
+            index_labels: Optional[dict[str, str]] = None,
+            hnsw_update_params: Optional[types.HnswIndexUpdate] = None,
+            timeout: Optional[int] = 100_000,
+    ) -> None:
+        """
+        Update an existing index.
+
+        :param namespace: The namespace for the index.
+        :type namespace: str
+
+        :param name: The name of the index.
+        :type name: str
+
+        :param index_labels: Optional labels associated with the index. Defaults to None.
+        :type index_labels: Optional[dict[str, str]]
+
+        :param hnsw_update_params: Parameters for updating HNSW index settings.
+        :type hnsw_update_params: Optional[types.HnswIndexUpdate]
+
+        :param timeout: Time in seconds (default 100_000) this operation will wait before raising an error.
+        :type timeout: int
+
+        Raises:
+            AVSServerError: Raised if an error occurs during the RPC communication with the server while attempting to update the index.
+        """
+        (index_stub, index_update_request, kwargs) = self._prepare_index_update(
+            namespace = namespace,
+            name = name,
+            index_labels = index_labels,
+            hnsw_update_params = hnsw_update_params,
+            timeout = timeout,
+            logger = logger,
+        )
+
+        try:
+            index_stub.Update(
+                index_update_request,
+                credentials=self._channel_provider.get_token(),
+                **kwargs,
+            )
+        except grpc.RpcError as e:
+            logger.error("Failed to update index with error: %s", e)
+            raise types.AVSServerError(rpc_error=e)
+
 
     def index_drop(
         self, *, namespace: str, name: str, timeout: Optional[int] = None

@@ -81,6 +81,49 @@ class BaseClient(object):
         index_create_request = index_pb2.IndexCreateRequest(definition=index_definition)
         return (index_stub, index_create_request, kwargs)
 
+    def _prepare_index_update(
+            self,
+            namespace: str,
+            name: str,
+            index_labels: Optional[Dict[str, str]],
+            hnsw_update_params: Optional[types.HnswIndexUpdate],
+            timeout: Optional[int],
+            logger: logging.Logger
+    ) -> tuple[index_pb2_grpc.IndexServiceStub, index_pb2.IndexUpdateRequest, dict[str, Any]]:
+        """
+        Prepares the index update request for updating an existing index.
+        """
+
+        logger.debug(
+            "Updating index: namespace=%s, name=%s, labels=%s, hnsw_update_params=%s, timeout=%s",
+            namespace,
+            name,
+            index_labels,
+            hnsw_update_params,
+            timeout,
+        )
+
+        kwargs = {}
+        if timeout is not None:
+            kwargs["timeout"] = timeout
+
+        index_stub = self._get_index_stub()
+        index_id = self._get_index_id(namespace, name)
+
+        # Prepare HNSW update parameters if provided
+        hnsw_update = None
+        if hnsw_update_params is not None:
+            hnsw_update = hnsw_update_params._to_pb2()
+
+        # Create the IndexUpdateRequest with optional fields
+        index_update_request = index_pb2.IndexUpdateRequest(
+            indexId=index_id,
+            labels=index_labels,
+            hnswIndexUpdate=hnsw_update,
+        )
+
+        return (index_stub, index_update_request, kwargs)
+
     def _prepare_index_drop(self, namespace: str, name: str, timeout: Optional[int], logger: logging.Logger) -> tuple[index_pb2_grpc.IndexServiceStub, index_pb2.IndexDropRequest, dict[str, Any]]:
 
         logger.debug(
