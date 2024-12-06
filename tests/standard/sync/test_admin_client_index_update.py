@@ -42,6 +42,7 @@ class index_update_test_case:
                 index_caching_params=types.HnswCachingParams(max_entries=10, expiry=3000),
                 merge_params=types.HnswIndexMergeParams(index_parallelism=10,reindex_parallelism=3),
                 healer_params=types.HnswHealerParams(max_scan_rate_per_node=80),
+                enable_vector_integrity_check=False,
             ),
             timeout=None,
         ),
@@ -101,6 +102,8 @@ def test_index_update(session_admin_client, test_case):
 
     if test_case.hnsw_index_update.healer_params:
         assert result["hnsw_params"]["healer_params"]["max_scan_rate_per_node"] == test_case.hnsw_index_update.healer_params.max_scan_rate_per_node
+
+    assert result["hnsw_params"]["enable_vector_integrity_check"] == test_case.hnsw_index_update.enable_vector_integrity_check
 
     # Clean up by dropping the index after the test
     drop_specified_index(session_admin_client, test_case.namespace, trimmed_random)

@@ -105,6 +105,7 @@ def fromIndexDefintion(input_data: types_pb2.IndexDefinition) -> types.IndexDefi
             m=input_data.hnswParams.m,
             ef_construction=input_data.hnswParams.efConstruction,
             ef=input_data.hnswParams.ef,
+            enable_vector_integrity_check=input_data.hnswParams.enableVectorIntegrityCheck,
             batching_params=types.HnswBatchingParams(
                 max_index_records=input_data.hnswParams.batchingParams.maxIndexRecords,
                 index_interval=input_data.hnswParams.batchingParams.indexInterval,
