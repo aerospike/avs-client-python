@@ -25,7 +25,7 @@ classifiers = [
 version = "3.0.1"
 requires-python = ">3.8"
 dependencies = [
-    "grpcio == 1.67.1",
+    "grpcio == 1.68.1",
     "protobuf == 5.28.3",
     "pyjwt == 2.9.0",
     "numpy",
