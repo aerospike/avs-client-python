@@ -539,6 +539,10 @@ class HnswParams(object):
 
     :param batching_params: Parameters related to configuring batch processing, such as the maximum number of records per batch and batching interval. Defaults to HnswBatchingParams().
     :type batching_params: Optional[HnswBatchingParams]
+
+    :param enable_vector_integrity_check: Verifies if the underlying vector has changed before returning the kANN result.
+    :type enable_vector_integrity_check: Optional[bool]
+
     """
 
     def __init__(
@@ -552,7 +556,7 @@ class HnswParams(object):
         index_caching_params: HnswCachingParams = HnswCachingParams(),
         healer_params: HnswHealerParams = HnswHealerParams(),
         merge_params: HnswIndexMergeParams = HnswIndexMergeParams(),
-        enable_vector_integrity_check : bool = True,
+        enable_vector_integrity_check : Optional[bool] = None,
         record_caching_params : HnswCachingParams = HnswCachingParams()
     ) -> None:
         self.m = m
@@ -580,7 +584,8 @@ class HnswParams(object):
         if self.max_mem_queue_size:
             params.maxMemQueueSize = self.max_mem_queue_size
 
-        params.enableVectorIntegrityCheck = self.enable_vector_integrity_check
+        if self.enable_vector_integrity_check is not None:
+            params.enableVectorIntegrityCheck = self.enable_vector_integrity_check
 
         params.batchingParams.CopyFrom(self.batching_params._to_pb2())
         params.indexCachingParams.CopyFrom(self.index_caching_params._to_pb2())

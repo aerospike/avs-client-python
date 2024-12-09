@@ -365,6 +365,7 @@ async def test_index_create_with_sets(session_admin_client, test_case, random_na
             sets=None,
             index_params=types.HnswParams(
                 m=8,
+                enable_vector_integrity_check= True,
             ),
             index_labels=None,
             index_storage=None,
@@ -377,7 +378,8 @@ async def test_index_create_with_sets(session_admin_client, test_case, random_na
             vector_distance_metric=None,
             sets=None,
             index_params=types.HnswParams(
-                batching_params=types.HnswBatchingParams(max_index_records=2000, index_interval=20000, max_reindex_records=1500, reindex_interval=70000)
+                batching_params=types.HnswBatchingParams(max_index_records=2000, index_interval=20000, max_reindex_records=1500, reindex_interval=70000),
+                enable_vector_integrity_check= True
             ),
             index_labels=None,
             index_storage=None,
@@ -402,6 +404,7 @@ async def test_index_create_with_sets(session_admin_client, test_case, random_na
                     index_parallelism=10,
                     reindex_parallelism=3
                 ),
+                enable_vector_integrity_check= True
             ),
             index_labels=None,
             index_storage=None,

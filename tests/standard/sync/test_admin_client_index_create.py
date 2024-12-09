@@ -397,6 +397,7 @@ def test_index_create_with_sets(session_admin_client, test_case, random_name):
             sets="demo",
             index_params=types.HnswParams(
                 batching_params=types.HnswBatchingParams(max_index_records=2000, index_interval=20000, max_reindex_records=1500, reindex_interval=70000),
+                enable_vector_integrity_check= True
             ),
             index_labels=None,
             index_storage=None,
@@ -421,6 +422,7 @@ def test_index_create_with_sets(session_admin_client, test_case, random_name):
                     index_parallelism=10,
                     reindex_parallelism=3
                 ),
+                enable_vector_integrity_check= True
             ),
             index_labels=None,
             index_storage=None,
