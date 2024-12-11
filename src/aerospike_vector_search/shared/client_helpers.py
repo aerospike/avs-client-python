@@ -358,6 +358,27 @@ class BaseClient(object):
         return helpers._prepare_wait_for_index_waiting(
             self, namespace, name, wait_interval
         )
+    
+    def _prepare_index_get_percent_unmerged(self, namespace: str, name: str, timeout: Optional[int], logger: Logger) -> (
+        Tuple)[index_pb2_grpc.IndexServiceStub, index_pb2.IndexStatusRequest, dict[str, Any]]:
+
+        logger.debug(
+            "Getting index percent merged: namespace=%s, name=%s, timeout=%s",
+            namespace,
+            name,
+            timeout,
+        )
+
+        kwargs = {}
+        if timeout is not None:
+            kwargs["timeout"] = timeout
+
+        index_stub = helpers._create_index_service_stub(self)
+        req = helpers._create_index_status_request(namespace, name)
+
+        return (index_stub, req, kwargs)
+
+
 
     def _check_timeout(self, start_time: float, timeout: int):
         if start_time + timeout < time.monotonic():

@@ -15,8 +15,17 @@ def _prepare_seeds(seeds: Union[types.HostPort, Tuple[types.HostPort, ...]]) -> 
 
     return seeds
 
+def _create_index_status_request(namespace: str, name: str) -> index_pb2.IndexStatusRequest:
+    index_id = types_pb2.IndexId(namespace=namespace, name=name)
+    return index_pb2.IndexStatusRequest(indexId=index_id)
 
-def _prepare_wait_for_index_waiting(client, namespace: str, name: str, wait_interval: Optional[int]) -> (
+# TODO: In the future we should reuse service stubs
+# perhaps we can wrap the client's channel provider in a service stub provider
+# that caches the stubs
+def _create_index_service_stub(client) -> index_pb2_grpc.IndexServiceStub:
+    return index_pb2_grpc.IndexServiceStub(client._channel_provider.get_channel())
+
+def _prepare_wait_for_index_waiting(client, namespace: str, name: str, wait_interval: int) -> (
         Tuple)[index_pb2_grpc.IndexServiceStub, int, float, bool, int, index_pb2.IndexGetRequest]:
 
     unmerged_record_initialized = False
@@ -34,7 +43,6 @@ def _prepare_wait_for_index_waiting(client, namespace: str, name: str, wait_inte
         consecutive_index_validations,
         index_wait_request,
     )
-
 
 def _get_credentials(username: str, password: str) -> Optional[types_pb2.Credentials]:
     if not username:
