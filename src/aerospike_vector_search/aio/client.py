@@ -682,7 +682,18 @@ class Client(BaseClient):
         timeout: Optional[int] = None,
     ) -> float:
         """
-        Get the percentage of unmerged records in the index.
+        Get the ratio of unmerged records to valid verticies in the index as a percentage.
+        This is useful for determining the completeness of the index. Estimating
+        the accuracy of search results, checking the progress of index healing,
+        and determining if the index healer is keeping up with record writes.
+
+        In general, the lower the percentage, the better the search accuracy.
+
+        It is possible for the percentage to be greater than 100% if the number
+        of unmerged records exceeds the number of valid vertices in the index.
+
+        NOTE: This method may be inaccurate if called when the index is first written to
+        as it takes time for index statistics to be collected server-side.
 
         :param namespace: The namespace of the index.
         :type namespace: str
