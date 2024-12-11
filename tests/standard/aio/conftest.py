@@ -1,13 +1,38 @@
-import pytest
 import asyncio
+import pytest
+import random
+import string
+
 from aerospike_vector_search.aio import Client
 from aerospike_vector_search.aio.admin import Client as AdminClient
 from aerospike_vector_search import types
+
+from .aio_utils import gen_records
 
 #import logging
 #logger = logging.getLogger(__name__)
 #logging.basicConfig(filename='example.log', encoding='utf-8', level=logging.DEBUG)
 
+
+# default test values
+DEFAULT_NAMESPACE = "test"
+DEFAULT_INDEX_DIMENSION = 128
+DEFAULT_VECTOR_FIELD = "vector"
+DEFAULT_INDEX_ARGS = {
+    "namespace": DEFAULT_NAMESPACE,
+    "vector_field": DEFAULT_VECTOR_FIELD,
+    "dimensions": DEFAULT_INDEX_DIMENSION,
+}
+
+DEFAULT_RECORD_GENERATOR = gen_records
+DEFAULT_NUM_RECORDS = 1000
+DEFAULT_RECORDS_ARGS = {
+    "record_generator": DEFAULT_RECORD_GENERATOR,
+    "namespace": DEFAULT_NAMESPACE,
+    "vector_field": DEFAULT_VECTOR_FIELD,
+    "dimensions": DEFAULT_INDEX_DIMENSION,
+    "num_records": DEFAULT_NUM_RECORDS,
+}
 
 @pytest.fixture(scope="module", autouse=True)
 async def drop_all_indexes(
@@ -164,3 +189,38 @@ async def function_admin_client(
     )
     yield client
     await client.close()
+
+
+@pytest.fixture()
+def index_name():
+    length = random.randint(1, 15)
+    return ''.join(random.choices(string.ascii_letters + string.digits, k=length))
+
+
+@pytest.fixture(params=[DEFAULT_INDEX_ARGS])
+async def index(session_admin_client, index_name, request):
+    index_args = request.param
+    await session_admin_client.index_create(
+        name = index_name,
+        **index_args,
+    )
+    yield index_name
+    namespace = index_args.get("namespace", DEFAULT_NAMESPACE)
+    await session_admin_client.index_drop(namespace=namespace, name=index_name)
+
+
+@pytest.fixture(params=[DEFAULT_RECORDS_ARGS])
+async def records(session_vector_client, request):
+    args = request.param
+    record_generator = args.get("record_generator", DEFAULT_RECORD_GENERATOR)
+    namespace = args.get("namespace", DEFAULT_NAMESPACE)
+    num_records = args.get("num_records", DEFAULT_NUM_RECORDS)
+    vector_field = args.get("vector_field", DEFAULT_VECTOR_FIELD)
+    dimensions = args.get("dimensions", DEFAULT_INDEX_DIMENSION)
+    keys = []
+    for key, rec in record_generator(count=num_records, vec_bin=vector_field, vec_dim=dimensions):
+        await session_vector_client.upsert(namespace=namespace, key=key, record_data=rec)
+        keys.append(key)
+    yield len(keys)
+    for key in keys:
+        await session_vector_client.delete(key=key, namespace=namespace)

@@ -48,7 +48,7 @@ class index_get_percent_unmerged_test_case:
     ],
     indirect=["records"],
 )
-def test_client_index_get_percent_unmerged(
+async def test_client_index_get_percent_unmerged(
     session_vector_client,
     index,
     records,
@@ -57,7 +57,7 @@ def test_client_index_get_percent_unmerged(
     # need some time for index stats to be counted server side
     time.sleep(1)
 
-    percent_unmerged = session_vector_client.index_get_percent_unmerged(
+    percent_unmerged = await session_vector_client.index_get_percent_unmerged(
         namespace=test_case.namespace,
         name=index,
         timeout=test_case.timeout,
