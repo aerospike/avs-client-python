@@ -692,9 +692,6 @@ class Client(BaseClient):
         It is possible for the percentage to be greater than 100% if the number
         of unmerged records exceeds the number of valid vertices in the index.
 
-        NOTE: This method may be inaccurate if called when the index is first written to
-        as it takes time for index statistics to be collected server-side.
-
         :param namespace: The namespace of the index.
         :type namespace: str
 
