@@ -26,6 +26,10 @@ You can add the package name `aerospike-vector-search` to your application's `re
 python3 -m pip install -r requirements.txt
 ```
 
+**Note**
+This project makes use of the warnings module to communicate deprecations and upcoming changes.
+Run your project with the `-Wd` or Python flag or the `PYTHONWARNINGS=default` environment variable to display relevant warnings.
+
 ## Building the client
 ### Setup build Python Virtual Environment
 This is the recommended mode for building the python client.

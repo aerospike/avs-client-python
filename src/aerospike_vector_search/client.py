@@ -727,6 +727,8 @@ class Client(BaseClient):
         """
         Wait for the index to have no pending index update operations.
 
+        :deprecated: This method is deprecated and will be removed. Use 'index_get_percent_unmerged' to monitor indexes.
+
         :param namespace (str): The namespace of the index.
         :type namespace: str
 
@@ -750,6 +752,16 @@ class Client(BaseClient):
             The function polls the index status with a wait interval of 10 seconds until either
             the timeout is reached or the index has no pending index update operations.
         """
+
+        warnings.warn(
+            "The 'wait_for_index_completion' method is deprecated and will be removed."
+                "Use 'index_get_percent_unmerged' to monitor indexes.",
+            DeprecationWarning,
+            # make sure the stack trace in the warning points to the caller
+            # for easier user debugging
+            stacklevel=2,
+        )
+
         (
             index_stub,
             wait_interval_float,
