@@ -657,6 +657,64 @@ class Client(BaseClient):
             logger.error("Failed to vector search with error: %s", e)
             raise types.AVSServerError(rpc_error=e)
 
+    def index_get_percent_unmerged(
+        self,
+        *,
+        namespace: str,
+        name: str,
+        timeout: Optional[int] = None,
+    ) -> float:
+        """
+        Get the ratio of unmerged records to valid verticies in the index as a percentage.
+        This is useful for determining the completeness of the index. Estimating
+        the accuracy of search results, checking the progress of index healing,
+        and determining if the index healer is keeping up with record writes.
+
+        In general, the lower the percentage, the better the search accuracy.
+
+        It is possible for the percentage to be greater than 100% if the number
+        of unmerged records exceeds the number of valid vertices in the index.
+
+        :param namespace: The namespace of the index.
+        :type namespace: str
+
+        :param name: The name of the index.
+        :type name: str
+
+        :param timeout: Time in seconds this operation will wait before raising an :class:`AVSServerError <aerospike_vector_search.types.AVSServerError>`. Defaults to None.
+        :type timeout: int
+
+        Returns:
+            float: The percentage of unmerged records in the index.
+
+        Raises:
+            AVSServerError: Raised if an error occurs during the RPC communication with the server while attempting to get the percentage of unmerged records in the index.
+            This error could occur due to various reasons such as network issues, server-side failures, or invalid request parameters.
+        """
+
+        (
+            index_stub,
+            index_status_request,
+            kwargs,
+        ) = self._prepare_index_get_percent_unmerged(namespace, name, timeout, logger)
+
+        try:
+            index_status = index_stub.GetStatus(
+                index_status_request,
+                credentials=self._channel_provider.get_token(),
+                **kwargs,
+            )
+        except grpc.RpcError as e:
+            logger.error("Failed to get index unmerged percent with error: %s", e)
+            raise types.AVSServerError(rpc_error=e)
+
+        unmergedIndexRecords = index_status.unmergedRecordCount
+        verticies = index_status.indexHealerVerticesValid
+        if verticies == 0:
+            verticies = 100
+
+        return (unmergedIndexRecords / verticies) * 100.0
+
     def wait_for_index_completion(
         self,
         *,
@@ -668,6 +726,8 @@ class Client(BaseClient):
     ) -> None:
         """
         Wait for the index to have no pending index update operations.
+
+        :deprecated: This method is deprecated and will be removed. Use 'index_get_percent_unmerged' to monitor indexes.
 
         :param namespace (str): The namespace of the index.
         :type namespace: str
@@ -692,6 +752,16 @@ class Client(BaseClient):
             The function polls the index status with a wait interval of 10 seconds until either
             the timeout is reached or the index has no pending index update operations.
         """
+
+        warnings.warn(
+            "The 'wait_for_index_completion' method is deprecated and will be removed."
+                "Use 'index_get_percent_unmerged' to monitor indexes.",
+            DeprecationWarning,
+            # make sure the stack trace in the warning points to the caller
+            # for easier user debugging
+            stacklevel=2,
+        )
+
         (
             index_stub,
             wait_interval_float,
