@@ -5,22 +5,15 @@ from aerospike_vector_search import AVSServerError
 import pytest
 import grpc
 
-from ...utils import random_name
+from utils import DEFAULT_NAMESPACE, DEFAULT_VECTOR_FIELD, DEFAULT_INDEX_DIMENSION
 
-from .aio_utils import drop_specified_index
 from hypothesis import given, settings, Verbosity
 
 
 @pytest.mark.parametrize("empty_test_case", [None])
 #@given(random_name=index_strategy())
 #@settings(max_examples=1, deadline=1000)
-async def test_index_list(session_admin_client, empty_test_case, random_name):
-    await session_admin_client.index_create(
-        namespace="test",
-        name=random_name,
-        vector_field="science",
-        dimensions=1024,
-    )
+async def test_index_list(session_admin_client, empty_test_case, index):
     result = await session_admin_client.index_list(apply_defaults=True)
     assert len(result) > 0
     for index in result:
@@ -37,7 +30,6 @@ async def test_index_list(session_admin_client, empty_test_case, random_name):
         assert isinstance(index["hnsw_params"]["batching_params"]["reindex_interval"], int)
         assert isinstance(index["storage"]["namespace"], str)
         assert isinstance(index["storage"]["set_name"], str)
-    await drop_specified_index(session_admin_client, "test", random_name)
 
 
 async def test_index_list_timeout(session_admin_client, with_latency):

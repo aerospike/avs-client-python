@@ -1,10 +1,27 @@
 import pytest
-from aerospike_vector_search import AVSServerError
 import grpc
 
-from ...utils import random_key
+from aerospike_vector_search import AVSServerError
+from utils import DEFAULT_NAMESPACE, random_key
 
 from hypothesis import given, settings, Verbosity
+
+
+# gen_records is used with the records test fixture
+def gen_record(count, vec_bin, vec_dim):
+    num = 0
+    while num < count:
+        key_and_rec = (
+            num,
+            {
+                "bin1": num,
+                "bin2": num,
+                "bin3": num,
+                vec_bin: [float(num)] * vec_dim
+            }
+        )
+        yield key_and_rec
+        num += 1
 
 
 class get_test_case:
@@ -15,7 +32,6 @@ class get_test_case:
         include_fields,
         exclude_fields,
         set_name,
-        record_data,
         expected_fields,
         timeout,
     ):
@@ -23,7 +39,6 @@ class get_test_case:
         self.include_fields = include_fields
         self.exclude_fields = exclude_fields
         self.set_name = set_name
-        self.record_data = record_data
         self.expected_fields = expected_fields
         self.timeout = timeout
 
@@ -31,83 +46,92 @@ class get_test_case:
 #@given(random_key=key_strategy())
 #@settings(max_examples=1, deadline=1000)
 @pytest.mark.parametrize(
-    "test_case",
+    "record,test_case",
     [
-        get_test_case(
-            namespace="test",
-            include_fields=["skills"],
-            exclude_fields = None,
-            set_name=None,
-            record_data={"skills": [i for i in range(1024)]},
-            expected_fields={"skills": [i for i in range(1024)]},
-            timeout=None,
+        (
+            {"record_generator": lambda count, vec_bin, vec_dim: (yield ("key1", {"skills": 1024}))},
+            get_test_case(
+                namespace=DEFAULT_NAMESPACE,
+                include_fields=["skills"],
+                exclude_fields = None,
+                set_name=None,
+                expected_fields={"skills": 1024},
+                timeout=None,
+            ),
         ),
-        get_test_case(
-            namespace="test",
-            include_fields=["english"],
-            exclude_fields = None,
-            set_name=None,
-            record_data={"english": [float(i) for i in range(1024)]},
-            expected_fields={"english": [float(i) for i in range(1024)]},
-            timeout=None,
+        (
+            {"record_generator": lambda count, vec_bin, vec_dim: (yield ("key1", {"english": [float(i) for i in range(1024)]}))},
+            get_test_case(
+                namespace=DEFAULT_NAMESPACE,
+                include_fields=["english"],
+                exclude_fields = None,
+                set_name=None,
+                expected_fields={"english": [float(i) for i in range(1024)]},
+                timeout=None,
+            ),
         ),
-        get_test_case(
-            namespace="test",
-            include_fields=["english"],
-            exclude_fields = None,
-            set_name=None,
-            record_data={"english": 1, "spanish": 2},
-            expected_fields={"english": 1},
-            timeout=None,
+        (   
+            {"record_generator": lambda count, vec_bin, vec_dim: (yield ("key1", {"english": 1, "spanish": 2}))},
+            get_test_case(
+                namespace=DEFAULT_NAMESPACE,
+                include_fields=["english"],
+                exclude_fields = None,
+                set_name=None,
+                expected_fields={"english": 1},
+                timeout=None,
+            ),
         ),
-        get_test_case(
-            namespace="test",
-            include_fields=None,
-            exclude_fields=["spanish"],
-            set_name=None,
-            record_data={"english": 1, "spanish": 2},
-            expected_fields={"english": 1},
-            timeout=None,
+        (
+            {"record_generator": lambda count, vec_bin, vec_dim: (yield ("key1", {"english": 1, "spanish": 2}))},
+            get_test_case(
+                namespace=DEFAULT_NAMESPACE,
+                include_fields=None,
+                exclude_fields=["spanish"],
+                set_name=None,
+                expected_fields={"english": 1},
+                timeout=None,
+            ),
         ),
-        get_test_case(
-            namespace="test",
-            include_fields=["spanish"],
-            exclude_fields=["spanish"],
-            set_name=None,
-            record_data={"english": 1, "spanish": 2},
-            expected_fields={},
-            timeout=None,
+        (
+            {"record_generator": lambda count, vec_bin, vec_dim: (yield ("key1", {"english": 1, "spanish": 2}))},
+            get_test_case(
+                namespace=DEFAULT_NAMESPACE,
+                include_fields=["spanish"],
+                exclude_fields=["spanish"],
+                set_name=None,
+                expected_fields={},
+                timeout=None,
+            ),
         ),
-        get_test_case(
-            namespace="test",
-            include_fields=[],
-            exclude_fields=None,
-            set_name=None,
-            record_data={"english": 1, "spanish": 2},
-            expected_fields={},
-            timeout=None,
+        (
+            {"record_generator": lambda count, vec_bin, vec_dim: (yield ("key1", {"english": 1, "spanish": 2}))},
+            get_test_case(
+                namespace=DEFAULT_NAMESPACE,
+                include_fields=[],
+                exclude_fields=None,
+                set_name=None,
+                expected_fields={},
+                timeout=None,
+            ),
         ),
-        get_test_case(
-            namespace="test",
-            include_fields=None,
-            exclude_fields=[],
-            set_name=None,
-            record_data={"english": 1, "spanish": 2},
-            expected_fields={"english": 1, "spanish": 2},
-            timeout=None,
+        (
+            {"record_generator": lambda count, vec_bin, vec_dim: (yield ("key1", {"english": 1, "spanish": 2}))},
+            get_test_case(
+                namespace=DEFAULT_NAMESPACE,
+                include_fields=None,
+                exclude_fields=[],
+                set_name=None,
+                expected_fields={"english": 1, "spanish": 2},
+                timeout=None,
+            ),
         ),
     ],
+    indirect=["record"],
 )
-async def test_vector_get(session_vector_client, test_case, random_key):
-    await session_vector_client.upsert(
-        namespace=test_case.namespace,
-        key=random_key,
-        record_data=test_case.record_data,
-        set_name=test_case.set_name,
-    )
+async def test_vector_get(session_vector_client, test_case, record):
     result = await session_vector_client.get(
         namespace=test_case.namespace,
-        key=random_key,
+        key=record,
         include_fields=test_case.include_fields,
         exclude_fields=test_case.exclude_fields,
     )
@@ -115,14 +139,9 @@ async def test_vector_get(session_vector_client, test_case, random_key):
     if test_case.set_name == None:
         test_case.set_name = ""
     assert result.key.set == test_case.set_name
-    assert result.key.key == random_key
+    assert result.key.key == record
 
     assert result.fields == test_case.expected_fields
-
-    await session_vector_client.delete(
-        namespace=test_case.namespace,
-        key=random_key,
-    )
 
 
 #@given(random_key=key_strategy())
@@ -135,7 +154,6 @@ async def test_vector_get(session_vector_client, test_case, random_key):
             include_fields=["skills"],
             exclude_fields = None,
             set_name=None,
-            record_data=None,
             expected_fields=None,
             timeout=0.0001,
         ),

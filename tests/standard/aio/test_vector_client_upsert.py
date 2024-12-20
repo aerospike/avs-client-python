@@ -1,5 +1,5 @@
 import pytest
-from ...utils import random_key
+from ...utils import random_key, DEFAULT_NAMESPACE
 
 from hypothesis import given, settings, Verbosity
 import numpy as np
@@ -24,19 +24,19 @@ class upsert_test_case:
     "test_case",
     [
         upsert_test_case(
-            namespace="test",
+            namespace=DEFAULT_NAMESPACE,
             record_data={"math": [i for i in range(1024)]},
             set_name=None,
             timeout=None,
         ),
         upsert_test_case(
-            namespace="test",
+            namespace=DEFAULT_NAMESPACE,
             record_data={"english": [float(i) for i in range(1024)]},
             set_name=None,
             timeout=None,
         ),
         upsert_test_case(
-            namespace="test",
+            namespace=DEFAULT_NAMESPACE,
             record_data={"english": [bool(i) for i in range(1024)]},
             set_name=None,
             timeout=None,
@@ -65,7 +65,7 @@ async def test_vector_upsert_without_existing_record(
     "test_case",
     [
         upsert_test_case(
-            namespace="test",
+            namespace=DEFAULT_NAMESPACE,
             record_data={"math": [i for i in range(1024)]},
             set_name=None,
             timeout=None,
@@ -92,14 +92,14 @@ async def test_vector_upsert_with_existing_record(
     "test_case",
     [
         upsert_test_case(
-            namespace="test",
+            namespace=DEFAULT_NAMESPACE,
             record_data={"math": [i for i in range(1024)]},
             set_name=None,
             timeout=None,
             key=np.int32(31),
         ),
         upsert_test_case(
-            namespace="test",
+            namespace=DEFAULT_NAMESPACE,
             record_data={"math": [i for i in range(1024)]},
             set_name=None,
             timeout=None,
@@ -128,7 +128,7 @@ async def test_vector_upsert_with_numpy_key(session_vector_client, test_case):
     [
         None,
         upsert_test_case(
-            namespace="test",
+            namespace=DEFAULT_NAMESPACE,
             record_data={"math": [i for i in range(1024)]},
             set_name=None,
             timeout=0.0001,

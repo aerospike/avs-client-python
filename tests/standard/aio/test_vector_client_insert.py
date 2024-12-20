@@ -62,6 +62,10 @@ async def test_vector_insert_without_existing_record(
         record_data=test_case.record_data,
         set_name=test_case.set_name,
     )
+    await session_vector_client.delete(
+        namespace=test_case.namespace,
+        key=random_key,
+    )
 
 
 #@given(random_key=key_strategy())
@@ -78,12 +82,12 @@ async def test_vector_insert_without_existing_record(
     ],
 )
 async def test_vector_insert_with_existing_record(
-    session_vector_client, test_case, random_key
+    session_vector_client, test_case, record
 ):
     try:
         await session_vector_client.insert(
             namespace=test_case.namespace,
-            key=random_key,
+            key=record,
             record_data=test_case.record_data,
             set_name=test_case.set_name,
         )
@@ -93,14 +97,10 @@ async def test_vector_insert_with_existing_record(
     with pytest.raises(AVSServerError) as e_info:
         await session_vector_client.insert(
             namespace=test_case.namespace,
-            key=random_key,
+            key=record,
             record_data=test_case.record_data,
             set_name=test_case.set_name,
         )
-    await session_vector_client.delete(
-        namespace=test_case.namespace,
-        key=random_key,
-    )
 
 
 #@given(random_key=key_strategy())
@@ -129,5 +129,9 @@ async def test_vector_insert_timeout(
                 record_data=test_case.record_data,
                 set_name=test_case.set_name,
                 timeout=test_case.timeout,
+            )
+            await session_vector_client.delete(
+                namespace=test_case.namespace,
+                key=random_key,
             )
     assert e_info.value.rpc_error.code() == grpc.StatusCode.DEADLINE_EXCEEDED

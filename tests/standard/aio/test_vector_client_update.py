@@ -1,6 +1,6 @@
 import pytest
 from aerospike_vector_search import AVSServerError
-from ...utils import random_key
+from ...utils import random_key, DEFAULT_NAMESPACE
 
 from hypothesis import given, settings, Verbosity
 import grpc
@@ -27,19 +27,19 @@ class update_test_case:
     "test_case",
     [
         update_test_case(
-            namespace="test",
+            namespace=DEFAULT_NAMESPACE,
             record_data={"math": [i for i in range(1024)]},
             set_name=None,
             timeout=None,
         ),
         update_test_case(
-            namespace="test",
+            namespace=DEFAULT_NAMESPACE,
             record_data={"english": [float(i) for i in range(1024)]},
             set_name=None,
             timeout=None,
         ),
         update_test_case(
-            namespace="test",
+            namespace=DEFAULT_NAMESPACE,
             record_data={"english": [bool(i) for i in range(1024)]},
             set_name=None,
             timeout=None,
@@ -47,26 +47,13 @@ class update_test_case:
     ],
 )
 async def test_vector_update_with_existing_record(
-    session_vector_client, test_case, random_key
+    session_vector_client, test_case, record
 ):
-    try:
-        await session_vector_client.insert(
-            namespace=test_case.namespace,
-            key=random_key,
-            record_data=test_case.record_data,
-            set_name=test_case.set_name,
-        )
-    except Exception as e:
-        pass
     await session_vector_client.update(
         namespace=test_case.namespace,
-        key=random_key,
+        key=record,
         record_data=test_case.record_data,
         set_name=test_case.set_name,
-    )
-    await session_vector_client.delete(
-        namespace=test_case.namespace,
-        key=random_key,
     )
 
 
@@ -76,7 +63,7 @@ async def test_vector_update_with_existing_record(
     "test_case",
     [
         update_test_case(
-            namespace="test",
+            namespace=DEFAULT_NAMESPACE,
             record_data={"math": [i for i in range(1024)]},
             set_name=None,
             timeout=None,
@@ -106,7 +93,7 @@ async def test_vector_update_without_existing_record(
     [
         None,
         update_test_case(
-            namespace="test",
+            namespace=DEFAULT_NAMESPACE,
             record_data={"math": [i for i in range(1024)]},
             set_name=None,
             timeout=0.0001,

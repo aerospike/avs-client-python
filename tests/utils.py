@@ -5,6 +5,13 @@ import string
 
 import pytest
 
+
+# default test values
+DEFAULT_NAMESPACE = "test"
+DEFAULT_INDEX_DIMENSION = 128
+DEFAULT_VECTOR_FIELD = "vector"
+
+
 def random_int():
     return str(random.randint(0, 50_000))
 

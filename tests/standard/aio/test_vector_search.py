@@ -1,7 +1,10 @@
 import numpy as np
 import asyncio
 import pytest
+
 from aerospike_vector_search import types
+from utils import DEFAULT_NAMESPACE
+from .aio_utils import wait_for_index
 
 
 class vector_search_test_case:
@@ -32,6 +35,7 @@ class vector_search_test_case:
         self.record_data = record_data
         self.expected_results = expected_results
 
+
 # TODO add a teardown
 #@settings(max_examples=1, deadline=1000)
 @pytest.mark.parametrize(
@@ -43,7 +47,7 @@ class vector_search_test_case:
             vector_field="vector",
             limit=3,
             query=[0.0, 0.0, 0.0],
-            namespace="test",
+            namespace=DEFAULT_NAMESPACE,
             include_fields=None,
             exclude_fields = None,
             set_name=None,
@@ -56,7 +60,7 @@ class vector_search_test_case:
             expected_results=[
                 types.Neighbor(
                     key=types.Key(
-                        namespace="test",
+                        namespace=DEFAULT_NAMESPACE,
                         set="",
                         key="rec1",
                     ),
@@ -74,7 +78,7 @@ class vector_search_test_case:
             vector_field="vector",
             limit=3,
             query=[0.0, 0.0, 0.0],
-            namespace="test",
+            namespace=DEFAULT_NAMESPACE,
             include_fields=["bin1"],
             exclude_fields=["bin1"],
             set_name=None,
@@ -87,7 +91,7 @@ class vector_search_test_case:
             expected_results=[
                 types.Neighbor(
                     key=types.Key(
-                        namespace="test",
+                        namespace=DEFAULT_NAMESPACE,
                         set="",
                         key="rec1",
                     ),
@@ -109,6 +113,19 @@ async def test_vector_search(
         name=test_case.index_name,
         vector_field=test_case.vector_field,
         dimensions=test_case.index_dimensions,
+        index_params=types.HnswParams(
+            batching_params=types.HnswBatchingParams(
+                # 10_000 is the minimum value, in order for the tests to run as
+                # fast as possible we set it to the minimum value so records are indexed
+                # quickly
+                index_interval=10_000,
+            ),
+            healer_params=types.HnswHealerParams(
+                # run the healer every second
+                # for fast indexing
+                schedule="* * * * * ?"
+            )
+        )
     )
 
     tasks = []
@@ -121,9 +138,10 @@ async def test_vector_search(
         ))
     
     tasks.append(
-        session_vector_client.wait_for_index_completion(
+        wait_for_index(
+            session_admin_client,
             namespace=test_case.namespace,
-            name=test_case.index_name,
+            index=test_case.index_name,
         )
     )
     await asyncio.gather(*tasks)
