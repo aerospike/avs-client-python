@@ -3,7 +3,7 @@ import pytest
 import grpc
 
 from aerospike_vector_search import AVSServerError
-from ...utils import random_key
+from utils import random_key, DEFAULT_NAMESPACE
 
 from hypothesis import given, settings, Verbosity
 
@@ -13,13 +13,11 @@ class delete_test_case:
         self,
         *,
         namespace,
-        record_data,
         set_name,
         timeout,
     ):
         self.namespace = namespace
         self.set_name = set_name
-        self.record_data = record_data
         self.timeout = timeout
 
 
@@ -29,33 +27,25 @@ class delete_test_case:
     "test_case",
     [
         delete_test_case(
-            namespace="test",
+            namespace=DEFAULT_NAMESPACE,
             set_name=None,
-            record_data={"skills": [i for i in range(1024)]},
             timeout=None,
         ),
         delete_test_case(
-            namespace="test",
+            namespace=DEFAULT_NAMESPACE,
             set_name=None,
-            record_data={"english": [float(i) for i in range(1024)]},
             timeout=None,
         ),
     ],
 )
-def test_vector_delete(session_vector_client, test_case, random_key):
-    session_vector_client.upsert(
-        namespace=test_case.namespace,
-        key=random_key,
-        record_data=test_case.record_data,
-        set_name=test_case.set_name,
-    )
+def test_vector_delete(session_vector_client, test_case, record):
     session_vector_client.delete(
         namespace=test_case.namespace,
-        key=random_key,
+        key=record,
     )
     with pytest.raises(AVSServerError) as e_info:
         result = session_vector_client.get(
-            namespace=test_case.namespace, key=random_key
+            namespace=test_case.namespace, key=record
         )
 
 
@@ -65,9 +55,8 @@ def test_vector_delete(session_vector_client, test_case, random_key):
     "test_case",
     [
         delete_test_case(
-            namespace="test",
+            namespace=DEFAULT_NAMESPACE,
             set_name=None,
-            record_data={"skills": [i for i in range(1024)]},
             timeout=None,
         ),
     ],
@@ -85,15 +74,14 @@ def test_vector_delete_without_record(session_vector_client, test_case, random_k
     "test_case",
     [
         delete_test_case(
-            namespace="test",
+            namespace=DEFAULT_NAMESPACE,
             set_name=None,
-            record_data={"skills": [i for i in range(1024)]},
             timeout=0.0001,
         ),
     ],
 )
 def test_vector_delete_timeout(
-    session_vector_client, test_case, random_key, with_latency
+    session_vector_client, test_case, record, with_latency
 ):
     if not with_latency:
         pytest.skip("Server latency too low to test timeout")
@@ -101,7 +89,7 @@ def test_vector_delete_timeout(
     for i in range(10):
         try:
             session_vector_client.delete(
-                namespace=test_case.namespace, key=random_key, timeout=test_case.timeout
+                namespace=test_case.namespace, key=record, timeout=test_case.timeout
             )
         except AVSServerError as se:
             if se.rpc_error.code() == grpc.StatusCode.DEADLINE_EXCEEDED:

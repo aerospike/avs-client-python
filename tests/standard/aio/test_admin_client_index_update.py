@@ -1,9 +1,9 @@
 import time
-import pytest
-from aerospike_vector_search import types, AVSServerError
-import grpc
 
+from aerospike_vector_search import types
 from utils import DEFAULT_NAMESPACE
+
+import pytest
 
 server_defaults = {
     "m": 16,

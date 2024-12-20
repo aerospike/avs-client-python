@@ -91,7 +91,6 @@ async def test_vector_update_without_existing_record(
 @pytest.mark.parametrize(
     "test_case",
     [
-        None,
         update_test_case(
             namespace=DEFAULT_NAMESPACE,
             record_data={"math": [i for i in range(1024)]},

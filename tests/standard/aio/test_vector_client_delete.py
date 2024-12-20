@@ -1,6 +1,6 @@
 import pytest
 from aerospike_vector_search import AVSServerError
-from utils import DEFAULT_NAMESPACE
+from utils import random_key, DEFAULT_NAMESPACE
 
 from hypothesis import given, settings, Verbosity
 import grpc
@@ -62,11 +62,11 @@ async def test_vector_delete(session_vector_client, test_case, record):
     ],
 )
 async def test_vector_delete_without_record(
-    session_vector_client, test_case, record
+    session_vector_client, test_case, random_key
 ):
     await session_vector_client.delete(
         namespace=test_case.namespace,
-        key=record,
+        key=random_key,
     )
 
 

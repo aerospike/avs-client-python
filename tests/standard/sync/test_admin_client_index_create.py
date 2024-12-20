@@ -2,9 +2,9 @@ import pytest
 import grpc
 
 from aerospike_vector_search import types, AVSServerError
-from ...utils import random_name
-
+from ...utils import random_name, DEFAULT_NAMESPACE
 from .sync_utils import drop_specified_index
+
 from hypothesis import given, settings, Verbosity
 
 server_defaults = {
@@ -51,7 +51,7 @@ class index_create_test_case:
     "test_case",
     [
         index_create_test_case(
-            namespace="test",
+            namespace=DEFAULT_NAMESPACE,
             vector_field="example_1",
             dimensions=1024,
             vector_distance_metric=None,
@@ -65,7 +65,7 @@ class index_create_test_case:
 )
 def test_index_create(session_admin_client, test_case, random_name):
     try:
-        session_admin_client.index_drop(namespace="test", name=random_name)
+        session_admin_client.index_drop(namespace=DEFAULT_NAMESPACE, name=random_name)
     except AVSServerError as se:
         if se.rpc_error.code() != grpc.StatusCode.NOT_FOUND:
             pass
@@ -110,7 +110,7 @@ def test_index_create(session_admin_client, test_case, random_name):
     "test_case",
     [
         index_create_test_case(
-            namespace="test",
+            namespace=DEFAULT_NAMESPACE,
             vector_field="example_2",
             dimensions=495,
             vector_distance_metric=None,
@@ -121,7 +121,7 @@ def test_index_create(session_admin_client, test_case, random_name):
             timeout=None,
         ),
         index_create_test_case(
-            namespace="test",
+            namespace=DEFAULT_NAMESPACE,
             vector_field="example_3",
             dimensions=2048,
             vector_distance_metric=None,
@@ -136,7 +136,7 @@ def test_index_create(session_admin_client, test_case, random_name):
 def test_index_create_with_dimnesions(session_admin_client, test_case, random_name):
 
     try:
-        session_admin_client.index_drop(namespace="test", name=random_name)
+        session_admin_client.index_drop(namespace=DEFAULT_NAMESPACE, name=random_name)
     except AVSServerError as se:
         if se.rpc_error.code() != grpc.StatusCode.NOT_FOUND:
             pass
@@ -184,7 +184,7 @@ def test_index_create_with_dimnesions(session_admin_client, test_case, random_na
     "test_case",
     [
         index_create_test_case(
-            namespace="test",
+            namespace=DEFAULT_NAMESPACE,
             vector_field="example_4",
             dimensions=1024,
             vector_distance_metric=types.VectorDistanceMetric.COSINE,
@@ -195,7 +195,7 @@ def test_index_create_with_dimnesions(session_admin_client, test_case, random_na
             timeout=None,
         ),
         index_create_test_case(
-            namespace="test",
+            namespace=DEFAULT_NAMESPACE,
             vector_field="example_5",
             dimensions=1024,
             vector_distance_metric=types.VectorDistanceMetric.DOT_PRODUCT,
@@ -206,7 +206,7 @@ def test_index_create_with_dimnesions(session_admin_client, test_case, random_na
             timeout=None,
         ),
         index_create_test_case(
-            namespace="test",
+            namespace=DEFAULT_NAMESPACE,
             vector_field="example_6",
             dimensions=1024,
             vector_distance_metric=types.VectorDistanceMetric.MANHATTAN,
@@ -217,7 +217,7 @@ def test_index_create_with_dimnesions(session_admin_client, test_case, random_na
             timeout=None,
         ),
         index_create_test_case(
-            namespace="test",
+            namespace=DEFAULT_NAMESPACE,
             vector_field="example_7",
             dimensions=1024,
             vector_distance_metric=types.VectorDistanceMetric.HAMMING,
@@ -234,7 +234,7 @@ def test_index_create_with_vector_distance_metric(
 ):
 
     try:
-        session_admin_client.index_drop(namespace="test", name=random_name)
+        session_admin_client.index_drop(namespace=DEFAULT_NAMESPACE, name=random_name)
     except AVSServerError as se:
         if se.rpc_error.code() != grpc.StatusCode.NOT_FOUND:
             pass
@@ -278,7 +278,7 @@ def test_index_create_with_vector_distance_metric(
     "test_case",
     [
         index_create_test_case(
-            namespace="test",
+            namespace=DEFAULT_NAMESPACE,
             vector_field="example_8",
             dimensions=1024,
             vector_distance_metric=None,
@@ -289,7 +289,7 @@ def test_index_create_with_vector_distance_metric(
             timeout=None,
         ),
         index_create_test_case(
-            namespace="test",
+            namespace=DEFAULT_NAMESPACE,
             vector_field="example_9",
             dimensions=1024,
             vector_distance_metric=None,
@@ -304,7 +304,7 @@ def test_index_create_with_vector_distance_metric(
 def test_index_create_with_sets(session_admin_client, test_case, random_name):
 
     try:
-        session_admin_client.index_drop(namespace="test", name=random_name)
+        session_admin_client.index_drop(namespace=DEFAULT_NAMESPACE, name=random_name)
     except AVSServerError as se:
         if se.rpc_error.code() != grpc.StatusCode.NOT_FOUND:
             pass
@@ -348,7 +348,7 @@ def test_index_create_with_sets(session_admin_client, test_case, random_name):
     "test_case",
     [
         index_create_test_case(
-            namespace="test",
+            namespace=DEFAULT_NAMESPACE,
             vector_field="example_10",
             dimensions=1024,
             vector_distance_metric=None,
@@ -364,7 +364,7 @@ def test_index_create_with_sets(session_admin_client, test_case, random_name):
             timeout=None,
         ),
         index_create_test_case(
-            namespace="test",
+            namespace=DEFAULT_NAMESPACE,
             vector_field="example_11",
             dimensions=1024,
             vector_distance_metric=None,
@@ -377,7 +377,7 @@ def test_index_create_with_sets(session_admin_client, test_case, random_name):
             timeout=None,
         ),
         index_create_test_case(
-            namespace="test",
+            namespace=DEFAULT_NAMESPACE,
             vector_field="example_20",
             dimensions=1024,
             vector_distance_metric=None,
@@ -390,7 +390,7 @@ def test_index_create_with_sets(session_admin_client, test_case, random_name):
             timeout=None,
         ),
         index_create_test_case(
-            namespace="test",
+            namespace=DEFAULT_NAMESPACE,
             vector_field="example_12",
             dimensions=1024,
             vector_distance_metric=None,
@@ -404,7 +404,7 @@ def test_index_create_with_sets(session_admin_client, test_case, random_name):
             timeout=None,
         ),
         index_create_test_case(
-            namespace="test",
+            namespace=DEFAULT_NAMESPACE,
             vector_field="example_13",
             dimensions=1024,
             vector_distance_metric=None,
@@ -432,7 +432,7 @@ def test_index_create_with_sets(session_admin_client, test_case, random_name):
 )
 def test_index_create_with_index_params(session_admin_client, test_case, random_name):
     try:
-        session_admin_client.index_drop(namespace="test", name=random_name)
+        session_admin_client.index_drop(namespace=DEFAULT_NAMESPACE, name=random_name)
     except AVSServerError as se:
         if se.rpc_error.code() != grpc.StatusCode.NOT_FOUND:
             pass
@@ -544,7 +544,7 @@ def test_index_create_with_index_params(session_admin_client, test_case, random_
     "test_case",
     [
         index_create_test_case(
-            namespace="test",
+            namespace=DEFAULT_NAMESPACE,
             vector_field="example_16",
             dimensions=1024,
             vector_distance_metric=None,
@@ -558,7 +558,7 @@ def test_index_create_with_index_params(session_admin_client, test_case, random_
 )
 def test_index_create_index_labels(session_admin_client, test_case, random_name):
     try:
-        session_admin_client.index_drop(namespace="test", name=random_name)
+        session_admin_client.index_drop(namespace=DEFAULT_NAMESPACE, name=random_name)
     except AVSServerError as se:
         if se.rpc_error.code() != grpc.StatusCode.NOT_FOUND:
             pass
@@ -605,21 +605,21 @@ def test_index_create_index_labels(session_admin_client, test_case, random_name)
     "test_case",
     [
         index_create_test_case(
-            namespace="test",
+            namespace=DEFAULT_NAMESPACE,
             vector_field="example_17",
             dimensions=1024,
             vector_distance_metric=None,
             sets=None,
             index_params=None,
             index_labels=None,
-            index_storage=types.IndexStorage(namespace="test", set_name="foo"),
+            index_storage=types.IndexStorage(namespace=DEFAULT_NAMESPACE, set_name="foo"),
             timeout=None,
         ),
     ],
 )
 def test_index_create_index_storage(session_admin_client, test_case, random_name):
     try:
-        session_admin_client.index_drop(namespace="test", name=random_name)
+        session_admin_client.index_drop(namespace=DEFAULT_NAMESPACE, name=random_name)
     except AVSServerError as se:
         if se.rpc_error.code() != grpc.StatusCode.NOT_FOUND:
             pass
@@ -662,7 +662,7 @@ def test_index_create_index_storage(session_admin_client, test_case, random_name
     "test_case",
     [
         index_create_test_case(
-            namespace="test",
+            namespace=DEFAULT_NAMESPACE,
             vector_field="example_18",
             dimensions=1024,
             vector_distance_metric=None,
@@ -681,7 +681,7 @@ def test_index_create_timeout(
     if not with_latency:
         pytest.skip("Server latency too low to test timeout")
     try:
-        session_admin_client.index_drop(namespace="test", name=random_name)
+        session_admin_client.index_drop(namespace=DEFAULT_NAMESPACE, name=random_name)
     except AVSServerError as se:
         if se.rpc_error.code() != grpc.StatusCode.NOT_FOUND:
             pass

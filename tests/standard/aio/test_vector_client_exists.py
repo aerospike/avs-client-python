@@ -44,11 +44,6 @@ async def test_vector_exists(session_vector_client, test_case, record):
     )
     assert result is True
 
-    await session_vector_client.delete(
-        namespace=test_case.namespace,
-        key=record,
-    )
-
 
 #@given(random_key=key_strategy())
 #@settings(max_examples=1, deadline=1000)

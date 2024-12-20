@@ -4,7 +4,7 @@ import string
 
 from aerospike_vector_search import Client
 from aerospike_vector_search.admin import Client as AdminClient
-from aerospike_vector_search import types
+from aerospike_vector_search import types, AVSServerError
 
 from .sync_utils import gen_records
 
@@ -195,14 +195,37 @@ def index_name():
 
 @pytest.fixture(params=[DEFAULT_INDEX_ARGS])
 def index(session_admin_client, index_name, request):
-    index_args = request.param
-    session_admin_client.index_create(
+    args = request.param
+    namespace = args.get("namespace", DEFAULT_NAMESPACE)
+    vector_field = args.get("vector_field", DEFAULT_VECTOR_FIELD) 
+    dimensions = args.get("dimensions", DEFAULT_INDEX_DIMENSION)
+    await session_admin_client.index_create(
         name = index_name,
-        **index_args,
+        namespace = namespace,
+        vector_field = vector_field,
+        dimensions = dimensions,
+        index_params=types.HnswParams(
+            batching_params=types.HnswBatchingParams(
+                # 10_000 is the minimum value, in order for the tests to run as
+                # fast as possible we set it to the minimum value so records are indexed
+                # quickly
+                index_interval=10_000,
+            ),
+            healer_params=types.HnswHealerParams(
+                # run the healer every second
+                # for fast indexing
+                schedule="* * * * * ?"
+            )
+        )
     )
     yield index_name
-    namespace = index_args.get("namespace", DEFAULT_NAMESPACE)
-    session_admin_client.index_drop(namespace=namespace, name=index_name)
+    try:
+        session_admin_client.index_drop(namespace=namespace, name=index_name)
+    except AVSServerError as se:
+        if se.rpc_error.code() != grpc.StatusCode.NOT_FOUND:
+            pass
+        else:
+            raise
 
 
 @pytest.fixture(params=[DEFAULT_RECORDS_ARGS])
@@ -213,10 +236,35 @@ def records(session_vector_client, request):
     num_records = args.get("num_records", DEFAULT_NUM_RECORDS)
     vector_field = args.get("vector_field", DEFAULT_VECTOR_FIELD)
     dimensions = args.get("dimensions", DEFAULT_INDEX_DIMENSION)
+    set_name = args.get("set_name", None)
     keys = []
     for key, rec in record_generator(count=num_records, vec_bin=vector_field, vec_dim=dimensions):
-        session_vector_client.upsert(namespace=namespace, key=key, record_data=rec)
+        session_vector_client.upsert(
+            namespace=namespace,
+            key=key,
+            record_data=rec,
+            set_name=set_name,
+        )
         keys.append(key)
-    yield len(keys)
+    yield keys
     for key in keys:
         session_vector_client.delete(key=key, namespace=namespace)
+
+
+@pytest.fixture(params=[DEFAULT_RECORDS_ARGS])
+def record(session_vector_client, request):
+    args = request.param
+    record_generator = args.get("record_generator", DEFAULT_RECORD_GENERATOR)
+    namespace = args.get("namespace", DEFAULT_NAMESPACE)
+    vector_field = args.get("vector_field", DEFAULT_VECTOR_FIELD)
+    dimensions = args.get("dimensions", DEFAULT_INDEX_DIMENSION)
+    set_name = args.get("set_name", None)
+    key, rec = next(record_generator(count=1, vec_bin=vector_field, vec_dim=dimensions))
+    session_vector_client.upsert(
+        namespace=namespace,
+        key=key,
+        record_data=rec,
+        set_name=set_name,
+    )
+    yield key
+    session_vector_client.delete(key=key, namespace=namespace)

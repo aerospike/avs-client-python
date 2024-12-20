@@ -41,19 +41,11 @@ class update_test_case:
     ],
 )
 def test_vector_update_with_existing_record(
-    session_vector_client, test_case, random_key
+    session_vector_client, test_case, record
 ):
-    session_vector_client.upsert(
-        namespace=test_case.namespace,
-        key=random_key,
-        record_data=test_case.record_data,
-        set_name=test_case.set_name,
-        timeout=None,
-    )
-
     session_vector_client.update(
         namespace=test_case.namespace,
-        key=random_key,
+        key=record,
         record_data=test_case.record_data,
         set_name=test_case.set_name,
         timeout=None,

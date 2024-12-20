@@ -1,6 +1,6 @@
 import pytest
 from aerospike_vector_search import AVSServerError
-from ...utils import random_key
+from utils import random_key, DEFAULT_NAMESPACE
 
 from hypothesis import given, settings, Verbosity
 import asyncio
@@ -30,19 +30,19 @@ class insert_test_case:
     "test_case",
     [
         insert_test_case(
-            namespace="test",
+            namespace=DEFAULT_NAMESPACE,
             record_data={"math": [i for i in range(1024)]},
             set_name=None,
             timeout=None,
         ),
         insert_test_case(
-            namespace="test",
+            namespace=DEFAULT_NAMESPACE,
             record_data={"homeSkills": [float(i) for i in range(1024)]},
             set_name=None,
             timeout=None,
         ),
         insert_test_case(
-            namespace="test",
+            namespace=DEFAULT_NAMESPACE,
             record_data={"english": [bool(i) for i in range(1024)]},
             set_name=None,
             timeout=None,
@@ -74,7 +74,7 @@ async def test_vector_insert_without_existing_record(
     "test_case",
     [
         insert_test_case(
-            namespace="test",
+            namespace=DEFAULT_NAMESPACE,
             record_data={"math": [i for i in range(1024)]},
             set_name=None,
             timeout=None,
@@ -84,16 +84,6 @@ async def test_vector_insert_without_existing_record(
 async def test_vector_insert_with_existing_record(
     session_vector_client, test_case, record
 ):
-    try:
-        await session_vector_client.insert(
-            namespace=test_case.namespace,
-            key=record,
-            record_data=test_case.record_data,
-            set_name=test_case.set_name,
-        )
-    except Exception as e:
-        pass
-
     with pytest.raises(AVSServerError) as e_info:
         await session_vector_client.insert(
             namespace=test_case.namespace,
@@ -109,7 +99,7 @@ async def test_vector_insert_with_existing_record(
     "test_case",
     [
         insert_test_case(
-            namespace="test",
+            namespace=DEFAULT_NAMESPACE,
             record_data={"math": [i for i in range(1024)]},
             set_name=None,
             timeout=0.0001,

@@ -1,12 +1,7 @@
-import pytest
-
 from aerospike_vector_search import AVSServerError
 
 import pytest
 import grpc
-
-from utils import DEFAULT_NAMESPACE, DEFAULT_VECTOR_FIELD, DEFAULT_INDEX_DIMENSION
-
 from hypothesis import given, settings, Verbosity
 
 
