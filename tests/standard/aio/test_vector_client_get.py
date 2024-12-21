@@ -7,23 +7,6 @@ from utils import DEFAULT_NAMESPACE, random_key
 from hypothesis import given, settings, Verbosity
 
 
-# gen_records is used with the records test fixture
-def gen_record(count, vec_bin, vec_dim):
-    num = 0
-    while num < count:
-        key_and_rec = (
-            num,
-            {
-                "bin1": num,
-                "bin2": num,
-                "bin3": num,
-                vec_bin: [float(num)] * vec_dim
-            }
-        )
-        yield key_and_rec
-        num += 1
-
-
 class get_test_case:
     def __init__(
         self,

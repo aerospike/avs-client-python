@@ -19,7 +19,7 @@ def test_index_get(session_admin_client, empty_test_case, index):
     assert result["hnsw_params"]["ef_construction"] == 100
     assert result["hnsw_params"]["ef"] == 100
     assert result["hnsw_params"]["batching_params"]["max_index_records"] == 100000
-    assert result["hnsw_params"]["batching_params"]["index_interval"] == 30000
+    assert result["hnsw_params"]["batching_params"]["index_interval"] == 10000
     assert result["hnsw_params"]["batching_params"]["max_reindex_records"] == max(100000 / 10, 1000)
     assert result["hnsw_params"]["batching_params"]["reindex_interval"] == 30000
     assert result["storage"]["namespace"] == DEFAULT_NAMESPACE
@@ -36,7 +36,7 @@ def test_index_get(session_admin_client, empty_test_case, index):
     assert result["hnsw_params"]["healer_params"]["max_scan_rate_per_node"] == 1000
     assert result["hnsw_params"]["healer_params"]["max_scan_page_size"] == 10000
     assert result["hnsw_params"]["healer_params"]["re_index_percent"] == 10.0
-    assert result["hnsw_params"]["healer_params"]["schedule"] == "0 0/15 * ? * * *"
+    assert result["hnsw_params"]["healer_params"]["schedule"] == "* * * * * ?"
     assert result["hnsw_params"]["healer_params"]["parallelism"] == 1
 
     # index parallelism and reindex parallelism are dynamic depending on the CPU cores of the host
@@ -64,7 +64,8 @@ async def test_index_get_no_defaults(session_admin_client, empty_test_case, inde
     assert result["hnsw_params"]["ef"] == 0
     assert result["hnsw_params"]["ef_construction"] == 0
     assert result["hnsw_params"]["batching_params"]["max_index_records"] == 0
-    assert result["hnsw_params"]["batching_params"]["index_interval"] == 0
+    # This is set by default to 10000 in the index fixture
+    assert result["hnsw_params"]["batching_params"]["index_interval"] == 10000
     assert result["hnsw_params"]["max_mem_queue_size"] == 0
     assert result["hnsw_params"]["index_caching_params"]["max_entries"] == 0
     assert result["hnsw_params"]["index_caching_params"]["expiry"] == 0
@@ -72,7 +73,8 @@ async def test_index_get_no_defaults(session_admin_client, empty_test_case, inde
     assert result["hnsw_params"]["healer_params"]["max_scan_rate_per_node"] == 0
     assert result["hnsw_params"]["healer_params"]["max_scan_page_size"] == 0
     assert result["hnsw_params"]["healer_params"]["re_index_percent"] == 0
-    assert result["hnsw_params"]["healer_params"]["schedule"] == ""
+    # This is set by default to * * * * * ? in the index fixture
+    assert result["hnsw_params"]["healer_params"]["schedule"] == "* * * * * ?"
     assert result["hnsw_params"]["healer_params"]["parallelism"] == 0
 
     assert result["hnsw_params"]["merge_params"]["index_parallelism"] == 0

@@ -2,7 +2,7 @@ import asyncio
 
 
 async def drop_specified_index(admin_client, namespace, name):
-    admin_client.index_drop(namespace=namespace, name=name)
+    await admin_client.index_drop(namespace=namespace, name=name)
 
 
 def gen_records(count: int, vec_bin: str, vec_dim: int):

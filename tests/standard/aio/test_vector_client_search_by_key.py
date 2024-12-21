@@ -39,7 +39,7 @@ class vector_search_by_key_test_case:
         self.key_namespace = key_namespace
 
 
-@pytest.fixture(scope="module", autouse=True)
+@pytest.fixture(scope="module")
 async def setup_index(
     session_admin_client,
 ):
@@ -92,12 +92,12 @@ async def setup_records(
 
     keys = []
     for key, record in recs.items():
+        keys.append(key)
         await session_vector_client.upsert(
             namespace=DEFAULT_NAMESPACE,
             key=key,
             record_data=record,
         )
-        keys.append(key)
     
     # write some records for set tests
     set_recs = {
@@ -112,13 +112,13 @@ async def setup_records(
     }
 
     for key, record in set_recs.items():
+        keys.append(key)
         await session_vector_client.upsert(
             namespace=DEFAULT_NAMESPACE,
             key=key,
             record_data=record,
             set_name=SET_NAME,
         )
-        keys.append(key)
 
     yield
 
@@ -332,6 +332,7 @@ async def setup_records(
 async def test_vector_search_by_key(
     session_vector_client,
     session_admin_client,
+    setup_index,
     test_case,
 ):
     await wait_for_index(session_admin_client, DEFAULT_NAMESPACE, INDEX)
@@ -361,6 +362,19 @@ async def test_vector_search_by_key_different_namespaces(
         name="diff_ns_idx",
         vector_field="vec",
         dimensions=3,
+        index_params=types.HnswParams(
+            batching_params=types.HnswBatchingParams(
+                # 10_000 is the minimum value, in order for the tests to run as
+                # fast as possible we set it to the minimum value so records are indexed
+                # quickly
+                index_interval=10_000,
+            ),
+            healer_params=types.HnswHealerParams(
+                # run the healer every second
+                # for fast indexing
+                schedule="* * * * * ?"
+            )
+        )
     )
 
     await session_vector_client.upsert(
