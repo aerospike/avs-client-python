@@ -386,7 +386,7 @@ class Client(BaseClient):
 
         Note:
             This method retrieves the status of the specified index. If index_get_status is called the vector client puts some records into Aerospike Vector Search,
-            the records may not immediately begin to merge into the index. To wait for all records to be merged into an index, use vector_client.wait_for_index_completion.
+            the records may not immediately begin to merge into the index.
 
             Warning: This API is subject to change.
         """

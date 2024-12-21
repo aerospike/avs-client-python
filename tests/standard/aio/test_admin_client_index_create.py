@@ -2,7 +2,7 @@ import pytest
 from aerospike_vector_search import types, AVSServerError
 import grpc
 
-from ...utils import random_name
+from ...utils import random_name, DEFAULT_NAMESPACE
 
 from .aio_utils import drop_specified_index
 from hypothesis import given, settings, Verbosity, Phase
@@ -51,7 +51,7 @@ class index_create_test_case:
     "test_case",
     [
         index_create_test_case(
-            namespace="test",
+            namespace=DEFAULT_NAMESPACE,
             vector_field="example_1",
             dimensions=1024,
             vector_distance_metric=None,
@@ -105,7 +105,7 @@ async def test_index_create(session_admin_client, test_case, random_name):
     "test_case",
     [
         index_create_test_case(
-            namespace="test",
+            namespace=DEFAULT_NAMESPACE,
             vector_field="example_2",
             dimensions=495,
             vector_distance_metric=None,
@@ -116,7 +116,7 @@ async def test_index_create(session_admin_client, test_case, random_name):
             timeout=None,
         ),
         index_create_test_case(
-            namespace="test",
+            namespace=DEFAULT_NAMESPACE,
             vector_field="example_3",
             dimensions=2048,
             vector_distance_metric=None,
@@ -174,7 +174,7 @@ async def test_index_create_with_dimnesions(
     "test_case",
     [
         index_create_test_case(
-            namespace="test",
+            namespace=DEFAULT_NAMESPACE,
             vector_field="example_4",
             dimensions=1024,
             vector_distance_metric=types.VectorDistanceMetric.COSINE,
@@ -185,7 +185,7 @@ async def test_index_create_with_dimnesions(
             timeout=None,
         ),
         index_create_test_case(
-            namespace="test",
+            namespace=DEFAULT_NAMESPACE,
             vector_field="example_5",
             dimensions=1024,
             vector_distance_metric=types.VectorDistanceMetric.DOT_PRODUCT,
@@ -196,7 +196,7 @@ async def test_index_create_with_dimnesions(
             timeout=None,
         ),
         index_create_test_case(
-            namespace="test",
+            namespace=DEFAULT_NAMESPACE,
             vector_field="example_6",
             dimensions=1024,
             vector_distance_metric=types.VectorDistanceMetric.MANHATTAN,
@@ -207,7 +207,7 @@ async def test_index_create_with_dimnesions(
             timeout=None,
         ),
         index_create_test_case(
-            namespace="test",
+            namespace=DEFAULT_NAMESPACE,
             vector_field="example_7",
             dimensions=1024,
             vector_distance_metric=types.VectorDistanceMetric.HAMMING,
@@ -262,7 +262,7 @@ async def test_index_create_with_vector_distance_metric(
     "test_case",
     [
         index_create_test_case(
-            namespace="test",
+            namespace=DEFAULT_NAMESPACE,
             vector_field="example_8",
             dimensions=1024,
             vector_distance_metric=None,
@@ -273,7 +273,7 @@ async def test_index_create_with_vector_distance_metric(
             timeout=None,
         ),
         index_create_test_case(
-            namespace="test",
+            namespace=DEFAULT_NAMESPACE,
             vector_field="example_9",
             dimensions=1024,
             vector_distance_metric=None,
@@ -326,7 +326,7 @@ async def test_index_create_with_sets(session_admin_client, test_case, random_na
     "test_case",
     [
         index_create_test_case(
-            namespace="test",
+            namespace=DEFAULT_NAMESPACE,
             vector_field="example_10",
             dimensions=1024,
             vector_distance_metric=None,
@@ -342,7 +342,7 @@ async def test_index_create_with_sets(session_admin_client, test_case, random_na
             timeout=None,
         ),
         index_create_test_case(
-            namespace="test",
+            namespace=DEFAULT_NAMESPACE,
             vector_field="example_11",
             dimensions=1024,
             vector_distance_metric=None,
@@ -358,7 +358,7 @@ async def test_index_create_with_sets(session_admin_client, test_case, random_na
             timeout=None,
         ),
         index_create_test_case(
-            namespace="test",
+            namespace=DEFAULT_NAMESPACE,
             vector_field="example_12",
             dimensions=1024,
             vector_distance_metric=None,
@@ -372,7 +372,7 @@ async def test_index_create_with_sets(session_admin_client, test_case, random_na
             timeout=None,
         ),
         index_create_test_case(
-            namespace="test",
+            namespace=DEFAULT_NAMESPACE,
             vector_field="example_13",
             dimensions=1024,
             vector_distance_metric=None,
@@ -386,7 +386,7 @@ async def test_index_create_with_sets(session_admin_client, test_case, random_na
             timeout=None,
         ),
         index_create_test_case(
-            namespace="test",
+            namespace=DEFAULT_NAMESPACE,
             vector_field="example_20",
             dimensions=1024,
             vector_distance_metric=None,
@@ -473,7 +473,7 @@ async def test_index_create_with_index_params(
     "test_case",
     [
         index_create_test_case(
-            namespace="test",
+            namespace=DEFAULT_NAMESPACE,
             vector_field="example_14",
             dimensions=1024,
             vector_distance_metric=None,
@@ -527,14 +527,14 @@ async def test_index_create_index_labels(session_admin_client, test_case, random
     "test_case",
     [
         index_create_test_case(
-            namespace="test",
+            namespace=DEFAULT_NAMESPACE,
             vector_field="example_15",
             dimensions=1024,
             vector_distance_metric=None,
             sets=None,
             index_params=None,
             index_labels=None,
-            index_storage=types.IndexStorage(namespace="test", set_name="foo"),
+            index_storage=types.IndexStorage(namespace=DEFAULT_NAMESPACE, set_name="foo"),
             timeout=None,
         ),
     ],
@@ -578,7 +578,7 @@ async def test_index_create_index_storage(session_admin_client, test_case, rando
     "test_case",
     [
         index_create_test_case(
-            namespace="test",
+            namespace=DEFAULT_NAMESPACE,
             vector_field="example_16",
             dimensions=1024,
             vector_distance_metric=None,

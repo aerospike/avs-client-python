@@ -528,20 +528,35 @@ class HnswParams(object):
     """
     Parameters for the Hierarchical Navigable Small World (HNSW) algorithm, used for approximate nearest neighbor search.
 
-    :param m: The number of bi-directional links created per level during construction. Larger 'm' values lead to higher recall but slower construction. Defaults to 16.
+    :param m: The number of bi-directional links created per level during construction. Larger 'm' values lead to higher recall but slower construction. Optional, Defaults to 16.
     :type m: Optional[int]
 
-    :param ef_construction: The size of the dynamic list for the nearest neighbors (candidates) during the index construction. Larger 'ef_construction' values lead to higher recall but slower construction. Defaults to 100.
+    :param ef_construction: The size of the dynamic list for the nearest neighbors (candidates) during the index construction. Larger 'ef_construction' values lead to higher recall but slower construction. Optional, Defaults to 100.
     :type ef_construction: Optional[int]
 
-    :param ef: The size of the dynamic list for the nearest neighbors (candidates) during the search phase. Larger 'ef' values lead to higher recall but slower search. Defaults to 100.
+    :param ef: The size of the dynamic list for the nearest neighbors (candidates) during the search phase. Larger 'ef' values lead to higher recall but slower search. Optional, Defaults to 100.
     :type ef: Optional[int]
 
-    :param batching_params: Parameters related to configuring batch processing, such as the maximum number of records per batch and batching interval. Defaults to HnswBatchingParams().
-    :type batching_params: Optional[HnswBatchingParams]
+    :param batching_params: Parameters related to configuring batch processing, such as the maximum number of records per batch and batching interval. Optional, Defaults to HnswBatchingParams().
+    :type batching_params: HnswBatchingParams
 
-    :param enable_vector_integrity_check: Verifies if the underlying vector has changed before returning the kANN result.
+    :param max_mem_queue_size: Maximum size of in-memory queue for inserted/updated vector records. Optional, Defaults to the corresponding config on the AVS Server.
+    :type max_mem_queue_size: Optional[int]
+
+    :param index_caching_params: Parameters related to configuring caching for the HNSW index. Optional, Defaults to HnswCachingParams().
+    :type index_caching_params: HnswCachingParams
+
+    :param healer_params: Parameters related to configuring the HNSW index healer. Optional, Defaults to HnswHealerParams().
+    :type healer_params: HnswHealerParams
+
+    :param merge_params: Parameters related to configuring the merging of index records. Optional, Defaults to HnswIndexMergeParams().
+    :type merge_params: HnswIndexMergeParams
+
+    :param enable_vector_integrity_check: Verifies if the underlying vector has changed before returning the kANN result. Optional, Defaults to True.
     :type enable_vector_integrity_check: Optional[bool]
+
+    :param record_caching_params: Parameters related to configuring caching for vector records. Optional, Defaults to HnswCachingParams().
+    :type record_caching_params: HnswCachingParams
 
     """
 

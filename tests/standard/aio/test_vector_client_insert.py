@@ -1,6 +1,6 @@
 import pytest
 from aerospike_vector_search import AVSServerError
-from ...utils import random_key
+from utils import random_key, DEFAULT_NAMESPACE
 
 from hypothesis import given, settings, Verbosity
 import asyncio
@@ -30,19 +30,19 @@ class insert_test_case:
     "test_case",
     [
         insert_test_case(
-            namespace="test",
+            namespace=DEFAULT_NAMESPACE,
             record_data={"math": [i for i in range(1024)]},
             set_name=None,
             timeout=None,
         ),
         insert_test_case(
-            namespace="test",
+            namespace=DEFAULT_NAMESPACE,
             record_data={"homeSkills": [float(i) for i in range(1024)]},
             set_name=None,
             timeout=None,
         ),
         insert_test_case(
-            namespace="test",
+            namespace=DEFAULT_NAMESPACE,
             record_data={"english": [bool(i) for i in range(1024)]},
             set_name=None,
             timeout=None,
@@ -62,41 +62,6 @@ async def test_vector_insert_without_existing_record(
         record_data=test_case.record_data,
         set_name=test_case.set_name,
     )
-
-
-#@given(random_key=key_strategy())
-#@settings(max_examples=1, deadline=1000)
-@pytest.mark.parametrize(
-    "test_case",
-    [
-        insert_test_case(
-            namespace="test",
-            record_data={"math": [i for i in range(1024)]},
-            set_name=None,
-            timeout=None,
-        ),
-    ],
-)
-async def test_vector_insert_with_existing_record(
-    session_vector_client, test_case, random_key
-):
-    try:
-        await session_vector_client.insert(
-            namespace=test_case.namespace,
-            key=random_key,
-            record_data=test_case.record_data,
-            set_name=test_case.set_name,
-        )
-    except Exception as e:
-        pass
-
-    with pytest.raises(AVSServerError) as e_info:
-        await session_vector_client.insert(
-            namespace=test_case.namespace,
-            key=random_key,
-            record_data=test_case.record_data,
-            set_name=test_case.set_name,
-        )
     await session_vector_client.delete(
         namespace=test_case.namespace,
         key=random_key,
@@ -109,7 +74,32 @@ async def test_vector_insert_with_existing_record(
     "test_case",
     [
         insert_test_case(
-            namespace="test",
+            namespace=DEFAULT_NAMESPACE,
+            record_data={"math": [i for i in range(1024)]},
+            set_name=None,
+            timeout=None,
+        ),
+    ],
+)
+async def test_vector_insert_with_existing_record(
+    session_vector_client, test_case, record
+):
+    with pytest.raises(AVSServerError) as e_info:
+        await session_vector_client.insert(
+            namespace=test_case.namespace,
+            key=record,
+            record_data=test_case.record_data,
+            set_name=test_case.set_name,
+        )
+
+
+#@given(random_key=key_strategy())
+#@settings(max_examples=1, deadline=1000)
+@pytest.mark.parametrize(
+    "test_case",
+    [
+        insert_test_case(
+            namespace=DEFAULT_NAMESPACE,
             record_data={"math": [i for i in range(1024)]},
             set_name=None,
             timeout=0.0001,
@@ -129,5 +119,9 @@ async def test_vector_insert_timeout(
                 record_data=test_case.record_data,
                 set_name=test_case.set_name,
                 timeout=test_case.timeout,
+            )
+            await session_vector_client.delete(
+                namespace=test_case.namespace,
+                key=random_key,
             )
     assert e_info.value.rpc_error.code() == grpc.StatusCode.DEADLINE_EXCEEDED
