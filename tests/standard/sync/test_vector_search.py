@@ -39,7 +39,7 @@ class vector_search_test_case:
         vector_search_test_case(
             index_name="basic_search",
             index_dimensions=3,
-            vector_field="vector",
+            vector_field="vecs",
             limit=3,
             query=[0.0, 0.0, 0.0],
             namespace="test",
@@ -49,7 +49,7 @@ class vector_search_test_case:
             record_data={
                 "rec1": {
                     "bin1": 1,
-                    "vector": [1.0, 1.0, 1.0],
+                    "vecs": [1.0, 1.0, 1.0],
                 },
             },
             expected_results=[
@@ -61,7 +61,7 @@ class vector_search_test_case:
                     ),
                     fields={
                         "bin1": 1,
-                        "vector": [1.0, 1.0, 1.0],
+                        "vecs": [1.0, 1.0, 1.0],
                     },
                     distance=3.0,
                 ),
@@ -70,7 +70,7 @@ class vector_search_test_case:
         vector_search_test_case(
             index_name="field_filter",
             index_dimensions=3,
-            vector_field="vector",
+            vector_field="vecs",
             limit=3,
             query=[0.0, 0.0, 0.0],
             namespace="test",
@@ -80,7 +80,7 @@ class vector_search_test_case:
             record_data={
                 "rec1": {
                     "bin1": 1,
-                    "vector": [1.0, 1.0, 1.0],
+                    "vecs": [1.0, 1.0, 1.0],
                 },
             },
             expected_results=[

@@ -110,10 +110,10 @@ class get_test_case:
     ],
     indirect=["record"],
 )
-def test_vector_get(session_vector_client, test_case, random_key, record_data):
+def test_vector_get(session_vector_client, test_case, record):
     result = session_vector_client.get(
         namespace=test_case.namespace,
-        key=random_key,
+        key=record,
         include_fields=test_case.include_fields,
         exclude_fields=test_case.exclude_fields,
     )
@@ -121,7 +121,7 @@ def test_vector_get(session_vector_client, test_case, random_key, record_data):
     if test_case.set_name is None:
         test_case.set_name = ""
     assert result.key.set == test_case.set_name
-    assert result.key.key == random_key
+    assert result.key.key == record
 
     assert result.fields == test_case.expected_fields
 

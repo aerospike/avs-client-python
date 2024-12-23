@@ -1,7 +1,7 @@
 import pytest
 
 from aerospike_vector_search import AVSServerError
-from utils import DEFAULT_NAMESPACE
+from utils import random_name, DEFAULT_NAMESPACE
 from .sync_utils import wait_for_index
 
 import grpc
@@ -22,7 +22,7 @@ def test_vector_is_indexed(
 
     result = session_vector_client.is_indexed(
         namespace=DEFAULT_NAMESPACE,
-        key="0",
+        key=record,
         index_name=index,
     )
     assert result is True

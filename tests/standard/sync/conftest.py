@@ -7,6 +7,7 @@ from aerospike_vector_search.admin import Client as AdminClient
 from aerospike_vector_search import types, AVSServerError
 
 from .sync_utils import gen_records
+import grpc
 
 #import logging
 #logger = logging.getLogger(__name__)
@@ -199,7 +200,7 @@ def index(session_admin_client, index_name, request):
     namespace = args.get("namespace", DEFAULT_NAMESPACE)
     vector_field = args.get("vector_field", DEFAULT_VECTOR_FIELD) 
     dimensions = args.get("dimensions", DEFAULT_INDEX_DIMENSION)
-    await session_admin_client.index_create(
+    session_admin_client.index_create(
         name = index_name,
         namespace = namespace,
         vector_field = vector_field,

@@ -301,6 +301,19 @@ def test_vector_search_by_key(
         name=test_case.index_name,
         vector_field=test_case.vector_field,
         dimensions=test_case.index_dimensions,
+        index_params=types.HnswParams(
+            batching_params=types.HnswBatchingParams(
+                # 10_000 is the minimum value, in order for the tests to run as
+                # fast as possible we set it to the minimum value so records are indexed
+                # quickly
+                index_interval=10_000,
+            ),
+            healer_params=types.HnswHealerParams(
+                # run the healer every second
+                # for fast indexing
+                schedule="* * * * * ?"
+            )
+        )
     )
 
     for key, rec in test_case.record_data.items():

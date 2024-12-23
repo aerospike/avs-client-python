@@ -26,7 +26,6 @@ def test_index_list(session_admin_client, empty_test_case, index):
         assert isinstance(index["hnsw_params"]["batching_params"]["reindex_interval"], int)
         assert isinstance(index["storage"]["namespace"], str)
         assert isinstance(index["storage"]["set_name"], str)
-    drop_specified_index(session_admin_client, "test", index)
 
 
 @pytest.mark.parametrize("empty_test_case", [None])

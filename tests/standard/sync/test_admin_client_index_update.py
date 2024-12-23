@@ -47,7 +47,7 @@ class index_update_test_case:
 def test_index_update(session_admin_client, test_case, index):
     # Update the index with parameters based on the test case
     session_admin_client.index_update(
-        namespace=test_case.namespace,
+        namespace=DEFAULT_NAMESPACE,
         name=index,
         index_labels=test_case.update_labels,
         hnsw_update_params=test_case.hnsw_index_update,
@@ -57,8 +57,10 @@ def test_index_update(session_admin_client, test_case, index):
     time.sleep(10)
 
     # Verify the update
-    result = session_admin_client.index_get(namespace=test_case.namespace, name=index, apply_defaults=True)
+    result = session_admin_client.index_get(namespace=DEFAULT_NAMESPACE, name=index, apply_defaults=True)
     assert result, "Expected result to be non-empty but got an empty dictionary."
+
+    assert result["id"]["namespace"] == DEFAULT_NAMESPACE
 
     # Assertions
     if test_case.hnsw_index_update.batching_params:
