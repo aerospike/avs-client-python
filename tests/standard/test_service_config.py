@@ -1,3 +1,8 @@
+# TODO refactor this file so it uses the client fixtures
+# and so that it is less timing dependent
+# ideally these would be unit tests maybe with mocked out grpc channels
+# that ensure the correct config is recieved
+
 # import pytest
 # import time
 

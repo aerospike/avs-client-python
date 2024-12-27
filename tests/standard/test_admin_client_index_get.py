@@ -1,4 +1,4 @@
-from ...utils import DEFAULT_NAMESPACE, DEFAULT_INDEX_DIMENSION, DEFAULT_VECTOR_FIELD
+from utils import DEFAULT_NAMESPACE, DEFAULT_INDEX_DIMENSION, DEFAULT_VECTOR_FIELD
 from aerospike_vector_search import AVSServerError
 
 import grpc

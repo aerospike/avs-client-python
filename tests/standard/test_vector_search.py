@@ -1,7 +1,7 @@
-import numpy as np
-import pytest
 from aerospike_vector_search import types
+from utils import wait_for_index
 
+import pytest
 
 class vector_search_test_case:
     def __init__(
@@ -118,9 +118,10 @@ def test_vector_search(
             set_name=test_case.set_name,
         )
     
-    session_vector_client.wait_for_index_completion(
+    wait_for_index(
+        admin_client=session_admin_client,
         namespace=test_case.namespace,
-        name=test_case.index_name,
+        index=test_case.index_name,
     )
 
     results = session_vector_client.vector_search(

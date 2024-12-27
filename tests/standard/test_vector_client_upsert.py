@@ -1,5 +1,5 @@
 import pytest
-from ...utils import random_key
+from utils import random_key
 
 from hypothesis import given, settings, Verbosity
 

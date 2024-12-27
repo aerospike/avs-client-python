@@ -2,7 +2,7 @@ import pytest
 
 from aerospike_vector_search import AVSServerError
 from utils import random_name, DEFAULT_NAMESPACE
-from .sync_utils import wait_for_index
+from utils import wait_for_index
 
 import grpc
 

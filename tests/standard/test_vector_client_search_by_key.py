@@ -1,6 +1,7 @@
-import pytest
 from aerospike_vector_search import types
+from utils import wait_for_index
 
+import pytest
 
 class vector_search_by_key_test_case:
     def __init__(
@@ -324,9 +325,10 @@ def test_vector_search_by_key(
             set_name=test_case.key_set,
         )
     
-    session_vector_client.wait_for_index_completion(
+    wait_for_index(
+        admin_client=session_admin_client,
         namespace=test_case.search_namespace,
-        name=test_case.index_name,
+        index=test_case.index_name,
     )
 
     results = session_vector_client.vector_search_by_key(
@@ -386,9 +388,10 @@ def test_vector_search_by_key_different_namespaces(
         },
     )
     
-    session_vector_client.wait_for_index_completion(
+    wait_for_index(
+        admin_client=session_admin_client,
         namespace="index_storage",
-        name="diff_ns_idx",
+        index="diff_ns_idx",
     )
 
     results = session_vector_client.vector_search_by_key(

@@ -1,9 +1,9 @@
 import pytest
 import grpc
 
-from ...utils import DEFAULT_NAMESPACE
+from utils import DEFAULT_NAMESPACE
 
-from .sync_utils import drop_specified_index
+from utils import drop_specified_index
 from hypothesis import given, settings, Verbosity
 
 from aerospike_vector_search import AVSServerError

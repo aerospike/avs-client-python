@@ -1,5 +1,5 @@
 from aerospike_vector_search import AVSServerError
-from .sync_utils import drop_specified_index
+from utils import drop_specified_index
 
 import pytest
 import grpc

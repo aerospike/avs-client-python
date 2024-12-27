@@ -1,8 +1,9 @@
 import random
-import hypothesis.strategies as st
-from hypothesis import given
+import time
 import string
 
+import hypothesis.strategies as st
+from hypothesis import given
 import pytest
 
 
@@ -46,6 +47,40 @@ def random_key():
         key = ''.join(random.choices(allowed_chars, k=size))
         if key not in ["0", "1", "null"]:
             return key
+
+
+def drop_specified_index(admin_client, namespace, name):
+    admin_client.index_drop(namespace=namespace, name=name)
+
+
+def gen_records(count: int, vec_bin: str, vec_dim: int):
+    num = 0
+    while num < count:
+        key_and_rec = (
+            num,
+            { "id": num, vec_bin: [float(num)] * vec_dim}
+        )
+        yield key_and_rec
+        num += 1
+
+
+def wait_for_index(admin_client, namespace: str, index: str):
+    
+    verticies = 0
+    unmerged_recs = 0
+    
+    while verticies == 0 or unmerged_recs > 0:
+        status = admin_client.index_get_status(
+            namespace=namespace,
+            name=index,
+        )
+
+        verticies = status.index_healer_vertices_valid
+        unmerged_recs = status.unmerged_record_count
+
+        # print(verticies)
+        # print(unmerged_recs)
+        time.sleep(0.5)
 
 
 """
