@@ -333,6 +333,7 @@ async def test_vector_search_by_key(
     session_vector_client,
     session_admin_client,
     setup_index,
+    setup_records,
     test_case,
 ):
     await wait_for_index(session_admin_client, DEFAULT_NAMESPACE, INDEX)
