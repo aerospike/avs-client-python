@@ -396,11 +396,21 @@ def pytest_addoption(parser):
         action="store_true",
         help="Run tests using the async client",
     )
+    parser.addoption(
+        "--sync",
+        action="store_true",
+        help="Run tests using the sync client",
+    )
 
 
 @pytest.fixture(scope="module", autouse=True)
 def async_client(request):
     return request.config.getoption("--async")
+
+
+@pytest.fixture(scope="module", autouse=True)
+def sync_client(request):
+    return request.config.getoption("--sync")
 
 
 @pytest.fixture(scope="module", autouse=True)
