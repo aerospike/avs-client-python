@@ -8,7 +8,7 @@ from aerospike_vector_search import types
 INDEX = "sbk_index"
 NAMESPACE = DEFAULT_NAMESPACE
 DIMENSIONS = 3
-VEC_BIN = "vector"
+VEC_BIN = "asbkvec"
 SET_NAME = "test_set"
 
 
@@ -71,7 +71,7 @@ async def setup_index(
     )
 
 
-@pytest.fixture(scope="module", autouse=True)
+@pytest.fixture(scope="module")
 async def setup_records(
     session_vector_client,
 ):
@@ -127,8 +127,14 @@ async def setup_records(
             namespace=DEFAULT_NAMESPACE,
             key=key,
         )
-    
 
+    for key in keys:
+        await session_vector_client.delete(
+            namespace=DEFAULT_NAMESPACE,
+            key=key,
+            set_name=SET_NAME,
+        )
+    
 
 #@settings(max_examples=1, deadline=1000)
 @pytest.mark.parametrize(
@@ -137,7 +143,7 @@ async def setup_records(
         # test string key
         vector_search_by_key_test_case(
             index_dimensions=3,
-            vector_field="vector",
+            vector_field=VEC_BIN,
             limit=2,
             key="rec1",
             key_namespace=DEFAULT_NAMESPACE,
@@ -154,7 +160,7 @@ async def setup_records(
                     ),
                     fields={
                         "bin": 1,
-                        "vector": [1.0, 1.0, 1.0],
+                        VEC_BIN: [1.0, 1.0, 1.0],
                     },
                     distance=0.0,
                 ),
@@ -166,7 +172,7 @@ async def setup_records(
                     ),
                     fields={
                         "bin": 2,
-                        "vector": [2.0, 2.0, 2.0],
+                        VEC_BIN: [2.0, 2.0, 2.0],
                     },
                     distance=3.0,
                 ),
@@ -175,7 +181,7 @@ async def setup_records(
         # test int key
         vector_search_by_key_test_case(
             index_dimensions=3,
-            vector_field="vector",
+            vector_field=VEC_BIN,
             limit=3,
             key=2,
             key_namespace=DEFAULT_NAMESPACE,
@@ -216,7 +222,7 @@ async def setup_records(
         # test bytes key
         vector_search_by_key_test_case(
             index_dimensions=3,
-            vector_field="vector",
+            vector_field=VEC_BIN,
             limit=3,
             key=bytes("rec5", "utf-8"),
             key_namespace=DEFAULT_NAMESPACE,
@@ -260,7 +266,7 @@ async def setup_records(
         # # vector_search_by_key_test_case(
         # #     index_name="field_filter",
         # #     index_dimensions=3,
-        # #     vector_field="vector",
+        # #     vector_field=VEC_BIN,
         # #     limit=3,
         # #     key=bytearray("rec1", "utf-8"),
         # #     namespace=DEFAULT_NAMESPACE,
@@ -270,11 +276,11 @@ async def setup_records(
         # #     record_data={
         # #         bytearray("rec1", "utf-8"): {
         # #             "bin": 1,
-        # #             "vector": [1.0, 1.0, 1.0],
+        # #             VEC_BIN: [1.0, 1.0, 1.0],
         # #         },
         # #         bytearray("rec1", "utf-8"): {
         # #             "bin": 2,
-        # #             "vector": [2.0, 2.0, 2.0],
+        # #             VEC_BIN: [2.0, 2.0, 2.0],
         # #         },
         # #     },
         # #     expected_results=[
@@ -292,7 +298,7 @@ async def setup_records(
         # test with set name
         vector_search_by_key_test_case(
             index_dimensions=3,
-            vector_field="vector",
+            vector_field=VEC_BIN,
             limit=2,
             key="srec100",
             key_namespace=DEFAULT_NAMESPACE,
@@ -309,7 +315,7 @@ async def setup_records(
                     ),
                     fields={
                         "bin": 100,
-                        "vector": [100.0] * DIMENSIONS,
+                        VEC_BIN: [100.0] * DIMENSIONS,
                     },
                     distance=0.0,
                 ),
@@ -321,7 +327,7 @@ async def setup_records(
                     ),
                     fields={
                         "bin": 101,
-                        "vector": [101.0] * DIMENSIONS,
+                        VEC_BIN: [101.0] * DIMENSIONS,
                     },
                     distance=3.0,
                 ),
