@@ -1,6 +1,7 @@
 import asyncio
 import random
 import string
+import threading
 
 from aerospike_vector_search import Client
 from aerospike_vector_search.aio import Client as AsyncClient
@@ -79,33 +80,53 @@ def drop_all_indexes(
             client.index_drop(namespace="test", name=item["id"]["name"])
 
 
-@pytest.fixture(scope="session")
+# @pytest.fixture(scope="session", autouse=True)
+# def event_loop():
+#     """
+#     Create an event loop for the test session.
+#     The async client requires a running event loop.
+#     So we create and run one here.
+#     """
+#     loop = asyncio.new_event_loop()
+#     asyncio.set_event_loop(loop)
+
+#     def run_loop(loop):
+#         asyncio.set_event_loop(loop)
+#         loop.run_forever()
+    
+#     thr = threading.Thread(target=run_loop, args=(loop,), daemon=True)
+#     thr.start()
+
+#     yield loop
+
+#     loop.call_soon_threadsafe(loop.stop)
+#     thr.join()
+#     loop.close()
+
+
+@pytest.fixture(scope="session", autouse=True)
 def event_loop():
     """
-    Create an event loop for the test session.
+    Create an event loop that runs in a separate thread.
+    The async client requires a running event loop at initialization.
     """
     loop = asyncio.new_event_loop()
-    asyncio.set_event_loop(loop)
-    #HACK the async client schedules tasks in its init function so we need
-    # to run the event loop to allow the tasks to be scheduled
+
+    # Define the target function to run the loop
+    def run_loop():
+        asyncio.set_event_loop(loop)
+        loop.run_forever()
+
+    # Start the event loop in a background thread
+    loop_thread = threading.Thread(target=run_loop, daemon=True)
+    loop_thread.start()
+
     yield loop
+
+    # Stop the event loop and wait for the thread to finish
+    loop.call_soon_threadsafe(loop.stop)
+    loop_thread.join()
     loop.close()
-
-
-class AsyncClientWrapper():
-    def __init__(self, client):
-        self.client = client
-    
-    def __getattr__(self, name):
-        attr = getattr(self.client, name)
-        if asyncio.iscoroutinefunction(attr):
-            # Wrap async methods to run in the current event loop
-            def sync_method(*args, **kwargs):
-                loop = asyncio.get_event_loop()
-                return loop.run_until_complete(attr(*args, **kwargs))
-
-            return sync_method
-        return attr
 
 
 async def new_wrapped_async_client(
@@ -117,9 +138,10 @@ async def new_wrapped_async_client(
     certificate_chain,
     private_key,
     is_loadbalancer,
-    ssl_target_name_override
+    ssl_target_name_override,
+    loop
 ):
-    client = AsyncClient(
+    return AsyncClient(
         seeds=types.HostPort(host=host, port=port),
         is_loadbalancer=is_loadbalancer,
         username=username,
@@ -129,7 +151,6 @@ async def new_wrapped_async_client(
         private_key=private_key,
         ssl_target_name_override=ssl_target_name_override
     )
-    return AsyncClientWrapper(client)
 
 
 async def new_wrapped_async_admin_client(
@@ -141,9 +162,10 @@ async def new_wrapped_async_admin_client(
     certificate_chain,
     private_key,
     is_loadbalancer,
-    ssl_target_name_override
+    ssl_target_name_override,
+    loop
 ):
-    client = AsyncAdminClient(
+    return AsyncAdminClient(
         seeds=types.HostPort(host=host, port=port),
         is_loadbalancer=is_loadbalancer,
         username=username,
@@ -153,7 +175,30 @@ async def new_wrapped_async_admin_client(
         private_key=private_key,
         ssl_target_name_override=ssl_target_name_override
     )
-    return AsyncClientWrapper(client)
+
+
+class AsyncClientWrapper():
+    def __init__(self, client, loop):
+        self.client = client
+        self.loop = loop
+    
+    def __getattr__(self, name):
+        attr = getattr(self.client, name)
+        if asyncio.iscoroutinefunction(attr):
+            # Wrap async methods to run in the current event loop
+            def sync_method(*args, **kwargs):
+                return self._run_async_task(attr(*args, **kwargs))
+
+            return sync_method
+        return attr
+    
+    def _run_async_task(self, task):
+        # Submit the coroutine to the loop and get its result
+        if self.loop.is_running():
+            future = asyncio.run_coroutine_threadsafe(task, self.loop)
+            return future.result()
+        else:
+            raise RuntimeError("Event loop is not running")
 
 
 @pytest.fixture(scope="module")
@@ -183,8 +228,7 @@ def session_admin_client(
             private_key = f.read()
 
     if async_client:
-        loop = asyncio.get_event_loop()
-        client = loop.run_until_complete(new_wrapped_async_admin_client(
+        task = new_wrapped_async_admin_client(
             host=host,
             port=port,
             username=username,
@@ -193,8 +237,11 @@ def session_admin_client(
             certificate_chain=certificate_chain,
             private_key=private_key,
             is_loadbalancer=is_loadbalancer,
-            ssl_target_name_override=ssl_target_name_override
-        ))
+            ssl_target_name_override=ssl_target_name_override,
+            loop=event_loop
+        )
+        client = asyncio.run_coroutine_threadsafe(task, event_loop).result()
+        client = AsyncClientWrapper(client, event_loop)
     else:
         client = AdminClient(
             seeds=types.HostPort(host=host, port=port),
@@ -238,8 +285,7 @@ def session_vector_client(
             private_key = f.read()
 
     if async_client:
-        loop = asyncio.get_event_loop()
-        client = loop.run_until_complete(new_wrapped_async_client(
+        task = new_wrapped_async_client(
             host=host,
             port=port,
             username=username,
@@ -248,8 +294,11 @@ def session_vector_client(
             certificate_chain=certificate_chain,
             private_key=private_key,
             is_loadbalancer=is_loadbalancer,
-            ssl_target_name_override=ssl_target_name_override
-        ))
+            ssl_target_name_override=ssl_target_name_override,
+            loop=event_loop
+        )
+        client = asyncio.run_coroutine_threadsafe(task, event_loop).result()
+        client = AsyncClientWrapper(client, event_loop)
     else:
         client = Client(
             seeds=types.HostPort(host=host, port=port),
