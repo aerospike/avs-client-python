@@ -261,34 +261,6 @@ class vector_search_by_key_test_case:
                 ),
             ],
         ),
-        # test search key record and search records are in different namespaces
-        vector_search_by_key_test_case(
-            index_name="basic_search",
-            index_dimensions=3,
-            vector_field="vector",
-            limit=2,
-            key="rec1",
-            key_namespace="test",
-            search_namespace="index_storage",
-            include_fields=None,
-            exclude_fields=None,
-            key_set=None,
-            record_data={
-                "rec1": {
-                    "bin": 1,
-                    "vector": [1.0, 1.0, 1.0],
-                },
-                "rec2": {
-                    "bin": 2,
-                    "vector": [2.0, 2.0, 2.0],
-                },
-                "rec3": {
-                    "bin": 3,
-                    "vector": [3.0, 3.0, 3.0],
-                },
-            },
-            expected_results=[],
-        ),
     ],
 )
 def test_vector_search_by_key(
@@ -368,6 +340,19 @@ def test_vector_search_by_key_different_namespaces(
         name="diff_ns_idx",
         vector_field="vec",
         dimensions=3,
+        index_params=types.HnswParams(
+            batching_params=types.HnswBatchingParams(
+                # 10_000 is the minimum value, in order for the tests to run as
+                # fast as possible we set it to the minimum value so records are indexed
+                # quickly
+                index_interval=10_000,
+            ),
+            healer_params=types.HnswHealerParams(
+                # run the healer every second
+                # for fast indexing
+                schedule="* * * * * ?"
+            )
+        )
     )
 
     session_vector_client.upsert(
