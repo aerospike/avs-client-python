@@ -80,30 +80,6 @@ def drop_all_indexes(
             client.index_drop(namespace="test", name=item["id"]["name"])
 
 
-# @pytest.fixture(scope="session", autouse=True)
-# def event_loop():
-#     """
-#     Create an event loop for the test session.
-#     The async client requires a running event loop.
-#     So we create and run one here.
-#     """
-#     loop = asyncio.new_event_loop()
-#     asyncio.set_event_loop(loop)
-
-#     def run_loop(loop):
-#         asyncio.set_event_loop(loop)
-#         loop.run_forever()
-    
-#     thr = threading.Thread(target=run_loop, args=(loop,), daemon=True)
-#     thr.start()
-
-#     yield loop
-
-#     loop.call_soon_threadsafe(loop.stop)
-#     thr.join()
-#     loop.close()
-
-
 @pytest.fixture(scope="session", autouse=True)
 def event_loop():
     """
