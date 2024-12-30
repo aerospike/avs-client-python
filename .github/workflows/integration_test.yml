@@ -17,7 +17,7 @@ jobs:
     strategy:
       matrix:
         python-version: ["3.9", "3.10", "3.11", "3.12"]
-        async: ["--sync", "--async"]
+        async: ["sync", "async"]
 
         
     steps:
@@ -71,7 +71,7 @@ jobs:
         sleep 5
 
         docker ps
-        python -m pytest standard -s --host 0.0.0.0 --port 5000 --cov=aerospike_vector_search ${{ matrix.async }}
+        python -m pytest standard -s --host 0.0.0.0 --port 5000 --cov=aerospike_vector_search --${{ matrix.async }}
 
         mv .coverage coverage_data
       working-directory: tests
@@ -80,7 +80,7 @@ jobs:
       if: ${{ matrix.python-version == '3.12' }}
       uses: actions/upload-artifact@v4
       with:
-        name: coverage_normal
+        name: coverage_normal_${{ matrix.async }}
         path: tests/coverage_data
 
   test-tls:
