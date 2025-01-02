@@ -22,7 +22,7 @@ The Aerospike Vector Search client is also available on our own Artifactory repo
 To resolve the Artifactory client packages, pip install with the following command.
 
 ```shell
-pip install aerospike-vector-search -i extra-index-url=https://<jfrog-username>:<jfrog-access-token>@aerospike.jfrog.io/artifactory/api/pypi/ecosystem-python-dev-local/simple 
+pip install aerospike-vector-search -i https://<jfrog-username>:<jfrog-access-token>@aerospike.jfrog.io/artifactory/api/pypi/ecosystem-python-dev-local/simple 
 ```
 
 **Note**
