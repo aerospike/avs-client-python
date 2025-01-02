@@ -1450,7 +1450,7 @@ class Client(BaseClientMixin, BaseAdminClientMixin):
         This method closes gRPC channels connected to Aerospike Vector Search.
 
         Note:
-            This method should be called when the VectorDbAdminClient is no longer needed to release resources.
+            This method should be called when the client is no longer needed to release resources.
         """
         self._channel_provider.close()
 
