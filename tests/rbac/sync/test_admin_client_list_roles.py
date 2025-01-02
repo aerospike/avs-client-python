@@ -25,11 +25,11 @@ class list_roles_test_case:
         ),
     ],
 )
-def test_list_roles(session_rbac_client, test_case):
-    session_rbac_client.add_user(
+def test_list_roles(session_rbac_admin_client, test_case):
+    session_rbac_admin_client.add_user(
         username=test_case.username, password=test_case.password, roles=test_case.roles
     )
 
-    result = session_rbac_client.list_roles()
+    result = session_rbac_admin_client.list_roles()
     for role in result:
         assert role.id in test_case.roles

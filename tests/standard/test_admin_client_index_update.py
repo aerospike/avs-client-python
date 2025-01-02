@@ -44,9 +44,9 @@ class index_update_test_case:
         ),
     ],
 )
-def test_index_update(session_vector_client, test_case, index):
+def test_index_update(session_admin_client, test_case, index):
     # Update the index with parameters based on the test case
-    session_vector_client.index_update(
+    session_admin_client.index_update(
         namespace=DEFAULT_NAMESPACE,
         name=index,
         index_labels=test_case.update_labels,
@@ -57,7 +57,7 @@ def test_index_update(session_vector_client, test_case, index):
     time.sleep(10)
 
     # Verify the update
-    result = session_vector_client.index_get(namespace=DEFAULT_NAMESPACE, name=index, apply_defaults=True)
+    result = session_admin_client.index_get(namespace=DEFAULT_NAMESPACE, name=index, apply_defaults=True)
     assert result, "Expected result to be non-empty but got an empty dictionary."
 
     assert result["id"]["namespace"] == DEFAULT_NAMESPACE

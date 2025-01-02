@@ -62,14 +62,14 @@ class index_create_test_case:
         )
     ],
 )
-def test_index_create(session_vector_client, test_case, random_name):
+def test_index_create(session_admin_client, test_case, random_name):
     try:
-        session_vector_client.index_drop(namespace=DEFAULT_NAMESPACE, name=random_name)
+        session_admin_client.index_drop(namespace=DEFAULT_NAMESPACE, name=random_name)
     except AVSServerError as se:
         if se.rpc_error.code() != grpc.StatusCode.NOT_FOUND:
             pass
 
-    session_vector_client.index_create(
+    session_admin_client.index_create(
         namespace=test_case.namespace,
         name=random_name,
         vector_field=test_case.vector_field,
@@ -82,7 +82,7 @@ def test_index_create(session_vector_client, test_case, random_name):
         timeout=test_case.timeout,
     )
 
-    results = session_vector_client.index_list()
+    results = session_admin_client.index_list()
     found = False
     for result in results:
         if result["id"]["name"] == random_name:
@@ -100,7 +100,7 @@ def test_index_create(session_vector_client, test_case, random_name):
             assert result["storage"]["namespace"] == test_case.namespace
             assert result["storage"]["set_name"] == random_name
     assert found == True
-    drop_specified_index(session_vector_client, test_case.namespace, random_name)
+    drop_specified_index(session_admin_client, test_case.namespace, random_name)
 
 
 #@given(random_name=index_strategy())
@@ -132,15 +132,15 @@ def test_index_create(session_vector_client, test_case, random_name):
         ),
     ],
 )
-def test_index_create_with_dimnesions(session_vector_client, test_case, random_name):
+def test_index_create_with_dimnesions(session_admin_client, test_case, random_name):
 
     try:
-        session_vector_client.index_drop(namespace=DEFAULT_NAMESPACE, name=random_name)
+        session_admin_client.index_drop(namespace=DEFAULT_NAMESPACE, name=random_name)
     except AVSServerError as se:
         if se.rpc_error.code() != grpc.StatusCode.NOT_FOUND:
             pass
 
-    session_vector_client.index_create(
+    session_admin_client.index_create(
         namespace=test_case.namespace,
         name=random_name,
         vector_field=test_case.vector_field,
@@ -153,7 +153,7 @@ def test_index_create_with_dimnesions(session_vector_client, test_case, random_n
         timeout=test_case.timeout,
     )
 
-    results = session_vector_client.index_list()
+    results = session_admin_client.index_list()
 
     found = False
     for result in results:
@@ -174,7 +174,7 @@ def test_index_create_with_dimnesions(session_vector_client, test_case, random_n
             assert result["storage"]["set_name"] == random_name
     assert found == True
 
-    drop_specified_index(session_vector_client, test_case.namespace, random_name)
+    drop_specified_index(session_admin_client, test_case.namespace, random_name)
 
 
 #@given(random_name=index_strategy())
@@ -229,16 +229,16 @@ def test_index_create_with_dimnesions(session_vector_client, test_case, random_n
     ],
 )
 def test_index_create_with_vector_distance_metric(
-    session_vector_client, test_case, random_name
+    session_admin_client, test_case, random_name
 ):
 
     try:
-        session_vector_client.index_drop(namespace=DEFAULT_NAMESPACE, name=random_name)
+        session_admin_client.index_drop(namespace=DEFAULT_NAMESPACE, name=random_name)
     except AVSServerError as se:
         if se.rpc_error.code() != grpc.StatusCode.NOT_FOUND:
             pass
 
-    session_vector_client.index_create(
+    session_admin_client.index_create(
         namespace=test_case.namespace,
         name=random_name,
         vector_field=test_case.vector_field,
@@ -250,7 +250,7 @@ def test_index_create_with_vector_distance_metric(
         index_storage=test_case.index_storage,
         timeout=test_case.timeout,
     )
-    results = session_vector_client.index_list()
+    results = session_admin_client.index_list()
     found = False
     for result in results:
         if result["id"]["name"] == random_name:
@@ -268,7 +268,7 @@ def test_index_create_with_vector_distance_metric(
             assert result["storage"]["namespace"] == test_case.namespace
             assert result["storage"]["set_name"] == random_name
     assert found == True
-    drop_specified_index(session_vector_client, test_case.namespace, random_name)
+    drop_specified_index(session_admin_client, test_case.namespace, random_name)
 
 
 #@given(random_name=index_strategy())
@@ -300,15 +300,15 @@ def test_index_create_with_vector_distance_metric(
         ),
     ],
 )
-def test_index_create_with_sets(session_vector_client, test_case, random_name):
+def test_index_create_with_sets(session_admin_client, test_case, random_name):
 
     try:
-        session_vector_client.index_drop(namespace=DEFAULT_NAMESPACE, name=random_name)
+        session_admin_client.index_drop(namespace=DEFAULT_NAMESPACE, name=random_name)
     except AVSServerError as se:
         if se.rpc_error.code() != grpc.StatusCode.NOT_FOUND:
             pass
 
-    session_vector_client.index_create(
+    session_admin_client.index_create(
         namespace=test_case.namespace,
         name=random_name,
         vector_field=test_case.vector_field,
@@ -320,7 +320,7 @@ def test_index_create_with_sets(session_vector_client, test_case, random_name):
         index_storage=test_case.index_storage,
         timeout=test_case.timeout,
     )
-    results = session_vector_client.index_list()
+    results = session_admin_client.index_list()
     found = False
     for result in results:
         if result["id"]["name"] == random_name:
@@ -338,7 +338,7 @@ def test_index_create_with_sets(session_vector_client, test_case, random_name):
             assert result["storage"]["namespace"] == test_case.namespace
             assert result["storage"]["set_name"] == random_name
     assert found == True
-    drop_specified_index(session_vector_client, test_case.namespace, random_name)
+    drop_specified_index(session_admin_client, test_case.namespace, random_name)
 
 
 #@given(random_name=index_strategy())
@@ -429,13 +429,13 @@ def test_index_create_with_sets(session_vector_client, test_case, random_name):
         ),
     ],
 )
-def test_index_create_with_index_params(session_vector_client, test_case, random_name):
+def test_index_create_with_index_params(session_admin_client, test_case, random_name):
     try:
-        session_vector_client.index_drop(namespace=DEFAULT_NAMESPACE, name=random_name)
+        session_admin_client.index_drop(namespace=DEFAULT_NAMESPACE, name=random_name)
     except AVSServerError as se:
         if se.rpc_error.code() != grpc.StatusCode.NOT_FOUND:
             pass
-    session_vector_client.index_create(
+    session_admin_client.index_create(
         namespace=test_case.namespace,
         name=random_name,
         vector_field=test_case.vector_field,
@@ -448,7 +448,7 @@ def test_index_create_with_index_params(session_vector_client, test_case, random
         timeout=test_case.timeout,
     )
 
-    results = session_vector_client.index_list()
+    results = session_admin_client.index_list()
     found = False
     for result in results:
         if result["id"]["name"] == random_name:
@@ -534,7 +534,7 @@ def test_index_create_with_index_params(session_vector_client, test_case, random
             assert result["storage"]["namespace"] == test_case.namespace
             assert result["storage"]["set_name"] == random_name
     assert found == True
-    drop_specified_index(session_vector_client, test_case.namespace, random_name)
+    drop_specified_index(session_admin_client, test_case.namespace, random_name)
 
 
 #@given(random_name=index_strategy())
@@ -555,13 +555,13 @@ def test_index_create_with_index_params(session_vector_client, test_case, random
         )
     ],
 )
-def test_index_create_index_labels(session_vector_client, test_case, random_name):
+def test_index_create_index_labels(session_admin_client, test_case, random_name):
     try:
-        session_vector_client.index_drop(namespace=DEFAULT_NAMESPACE, name=random_name)
+        session_admin_client.index_drop(namespace=DEFAULT_NAMESPACE, name=random_name)
     except AVSServerError as se:
         if se.rpc_error.code() != grpc.StatusCode.NOT_FOUND:
             pass
-    session_vector_client.index_create(
+    session_admin_client.index_create(
         namespace=test_case.namespace,
         name=random_name,
         vector_field=test_case.vector_field,
@@ -574,7 +574,7 @@ def test_index_create_index_labels(session_vector_client, test_case, random_name
         timeout=test_case.timeout,
     )
 
-    results = session_vector_client.index_list()
+    results = session_admin_client.index_list()
     found = False
     for result in results:
         if result["id"]["name"] == random_name:
@@ -595,7 +595,7 @@ def test_index_create_index_labels(session_vector_client, test_case, random_name
             assert result["storage"]["namespace"] == test_case.namespace
             assert result["storage"]["set_name"] == random_name
     assert found == True
-    drop_specified_index(session_vector_client, test_case.namespace, random_name)
+    drop_specified_index(session_admin_client, test_case.namespace, random_name)
 
 
 #@given(random_name=index_strategy())
@@ -616,13 +616,13 @@ def test_index_create_index_labels(session_vector_client, test_case, random_name
         ),
     ],
 )
-def test_index_create_index_storage(session_vector_client, test_case, random_name):
+def test_index_create_index_storage(session_admin_client, test_case, random_name):
     try:
-        session_vector_client.index_drop(namespace=DEFAULT_NAMESPACE, name=random_name)
+        session_admin_client.index_drop(namespace=DEFAULT_NAMESPACE, name=random_name)
     except AVSServerError as se:
         if se.rpc_error.code() != grpc.StatusCode.NOT_FOUND:
             pass
-    session_vector_client.index_create(
+    session_admin_client.index_create(
         namespace=test_case.namespace,
         name=random_name,
         vector_field=test_case.vector_field,
@@ -635,7 +635,7 @@ def test_index_create_index_storage(session_vector_client, test_case, random_nam
         timeout=test_case.timeout,
     )
 
-    results = session_vector_client.index_list()
+    results = session_admin_client.index_list()
     found = False
     for result in results:
         if result["id"]["name"] == random_name:
@@ -674,20 +674,20 @@ def test_index_create_index_storage(session_vector_client, test_case, random_nam
     ],
 )
 def test_index_create_timeout(
-    session_vector_client, test_case, random_name, with_latency
+    session_admin_client, test_case, random_name, with_latency
 ):
 
     if not with_latency:
         pytest.skip("Server latency too low to test timeout")
     try:
-        session_vector_client.index_drop(namespace=DEFAULT_NAMESPACE, name=random_name)
+        session_admin_client.index_drop(namespace=DEFAULT_NAMESPACE, name=random_name)
     except AVSServerError as se:
         if se.rpc_error.code() != grpc.StatusCode.NOT_FOUND:
             pass
 
     for i in range(10):
         try:
-            session_vector_client.index_create(
+            session_admin_client.index_create(
                 namespace=test_case.namespace,
                 name=random_name,
                 vector_field=test_case.vector_field,

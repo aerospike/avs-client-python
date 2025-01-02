@@ -11,10 +11,10 @@ from hypothesis import given, settings, Verbosity
 @pytest.mark.parametrize("empty_test_case", [None])
 #@given(random_name=index_strategy())
 #@settings(max_examples=1, deadline=1000)
-def test_index_drop(session_vector_client, empty_test_case, index):
-    session_vector_client.index_drop(namespace=DEFAULT_NAMESPACE, name=index)
+def test_index_drop(session_admin_client, empty_test_case, index):
+    session_admin_client.index_drop(namespace=DEFAULT_NAMESPACE, name=index)
 
-    result = session_vector_client.index_list()
+    result = session_admin_client.index_list()
     result = result
     for index in result:
         assert index["id"]["name"] != index
@@ -24,7 +24,7 @@ def test_index_drop(session_vector_client, empty_test_case, index):
 #@given(random_name=index_strategy())
 #@settings(max_examples=1, deadline=1000)
 def test_index_drop_timeout(
-    session_vector_client,
+    session_admin_client,
     empty_test_case,
     index,
     with_latency
@@ -34,7 +34,7 @@ def test_index_drop_timeout(
 
     for i in range(10):
         try:
-            session_vector_client.index_drop(
+            session_admin_client.index_drop(
                 namespace=DEFAULT_NAMESPACE, name=index, timeout=0.0001
             )
         except AVSServerError as se:

@@ -21,16 +21,16 @@ class revoke_roles_test_case:
         ),
     ],
 )
-def test_revoke_roles(session_rbac_client, test_case):
-    session_rbac_client.add_user(
+def test_revoke_roles(session_rbac_admin_client, test_case):
+    session_rbac_admin_client.add_user(
         username=test_case.username, password=test_case.password, roles=test_case.roles
     )
 
-    session_rbac_client.revoke_roles(
+    session_rbac_admin_client.revoke_roles(
         username=test_case.username, roles=test_case.roles
     )
 
-    result = session_rbac_client.get_user(username=test_case.username)
+    result = session_rbac_admin_client.get_user(username=test_case.username)
 
     assert result.username == test_case.username
 

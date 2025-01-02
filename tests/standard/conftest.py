@@ -5,6 +5,8 @@ import threading
 
 from aerospike_vector_search import Client
 from aerospike_vector_search.aio import Client as AsyncClient
+from aerospike_vector_search.admin import Client as AdminClient
+from aerospike_vector_search.aio.admin import Client as AsyncAdminClient
 from aerospike_vector_search import types, AVSServerError
 
 from utils import gen_records, DEFAULT_NAMESPACE, DEFAULT_INDEX_DIMENSION, DEFAULT_VECTOR_FIELD
@@ -61,7 +63,7 @@ def drop_all_indexes(
         with open(private_key, "rb") as f:
             private_key = f.read()
 
-    with Client(
+    with AdminClient(
         seeds=types.HostPort(host=host, port=port),
         is_loadbalancer=is_loadbalancer,
         username=username,
@@ -127,6 +129,30 @@ async def new_wrapped_async_client(
     )
 
 
+async def new_wrapped_async_admin_client(
+    host,
+    port,
+    username,
+    password,
+    root_certificate,
+    certificate_chain,
+    private_key,
+    is_loadbalancer,
+    ssl_target_name_override,
+    loop
+):
+    return AsyncAdminClient(
+        seeds=types.HostPort(host=host, port=port),
+        is_loadbalancer=is_loadbalancer,
+        username=username,
+        password=password,
+        root_certificate=root_certificate,
+        certificate_chain=certificate_chain,
+        private_key=private_key,
+        ssl_target_name_override=ssl_target_name_override
+    )
+
+
 class AsyncClientWrapper():
     def __init__(self, client, loop):
         self.client = client
@@ -149,6 +175,63 @@ class AsyncClientWrapper():
             return future.result()
         else:
             raise RuntimeError("Event loop is not running")
+
+
+@pytest.fixture(scope="module")
+def session_admin_client(
+    username,
+    password,
+    root_certificate,
+    host,
+    port,
+    certificate_chain,
+    private_key,
+    is_loadbalancer,
+    ssl_target_name_override,
+    async_client,
+    event_loop,
+):
+
+    if root_certificate:
+        with open(root_certificate, "rb") as f:
+            root_certificate = f.read()
+
+    if certificate_chain:
+        with open(certificate_chain, "rb") as f:
+            certificate_chain = f.read()
+    if private_key:
+        with open(private_key, "rb") as f:
+            private_key = f.read()
+
+    if async_client:
+        task = new_wrapped_async_admin_client(
+            host=host,
+            port=port,
+            username=username,
+            password=password,
+            root_certificate=root_certificate,
+            certificate_chain=certificate_chain,
+            private_key=private_key,
+            is_loadbalancer=is_loadbalancer,
+            ssl_target_name_override=ssl_target_name_override,
+            loop=event_loop
+        )
+        client = asyncio.run_coroutine_threadsafe(task, event_loop).result()
+        client = AsyncClientWrapper(client, event_loop)
+    else:
+        client = AdminClient(
+            seeds=types.HostPort(host=host, port=port),
+            is_loadbalancer=is_loadbalancer,
+            username=username,
+            password=password,
+            root_certificate=root_certificate,
+            certificate_chain=certificate_chain,
+            private_key=private_key,
+            ssl_target_name_override=ssl_target_name_override
+        )
+
+    yield client
+    client.close()
 
 
 @pytest.fixture(scope="module")
@@ -215,12 +298,12 @@ def index_name():
 
 
 @pytest.fixture(params=[DEFAULT_INDEX_ARGS])
-def index(session_vector_client, index_name, request):
+def index(session_admin_client, index_name, request):
     args = request.param
     namespace = args.get("namespace", DEFAULT_NAMESPACE)
     vector_field = args.get("vector_field", DEFAULT_VECTOR_FIELD) 
     dimensions = args.get("dimensions", DEFAULT_INDEX_DIMENSION)
-    session_vector_client.index_create(
+    session_admin_client.index_create(
         name = index_name,
         namespace = namespace,
         vector_field = vector_field,
@@ -241,7 +324,7 @@ def index(session_vector_client, index_name, request):
     )
     yield index_name
     try:
-        session_vector_client.index_drop(namespace=namespace, name=index_name)
+        session_admin_client.index_drop(namespace=namespace, name=index_name)
     except AVSServerError as se:
         if se.rpc_error.code() != grpc.StatusCode.NOT_FOUND:
             pass

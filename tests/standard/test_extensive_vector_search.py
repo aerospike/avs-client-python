@@ -107,6 +107,7 @@ def grade_results(
     truth_numpy,
     query_numpy,
     session_vector_client,
+    session_admin_client,
     name,
 ):
 
@@ -156,13 +157,14 @@ def test_vector_search(
     truth_numpy,
     query_numpy,
     session_vector_client,
+    session_admin_client,
     extensive_vector_search,
 ):
 
     if not extensive_vector_search:
         pytest.skip("Extensive vector tests disabled")
 
-    session_vector_client.index_create(
+    session_admin_client.index_create(
         namespace="test",
         name="demo1",
         vector_field="unit_test",
@@ -183,6 +185,7 @@ def test_vector_search(
         truth_numpy,
         query_numpy,
         session_vector_client,
+        session_admin_client,
         name="demo1",
     )
 
@@ -192,13 +195,14 @@ def test_vector_search_with_set_same_as_index(
     truth_numpy,
     query_numpy,
     session_vector_client,
+    session_admin_client,
     extensive_vector_search,
 ):
 
     if not extensive_vector_search:
         pytest.skip("Extensive vector tests disabled")
 
-    session_vector_client.index_create(
+    session_admin_client.index_create(
         namespace="test",
         name="demo2",
         sets="demo2",
@@ -224,6 +228,7 @@ def test_vector_search_with_set_same_as_index(
         truth_numpy,
         query_numpy,
         session_vector_client,
+        session_admin_client,
         name="demo2",
     )
 
@@ -233,13 +238,14 @@ def test_vector_search_with_set_different_than_name(
     truth_numpy,
     query_numpy,
     session_vector_client,
+    session_admin_client,
     extensive_vector_search,
 ):
 
     if not extensive_vector_search:
         pytest.skip("Extensive vector tests disabled")
 
-    session_vector_client.index_create(
+    session_admin_client.index_create(
         namespace="test",
         name="demo3",
         vector_field="unit_test",
@@ -262,6 +268,7 @@ def test_vector_search_with_set_different_than_name(
         truth_numpy,
         query_numpy,
         session_vector_client,
+        session_admin_client,
         name="demo3",
     )
 
@@ -271,13 +278,14 @@ def test_vector_search_with_index_storage_different_than_name(
     truth_numpy,
     query_numpy,
     session_vector_client,
+    session_admin_client,
     extensive_vector_search,
 ):
 
     if not extensive_vector_search:
         pytest.skip("Extensive vector tests disabled")
 
-    session_vector_client.index_create(
+    session_admin_client.index_create(
         namespace="test",
         name="demo4",
         vector_field="unit_test",
@@ -300,6 +308,7 @@ def test_vector_search_with_index_storage_different_than_name(
         truth_numpy,
         query_numpy,
         session_vector_client,
+        session_admin_client,
         name="demo4",
     )
 
@@ -309,13 +318,14 @@ def test_vector_search_with_index_storage_different_location(
     truth_numpy,
     query_numpy,
     session_vector_client,
+    session_admin_client,
     extensive_vector_search,
 ):
 
     if not extensive_vector_search:
         pytest.skip("Extensive vector tests disabled")
 
-    session_vector_client.index_create(
+    session_admin_client.index_create(
         namespace="test",
         name="demo5",
         vector_field="unit_test",
@@ -338,6 +348,7 @@ def test_vector_search_with_index_storage_different_location(
         truth_numpy,
         query_numpy,
         session_vector_client,
+        session_admin_client,
         name="demo5",
     )
 
@@ -347,13 +358,14 @@ def test_vector_search_with_separate_namespace(
     truth_numpy,
     query_numpy,
     session_vector_client,
+    session_admin_client,
     extensive_vector_search,
 ):
 
     if not extensive_vector_search:
         pytest.skip("Extensive vector tests disabled")
 
-    session_vector_client.index_create(
+    session_admin_client.index_create(
         namespace="test",
         name="demo6",
         vector_field="unit_test",
@@ -376,12 +388,13 @@ def test_vector_search_with_separate_namespace(
         truth_numpy,
         query_numpy,
         session_vector_client,
+        session_admin_client,
         name="demo6",
     )
 
 
 def test_vector_vector_search_timeout(
-    session_vector_client, with_latency
+    session_vector_client, session_admin_client, with_latency
 ):
     if not with_latency:
         pytest.skip("Server latency too low to test timeout")

@@ -1,6 +1,7 @@
 import pytest
 
 from aerospike_vector_search import Client
+from aerospike_vector_search.admin import Client as AdminClient
 from aerospike_vector_search import types
 
 
@@ -28,7 +29,7 @@ def drop_all_indexes(
         with open(private_key, "rb") as f:
             private_key = f.read()
 
-    with Client(
+    with AdminClient(
         seeds=types.HostPort(host=host, port=port),
         is_loadbalancer=is_loadbalancer,
         username=username,
@@ -46,7 +47,7 @@ def drop_all_indexes(
 
 
 @pytest.fixture(scope="module")
-def session_rbac_client(
+def session_rbac_admin_client(
     username,
     password,
     root_certificate,
@@ -69,7 +70,7 @@ def session_rbac_client(
         with open(private_key, "rb") as f:
             private_key = f.read()
 
-    client = Client(
+    client = AdminClient(
         seeds=types.HostPort(host=host, port=port),
         is_loadbalancer=is_loadbalancer,
         username=username,

@@ -8,8 +8,8 @@ import pytest
 @pytest.mark.parametrize("empty_test_case", [None])
 #@given(random_name=index_strategy())
 #@settings(max_examples=1, deadline=1000)
-def test_index_get(session_vector_client, empty_test_case, index):
-    result = session_vector_client.index_get(namespace=DEFAULT_NAMESPACE, name=index, apply_defaults=True)
+def test_index_get(session_admin_client, empty_test_case, index):
+    result = session_admin_client.index_get(namespace=DEFAULT_NAMESPACE, name=index, apply_defaults=True)
 
     assert result["id"]["name"] == index
     assert result["id"]["namespace"] == DEFAULT_NAMESPACE
@@ -47,9 +47,9 @@ def test_index_get(session_vector_client, empty_test_case, index):
 @pytest.mark.parametrize("empty_test_case", [None])
 #@given(random_name=index_strategy())
 #@settings(max_examples=1, deadline=1000)
-async def test_index_get_no_defaults(session_vector_client, empty_test_case, index):
+async def test_index_get_no_defaults(session_admin_client, empty_test_case, index):
 
-    result = session_vector_client.index_get(namespace=DEFAULT_NAMESPACE, name=index, apply_defaults=False)
+    result = session_admin_client.index_get(namespace=DEFAULT_NAMESPACE, name=index, apply_defaults=False)
 
     assert result["id"]["name"] == index
     assert result["id"]["namespace"] == DEFAULT_NAMESPACE
@@ -89,14 +89,14 @@ async def test_index_get_no_defaults(session_vector_client, empty_test_case, ind
 #@given(random_name=index_strategy())
 #@settings(max_examples=1, deadline=1000)
 def test_index_get_timeout(
-    session_vector_client, empty_test_case, index, with_latency
+    session_admin_client, empty_test_case, index, with_latency
 ):
     if not with_latency:
         pytest.skip("Server latency too low to test timeout")
 
     for i in range(10):
         try:
-            result = session_vector_client.index_get(
+            result = session_admin_client.index_get(
                 namespace=DEFAULT_NAMESPACE, name=index, timeout=0.0001
             )
 

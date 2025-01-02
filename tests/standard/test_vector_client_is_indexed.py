@@ -8,13 +8,14 @@ import grpc
 
 
 def test_vector_is_indexed(
+    session_admin_client,
     session_vector_client,
     index,
     record,
 ):
     # wait for the record to be indexed
     wait_for_index(
-        admin_client=session_vector_client,
+        admin_client=session_admin_client,
         namespace=DEFAULT_NAMESPACE,
         index=index
     )
