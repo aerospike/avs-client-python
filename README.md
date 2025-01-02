@@ -17,7 +17,7 @@ You can add the package name `aerospike-vector-search` to your application's `re
 python3 -m pip install -r requirements.txt
 ```
 
-## Installing from Jfrog
+## Installing from Artifactory/Jfrog
 The Aerospike Vector Search client is also available on our own Artifactory repository.
 To resolve the Artifactory client packages, pip install with the following command.
 
