@@ -9,8 +9,8 @@ from hypothesis import given, settings, Verbosity
 @pytest.mark.parametrize("empty_test_case", [None])
 #@given(random_name=index_strategy())
 #@settings(max_examples=1, deadline=1000)
-def test_index_list(session_admin_client, empty_test_case, index):
-    result = session_admin_client.index_list(apply_defaults=True)
+def test_index_list(session_vector_client, empty_test_case, index):
+    result = session_vector_client.index_list(apply_defaults=True)
     assert len(result) > 0
     for index in result:
         assert isinstance(index["id"]["name"], str)
@@ -32,7 +32,7 @@ def test_index_list(session_admin_client, empty_test_case, index):
 #@given(random_name=index_strategy())
 #@settings(max_examples=1, deadline=1000)
 def test_index_list_timeout(
-    session_admin_client, empty_test_case, with_latency
+    session_vector_client, empty_test_case, with_latency
 ):
 
     if not with_latency:
@@ -41,7 +41,7 @@ def test_index_list_timeout(
     for i in range(10):
 
         try:
-            result = session_admin_client.index_list(timeout=0.0001)
+            result = session_vector_client.index_list(timeout=0.0001)
 
         except AVSServerError as se:
             if se.rpc_error.code() != grpc.StatusCode.DEADLINE_EXCEEDED:

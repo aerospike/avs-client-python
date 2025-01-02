@@ -265,11 +265,10 @@ class vector_search_by_key_test_case:
 )
 def test_vector_search_by_key(
     session_vector_client,
-    session_admin_client,
     test_case,
 ):
     
-    session_admin_client.index_create(
+    session_vector_client.index_create(
         namespace=test_case.search_namespace,
         name=test_case.index_name,
         vector_field=test_case.vector_field,
@@ -298,7 +297,7 @@ def test_vector_search_by_key(
         )
     
     wait_for_index(
-        admin_client=session_admin_client,
+        admin_client=session_vector_client,
         namespace=test_case.search_namespace,
         index=test_case.index_name,
     )
@@ -324,7 +323,7 @@ def test_vector_search_by_key(
             key=key,
         )
 
-    session_admin_client.index_drop(
+    session_vector_client.index_drop(
         namespace=test_case.search_namespace,
         name=test_case.index_name,
     )
@@ -332,10 +331,9 @@ def test_vector_search_by_key(
 
 def test_vector_search_by_key_different_namespaces(
     session_vector_client,
-    session_admin_client,
 ):
     
-    session_admin_client.index_create(
+    session_vector_client.index_create(
         namespace="index_storage",
         name="diff_ns_idx",
         vector_field="vec",
@@ -374,7 +372,7 @@ def test_vector_search_by_key_different_namespaces(
     )
     
     wait_for_index(
-        admin_client=session_admin_client,
+        admin_client=session_vector_client,
         namespace="index_storage",
         index="diff_ns_idx",
     )
@@ -415,7 +413,7 @@ def test_vector_search_by_key_different_namespaces(
         key="search_for",
     )
 
-    session_admin_client.index_drop(
+    session_vector_client.index_drop(
         namespace="index_storage",
         name="diff_ns_idx",
     )
