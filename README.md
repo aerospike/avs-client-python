@@ -1,19 +1,10 @@
 # Aerospike Vector Search Client Python
-Python client for Aerospike Vector Search Database
+Python client for the Aerospike Vector Search Database
 
 ## Prerequisites
  - Python 3.9 or higher
  - pip version 9.0.1 or higher
  - Aerospike Vector Search DB and Aerospike clusters running.
-
-
-## Using the client from your application using pip
-To resolve the client packages using pip, add the following to $HOME/.pip/pip.conf
-
-```ini
-[global]
-extra-index-url=https://<jfrog-username>:<jfrog-access-token>@aerospike.jfrog.io/artifactory/api/pypi/ecosystem-python-dev-local/simple 
-```
 
 ### Install the aerospike_vector_search using pip
 ```shell
@@ -26,12 +17,20 @@ You can add the package name `aerospike-vector-search` to your application's `re
 python3 -m pip install -r requirements.txt
 ```
 
+## Installing from Artifactory/Jfrog
+The Aerospike Vector Search client is also available on our own Artifactory repository.
+To resolve the Artifactory client packages, pip install with the following command.
+
+```shell
+pip install aerospike-vector-search -i https://<jfrog-username>:<jfrog-access-token>@aerospike.jfrog.io/artifactory/api/pypi/ecosystem-python-dev-local/simple 
+```
+
 **Note**
 This project makes use of the warnings module to communicate deprecations and upcoming changes.
-Run your project with the `-Wd` or Python flag or the `PYTHONWARNINGS=default` environment variable to display relevant warnings.
+Run your project with the `-Wd` Python flag or the `PYTHONWARNINGS=default` environment variable to display relevant warnings.
 
 ## Building the client
-### Setup build Python Virtual Environment
+### Setup the Python Virtual Environment
 This is the recommended mode for building the python client.
 
 ```shell
@@ -59,4 +58,4 @@ python3 -m build
 
 ## Examples
 
-See [examples](https://github.com/aerospike/proximus-examples) for working samples.
+See [examples](https://github.com/aerospike/aerospike-vector) for sample projects.
