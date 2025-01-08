@@ -8,5 +8,4 @@ This module contains clients with methods used for synchronous programming.
    :maxdepth: 2
    :caption: Contents:
 
-   admin
    client
