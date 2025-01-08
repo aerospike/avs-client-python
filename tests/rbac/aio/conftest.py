@@ -1,7 +1,6 @@
 import pytest
 import asyncio
 from aerospike_vector_search.aio import Client
-from aerospike_vector_search.aio.admin import Client as AdminClient
 from aerospike_vector_search import types
 
 
@@ -28,7 +27,7 @@ async def drop_all_indexes(
         with open(private_key, "rb") as f:
             private_key = f.read()
 
-    async with AdminClient(
+    async with Client(
         seeds=types.HostPort(host=host, port=port),
         is_loadbalancer=is_loadbalancer,
         username=username,
@@ -48,7 +47,7 @@ async def drop_all_indexes(
 
 
 @pytest.fixture(scope="module")
-async def session_rbac_admin_client(
+async def session_rbac_client(
     username,
     password,
     root_certificate,
@@ -70,7 +69,7 @@ async def session_rbac_admin_client(
         with open(private_key, "rb") as f:
             private_key = f.read()
 
-    client = AdminClient(
+    client = Client(
         seeds=types.HostPort(host=host, port=port),
         is_loadbalancer=is_loadbalancer,
         username=username,

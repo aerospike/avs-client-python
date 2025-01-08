@@ -1,6 +1,7 @@
-import pytest
 from aerospike_vector_search import types
+from utils import wait_for_index
 
+import pytest
 
 class vector_search_by_key_test_case:
     def __init__(
@@ -260,47 +261,31 @@ class vector_search_by_key_test_case:
                 ),
             ],
         ),
-        # test search key record and search records are in different namespaces
-        vector_search_by_key_test_case(
-            index_name="basic_search",
-            index_dimensions=3,
-            vector_field="vector",
-            limit=2,
-            key="rec1",
-            key_namespace="test",
-            search_namespace="index_storage",
-            include_fields=None,
-            exclude_fields=None,
-            key_set=None,
-            record_data={
-                "rec1": {
-                    "bin": 1,
-                    "vector": [1.0, 1.0, 1.0],
-                },
-                "rec2": {
-                    "bin": 2,
-                    "vector": [2.0, 2.0, 2.0],
-                },
-                "rec3": {
-                    "bin": 3,
-                    "vector": [3.0, 3.0, 3.0],
-                },
-            },
-            expected_results=[],
-        ),
     ],
 )
 def test_vector_search_by_key(
     session_vector_client,
-    session_admin_client,
     test_case,
 ):
     
-    session_admin_client.index_create(
+    session_vector_client.index_create(
         namespace=test_case.search_namespace,
         name=test_case.index_name,
         vector_field=test_case.vector_field,
         dimensions=test_case.index_dimensions,
+        index_params=types.HnswParams(
+            batching_params=types.HnswBatchingParams(
+                # 10_000 is the minimum value, in order for the tests to run as
+                # fast as possible we set it to the minimum value so records are indexed
+                # quickly
+                index_interval=10_000,
+            ),
+            healer_params=types.HnswHealerParams(
+                # run the healer every second
+                # for fast indexing
+                schedule="* * * * * ?"
+            )
+        )
     )
 
     for key, rec in test_case.record_data.items():
@@ -311,9 +296,10 @@ def test_vector_search_by_key(
             set_name=test_case.key_set,
         )
     
-    session_vector_client.wait_for_index_completion(
+    wait_for_index(
+        admin_client=session_vector_client,
         namespace=test_case.search_namespace,
-        name=test_case.index_name,
+        index=test_case.index_name,
     )
 
     results = session_vector_client.vector_search_by_key(
@@ -337,7 +323,7 @@ def test_vector_search_by_key(
             key=key,
         )
 
-    session_admin_client.index_drop(
+    session_vector_client.index_drop(
         namespace=test_case.search_namespace,
         name=test_case.index_name,
     )
@@ -345,14 +331,26 @@ def test_vector_search_by_key(
 
 def test_vector_search_by_key_different_namespaces(
     session_vector_client,
-    session_admin_client,
 ):
     
-    session_admin_client.index_create(
+    session_vector_client.index_create(
         namespace="index_storage",
         name="diff_ns_idx",
         vector_field="vec",
         dimensions=3,
+        index_params=types.HnswParams(
+            batching_params=types.HnswBatchingParams(
+                # 10_000 is the minimum value, in order for the tests to run as
+                # fast as possible we set it to the minimum value so records are indexed
+                # quickly
+                index_interval=10_000,
+            ),
+            healer_params=types.HnswHealerParams(
+                # run the healer every second
+                # for fast indexing
+                schedule="* * * * * ?"
+            )
+        )
     )
 
     session_vector_client.upsert(
@@ -373,9 +371,10 @@ def test_vector_search_by_key_different_namespaces(
         },
     )
     
-    session_vector_client.wait_for_index_completion(
+    wait_for_index(
+        admin_client=session_vector_client,
         namespace="index_storage",
-        name="diff_ns_idx",
+        index="diff_ns_idx",
     )
 
     results = session_vector_client.vector_search_by_key(
@@ -414,7 +413,7 @@ def test_vector_search_by_key_different_namespaces(
         key="search_for",
     )
 
-    session_admin_client.index_drop(
+    session_vector_client.index_drop(
         namespace="index_storage",
         name="diff_ns_idx",
     )

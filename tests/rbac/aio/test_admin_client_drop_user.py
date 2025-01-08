@@ -24,13 +24,13 @@ class drop_user_test_case:
         ),
     ],
 )
-async def test_drop_user(session_rbac_admin_client, test_case):
-    await session_rbac_admin_client.add_user(
+async def test_drop_user(session_rbac_client, test_case):
+    await session_rbac_client.add_user(
         username=test_case.username, password=test_case.password, roles=None
     )
-    await session_rbac_admin_client.drop_user(
+    await session_rbac_client.drop_user(
         username=test_case.username,
     )
     with pytest.raises(AVSServerError) as e_info:
-        result = await session_rbac_admin_client.get_user(username=test_case.username)
+        result = await session_rbac_client.get_user(username=test_case.username)
     assert e_info.value.rpc_error.code() == grpc.StatusCode.NOT_FOUND

@@ -1,27 +1,16 @@
-import pytest
-
 from aerospike_vector_search import AVSServerError
+from utils import drop_specified_index
 
 import pytest
 import grpc
-
-from ...utils import random_name
-
-from .aio_utils import drop_specified_index
 from hypothesis import given, settings, Verbosity
 
 
 @pytest.mark.parametrize("empty_test_case", [None])
 #@given(random_name=index_strategy())
 #@settings(max_examples=1, deadline=1000)
-async def test_index_list(session_admin_client, empty_test_case, random_name):
-    await session_admin_client.index_create(
-        namespace="test",
-        name=random_name,
-        vector_field="science",
-        dimensions=1024,
-    )
-    result = await session_admin_client.index_list(apply_defaults=True)
+def test_index_list(session_vector_client, empty_test_case, index):
+    result = session_vector_client.index_list(apply_defaults=True)
     assert len(result) > 0
     for index in result:
         assert isinstance(index["id"]["name"], str)
@@ -37,19 +26,25 @@ async def test_index_list(session_admin_client, empty_test_case, random_name):
         assert isinstance(index["hnsw_params"]["batching_params"]["reindex_interval"], int)
         assert isinstance(index["storage"]["namespace"], str)
         assert isinstance(index["storage"]["set_name"], str)
-    await drop_specified_index(session_admin_client, "test", random_name)
 
 
-async def test_index_list_timeout(session_admin_client, with_latency):
+@pytest.mark.parametrize("empty_test_case", [None])
+#@given(random_name=index_strategy())
+#@settings(max_examples=1, deadline=1000)
+def test_index_list_timeout(
+    session_vector_client, empty_test_case, with_latency
+):
+
     if not with_latency:
         pytest.skip("Server latency too low to test timeout")
+
     for i in range(10):
+
         try:
-            result = await session_admin_client.index_list(timeout=0.0001)
+            result = session_vector_client.index_list(timeout=0.0001)
 
         except AVSServerError as se:
-            if se.rpc_error.code() == grpc.StatusCode.DEADLINE_EXCEEDED:
+            if se.rpc_error.code() != grpc.StatusCode.DEADLINE_EXCEEDED:
                 assert se.rpc_error.code() == grpc.StatusCode.DEADLINE_EXCEEDED
                 return
-
     assert "In several attempts, the timeout did not happen" == "TEST FAIL"

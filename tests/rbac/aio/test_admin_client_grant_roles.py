@@ -21,16 +21,16 @@ class grant_roles_test_case:
         ),
     ],
 )
-async def test_grant_roles(session_rbac_admin_client, test_case):
-    await session_rbac_admin_client.add_user(
+async def test_grant_roles(session_rbac_client, test_case):
+    await session_rbac_client.add_user(
         username=test_case.username, password=test_case.password, roles=test_case.roles
     )
 
-    await session_rbac_admin_client.grant_roles(
+    await session_rbac_client.grant_roles(
         username=test_case.username, roles=test_case.granted_roles
     )
 
-    result = await session_rbac_admin_client.get_user(username=test_case.username)
+    result = await session_rbac_client.get_user(username=test_case.username)
 
     assert result.username == test_case.username
 

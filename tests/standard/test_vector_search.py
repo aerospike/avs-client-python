@@ -1,7 +1,7 @@
-import numpy as np
-import pytest
 from aerospike_vector_search import types
+from utils import wait_for_index
 
+import pytest
 
 class vector_search_test_case:
     def __init__(
@@ -39,7 +39,7 @@ class vector_search_test_case:
         vector_search_test_case(
             index_name="basic_search",
             index_dimensions=3,
-            vector_field="vector",
+            vector_field="vecs",
             limit=3,
             query=[0.0, 0.0, 0.0],
             namespace="test",
@@ -49,7 +49,7 @@ class vector_search_test_case:
             record_data={
                 "rec1": {
                     "bin1": 1,
-                    "vector": [1.0, 1.0, 1.0],
+                    "vecs": [1.0, 1.0, 1.0],
                 },
             },
             expected_results=[
@@ -61,7 +61,7 @@ class vector_search_test_case:
                     ),
                     fields={
                         "bin1": 1,
-                        "vector": [1.0, 1.0, 1.0],
+                        "vecs": [1.0, 1.0, 1.0],
                     },
                     distance=3.0,
                 ),
@@ -70,7 +70,7 @@ class vector_search_test_case:
         vector_search_test_case(
             index_name="field_filter",
             index_dimensions=3,
-            vector_field="vector",
+            vector_field="vecs",
             limit=3,
             query=[0.0, 0.0, 0.0],
             namespace="test",
@@ -80,7 +80,7 @@ class vector_search_test_case:
             record_data={
                 "rec1": {
                     "bin1": 1,
-                    "vector": [1.0, 1.0, 1.0],
+                    "vecs": [1.0, 1.0, 1.0],
                 },
             },
             expected_results=[
@@ -99,15 +99,27 @@ class vector_search_test_case:
 )
 def test_vector_search(
     session_vector_client,
-    session_admin_client,
     test_case,
 ):
     
-    session_admin_client.index_create(
+    session_vector_client.index_create(
         namespace=test_case.namespace,
         name=test_case.index_name,
         vector_field=test_case.vector_field,
         dimensions=test_case.index_dimensions,
+        index_params=types.HnswParams(
+            batching_params=types.HnswBatchingParams(
+                # 10_000 is the minimum value, in order for the tests to run as
+                # fast as possible we set it to the minimum value so records are indexed
+                # quickly
+                index_interval=10_000,
+            ),
+            healer_params=types.HnswHealerParams(
+                # run the healer every second
+                # for fast indexing
+                schedule="* * * * * ?"
+            )
+        )
     )
 
     for key, rec in test_case.record_data.items():
@@ -118,9 +130,10 @@ def test_vector_search(
             set_name=test_case.set_name,
         )
     
-    session_vector_client.wait_for_index_completion(
+    wait_for_index(
+        admin_client=session_vector_client,
         namespace=test_case.namespace,
-        name=test_case.index_name,
+        index=test_case.index_name,
     )
 
     results = session_vector_client.vector_search(
@@ -140,7 +153,7 @@ def test_vector_search(
             key=key,
         )
 
-    session_admin_client.index_drop(
+    session_vector_client.index_drop(
         namespace=test_case.namespace,
         name=test_case.index_name,
     )
