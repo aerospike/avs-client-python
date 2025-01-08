@@ -19,17 +19,17 @@ class update_credentials_test_case:
         ),
     ],
 )
-async def test_update_credentials(session_rbac_admin_client, test_case):
-    await session_rbac_admin_client.add_user(
+async def test_update_credentials(session_rbac_client, test_case):
+    await session_rbac_client.add_user(
         username=test_case.username, password=test_case.old_password, roles=None
     )
 
-    await session_rbac_admin_client.update_credentials(
+    await session_rbac_client.update_credentials(
         username=test_case.username,
         password=test_case.new_password,
     )
 
-    result = await session_rbac_admin_client.get_user(username=test_case.username)
+    result = await session_rbac_client.get_user(username=test_case.username)
 
     assert result.username == test_case.username
 

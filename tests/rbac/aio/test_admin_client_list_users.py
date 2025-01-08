@@ -17,12 +17,12 @@ class list_users_test_case:
         ),
     ],
 )
-async def test_list_users(session_rbac_admin_client, test_case):
-    await session_rbac_admin_client.add_user(
+async def test_list_users(session_rbac_client, test_case):
+    await session_rbac_client.add_user(
         username=test_case.username, password=test_case.password, roles=None
     )
 
-    result = await session_rbac_admin_client.list_users()
+    result = await session_rbac_client.list_users()
     user_found = False
     for user in result:
         if user.username == test_case.username:
