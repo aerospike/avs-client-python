@@ -433,7 +433,7 @@ class Client(BaseClientMixin, AdminBaseClientMixin):
         :param namespace: The namespace for the record.
         :type namespace: str
 
-        :param key: The key for the record.
+        :param key: The primary key for the record.
         :type key: Union[int, str, bytes, bytearray, np.generic, np.ndarray]
 
         :param index_name: The name of the index.
@@ -487,7 +487,7 @@ class Client(BaseClientMixin, AdminBaseClientMixin):
         timeout: Optional[int] = None,
     ) -> list[types.Neighbor]:
         """
-        Perform a Hierarchical Navigable Small World (HNSW) vector search in Aerospike Vector Search by primary record key.
+        Perform a vector search against this index using a record in Aerospike.
 
         :param search_namespace: The namespace that stores the records to be searched.
         :type search_namespace: str
@@ -507,7 +507,7 @@ class Client(BaseClientMixin, AdminBaseClientMixin):
         :param limit: The maximum number of neighbors to return. K value.
         :type limit: int
 
-        :param key_set: The name of the set from which to read the record to search by. Defaults to None.
+        :param key_set: The set that stores the record, if any. Defaults to None.
         :type key_set: Optional[str]
         
         :param search_params: Parameters for the HNSW algorithm.
