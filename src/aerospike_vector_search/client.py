@@ -908,7 +908,7 @@ class Client(BaseClientMixin, AdminBaseClientMixin):
         :param index_labels: Optional labels associated with the index. Defaults to None.
         :type index_labels: Optional[dict[str, str]]
 
-        :param hnsw_update_params: Parameters for updating HNSW index settings.
+        :param hnsw_update_params: Parameters for updating HNSW index settings. Defaults to None.
         :type hnsw_update_params: Optional[types.HnswIndexUpdate]
 
         :param timeout: Time in seconds (default 100_000) this operation will wait before raising an error.
@@ -941,7 +941,7 @@ class Client(BaseClientMixin, AdminBaseClientMixin):
         self, *, namespace: str, name: str, timeout: Optional[int] = None
     ) -> None:
         """
-        Drop an index.
+        Deletes the index from AVS.
 
         :param namespace: The namespace of the index.
         :type name: str
@@ -1021,11 +1021,11 @@ class Client(BaseClientMixin, AdminBaseClientMixin):
         *,
         namespace: str,
         name: str,
-        timeout: Optional[int] = None,
         apply_defaults: Optional[bool] = True,
+        timeout: Optional[int] = None,
     ) -> types.IndexDefinition:
         """
-        Retrieve the information related with an index.
+        Retrieve information related to the index from AVS.
 
         :param namespace: The namespace of the index.
         :type namespace: str
@@ -1033,11 +1033,11 @@ class Client(BaseClientMixin, AdminBaseClientMixin):
         :param name: The name of the index.
         :type name: str
 
-        :param timeout: Time in seconds this operation will wait before raising an :class:`AVSServerError <aerospike_vector_search.types.AVSServerError>`. Defaults to None.
-        :type timeout: int
-
         :param apply_defaults: Apply default values to parameters which are not set by user. Defaults to True.
         :type apply_defaults: bool
+
+        :param timeout: Time in seconds this operation will wait before raising an :class:`AVSServerError <aerospike_vector_search.types.AVSServerError>`. Defaults to None.
+        :type timeout: int
 
         Returns: dict[str, Union[int, str]: Information about an index.
 
@@ -1082,12 +1082,6 @@ class Client(BaseClientMixin, AdminBaseClientMixin):
         Raises:
             AVSServerError: Raised if an error occurs during the RPC communication with the server while attempting to get the index status.
             This error could occur due to various reasons such as network issues, server-side failures, or invalid request parameters.
-
-        Note:
-            This method retrieves the status of the specified index. If index_get_status is called the vector client puts some records into Aerospike Vector Search,
-            the records may not immediately begin to merge into the index.
-
-            Warning: This API is subject to change.
         """
         (index_stub, index_get_status_request, kwargs) = self._prepare_index_get_status(
             namespace, name, timeout, logger

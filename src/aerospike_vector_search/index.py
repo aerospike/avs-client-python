@@ -249,7 +249,114 @@ class Index():
             timeout=timeout,
         )
 
+    def update(
+            self,
+            *,
+            labels: Optional[dict[str, str]] = None,
+            hnsw_update_params: Optional[types.HnswIndexUpdate] = None,
+            timeout: Optional[int] = None,
+        ) -> None:
+        """
+        Update index configuration.
 
+        :param index_labels: Optional labels associated with the index. Defaults to None.
+        :type index_labels: Optional[dict[str, str]]
+
+        :param hnsw_update_params: Parameters for updating HNSW index settings. Defaults to None.
+        :type hnsw_update_params: Optional[types.HnswIndexUpdate]
+
+        :param timeout: Time in seconds this operation will wait before raising an error. Defaults to None.
+        :type timeout: int
+
+        Raises:
+            AVSServerError: Raised if an error occurs during the RPC communication with the server while attempting to update the index.
+        """
+
+        self._client.index_update(
+            namespace=self._namespace,
+            name=self._name,
+            index_labels=labels,
+            hnsw_update_params=hnsw_update_params,
+            timeout=timeout,
+        )
+    
+    def get(
+            self,
+            *,
+            apply_defaults: bool = True,
+            timeout: Optional[int] = None,
+        ) -> types.IndexDefinition:
+        """
+        Retrieve information related to the index from AVS.
+
+        :param apply_defaults: Apply default values to parameters which are not set by user. Defaults to True.
+        :type apply_defaults: bool
+
+        :param timeout: Time in seconds this operation will wait before raising an :class:`AVSServerError <aerospike_vector_search.types.AVSServerError>`. Defaults to None.
+        :type timeout: int
+
+        Returns: dict[str, Union[int, str]: Information about an index.
+
+        Raises:
+            AVSServerError: Raised if an error occurs during the RPC communication with the server while attempting to get the index.
+            This error could occur due to various reasons such as network issues, server-side failures, or invalid request parameters.
+
+        """
+        return self._client.index_get(
+            namespace=self._namespace,
+            name=self._name,
+            apply_defaults=apply_defaults,
+            timeout=timeout,
+        )
+    
+    def status(
+            self,
+            *,
+            timeout: Optional[int] = None,
+        ) -> types.IndexStatusResponse:
+        """
+        Retrieve index status information. Results include metrics like the number of vertices in the index, 
+        the number of unmerged index records, and the number of vector records indexed.
+
+        :param timeout: Time in seconds this operation will wait before raising an :class:`AVSServerError <aerospike_vector_search.types.AVSServerError>`. Defaults to None.
+        :type timeout: int
+
+        Returns: IndexStatusResponse: AVS response containing index status information.
+
+        Raises:
+            AVSServerError: Raised if an error occurs during the RPC communication with the server while attempting to get the index status.
+            This error could occur due to various reasons such as network issues, server-side failures, or invalid request parameters.
+        """
+        return self._client.index_get_status(
+            namespace=self._namespace,
+            name=self._name,
+            timeout=timeout,
+        )
+
+    def drop(
+            self,
+            *,
+            timeout: Optional[int] = None,
+        ) -> None:
+        """
+        Deletes the index from AVS.
+
+        :param timeout: Time in seconds this operation will wait before raising an :class:`AVSServerError <aerospike_vector_search.types.AVSServerError>`. Defaults to None.
+        :type timeout: int
+
+        Raises:
+            AVSServerError: Raised if an error occurs during the RPC communication with the server while attempting to drop the index.
+            This error could occur due to various reasons such as network issues, server-side failures, or invalid request parameters.
+
+        Note:
+            This method drops an index with the specified parameters and waits for the index deletion to complete.
+            It waits for up to 100,000 seconds for the index deletion to complete.
+        """
+        return self._client.index_drop(
+            namespace=self._namespace,
+            name=self._name,
+            timeout=timeout,
+        )
 
 
 

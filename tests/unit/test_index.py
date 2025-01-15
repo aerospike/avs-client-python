@@ -151,6 +151,7 @@ def test_index_vector_search_by_key_no_params():
         timeout=None,
     )
 
+
 def test_index_is_indexed():
     mock_client = MagicMock(spec=Client)
     index = Index(
@@ -179,6 +180,7 @@ def test_index_is_indexed():
         timeout=1000,
     )
 
+
 def test_index_is_indexed_no_params():
     mock_client = MagicMock(spec=Client)
     index = Index(
@@ -205,6 +207,7 @@ def test_index_is_indexed_no_params():
         timeout=None,
     )
 
+
 def test_index_get_percent_unmerged():
     mock_client = MagicMock(spec=Client)
     index = Index(
@@ -227,6 +230,7 @@ def test_index_get_percent_unmerged():
         timeout=1000,
     )
 
+
 def test_index_get_percent_unmerged_no_params():
     mock_client = MagicMock(spec=Client)
     index = Index(
@@ -242,6 +246,195 @@ def test_index_get_percent_unmerged_no_params():
     index.get_percent_unmerged()
 
     mock_client.index_get_percent_unmerged.assert_called_once_with(
+        namespace="test_namespace",
+        name="test_index",
+        timeout=None,
+    )
+
+
+def test_index_update():
+    mock_client = MagicMock(spec=Client)
+    index = Index(
+        client=mock_client,
+        name="test_index",
+        namespace="test_namespace",
+        vector_field="test_vector_field",
+        dimensions=10,
+        vector_distance_metric=types.VectorDistanceMetric.SQUARED_EUCLIDEAN,
+        sets="test_sets",
+    )
+
+    updates = types.HnswIndexUpdate(
+        enable_vector_integrity_check=True,
+    )
+
+    index.update(
+        timeout=1000,
+        hnsw_update_params=updates,
+        labels={"test": "label"},
+    )
+
+    mock_client.index_update.assert_called_once_with(
+        namespace="test_namespace",
+        name="test_index",
+        index_labels={"test": "label"},
+        hnsw_update_params=updates,
+        timeout=1000,
+    )
+
+
+def test_index_update_no_params():
+    mock_client = MagicMock(spec=Client)
+    index = Index(
+        client=mock_client,
+        name="test_index",
+        namespace="test_namespace",
+        vector_field="test_vector_field",
+        dimensions=10,
+        vector_distance_metric=types.VectorDistanceMetric.SQUARED_EUCLIDEAN,
+        sets="test_sets",
+    )
+
+    index.update()
+
+    mock_client.index_update.assert_called_once_with(
+        namespace="test_namespace",
+        name="test_index",
+        index_labels=None,
+        hnsw_update_params=None,
+        timeout=None,
+    )
+
+
+def test_index_get():
+    mock_client = MagicMock(spec=Client)
+    index = Index(
+        client=mock_client,
+        name="test_index",
+        namespace="test_namespace",
+        vector_field="test_vector_field",
+        dimensions=10,
+        vector_distance_metric=types.VectorDistanceMetric.SQUARED_EUCLIDEAN,
+        sets="test_sets",
+    )
+
+    index.get(
+        apply_defaults=False,
+        timeout=1000,
+    )
+
+    mock_client.index_get.assert_called_once_with(
+        namespace="test_namespace",
+        name="test_index",
+        apply_defaults=False,
+        timeout=1000,
+    )
+
+
+def test_index_get_no_params():
+    mock_client = MagicMock(spec=Client)
+    index = Index(
+        client=mock_client,
+        name="test_index",
+        namespace="test_namespace",
+        vector_field="test_vector_field",
+        dimensions=10,
+        vector_distance_metric=types.VectorDistanceMetric.SQUARED_EUCLIDEAN,
+        sets="test_sets",
+    )
+
+    index.get()
+
+    mock_client.index_get.assert_called_once_with(
+        namespace="test_namespace",
+        name="test_index",
+        apply_defaults=True,
+        timeout=None,
+    )
+
+
+def test_index_status():
+    mock_client = MagicMock(spec=Client)
+    index = Index(
+        client=mock_client,
+        name="test_index",
+        namespace="test_namespace",
+        vector_field="test_vector_field",
+        dimensions=10,
+        vector_distance_metric=types.VectorDistanceMetric.SQUARED_EUCLIDEAN,
+        sets="test_sets",
+    )
+
+    index.status(
+        timeout=1000,
+    )
+
+    mock_client.index_get_status.assert_called_once_with(
+        namespace="test_namespace",
+        name="test_index",
+        timeout=1000,
+    )
+
+
+def test_index_status_no_params():
+    mock_client = MagicMock(spec=Client)
+    index = Index(
+        client=mock_client,
+        name="test_index",
+        namespace="test_namespace",
+        vector_field="test_vector_field",
+        dimensions=10,
+        vector_distance_metric=types.VectorDistanceMetric.SQUARED_EUCLIDEAN,
+        sets="test_sets",
+    )
+
+    index.status()
+
+    mock_client.index_get_status.assert_called_once_with(
+        namespace="test_namespace",
+        name="test_index",
+        timeout=None,
+    )
+
+
+def test_index_drop():
+    mock_client = MagicMock(spec=Client)
+    index = Index(
+        client=mock_client,
+        name="test_index",
+        namespace="test_namespace",
+        vector_field="test_vector_field",
+        dimensions=10,
+        vector_distance_metric=types.VectorDistanceMetric.SQUARED_EUCLIDEAN,
+        sets="test_sets",
+    )
+
+    index.drop(
+        timeout=1000,
+    )
+
+    mock_client.index_drop.assert_called_once_with(
+        namespace="test_namespace",
+        name="test_index",
+        timeout=1000,
+    )
+
+
+def test_index_drop_no_params():
+    mock_client = MagicMock(spec=Client)
+    index = Index(
+        client=mock_client,
+        name="test_index",
+        namespace="test_namespace",
+        vector_field="test_vector_field",
+        dimensions=10,
+        vector_distance_metric=types.VectorDistanceMetric.SQUARED_EUCLIDEAN,
+        sets="test_sets",
+    )
+
+    index.drop()
+
+    mock_client.index_drop.assert_called_once_with(
         namespace="test_namespace",
         name="test_index",
         timeout=None,
