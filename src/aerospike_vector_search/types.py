@@ -846,6 +846,11 @@ class IndexStorage(object):
             f"}}"
         )
 
+    def __eq__(self, other) -> bool:
+        if not isinstance(other, IndexStorage):
+            return NotImplemented
+        return self.namespace == other.namespace and self.set_name == other.set_name
+
     def __getitem__(self, key):
         key = str(key)  # Ensure key is a string
         if not hasattr(self, key):

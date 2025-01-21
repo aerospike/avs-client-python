@@ -1098,7 +1098,48 @@ class Client(BaseClientMixin, AdminBaseClientMixin):
             logger.error("Failed to get index status with error: %s", e)
             raise types.AVSServerError(rpc_error=e)
 
+    def index(
+            self,
+            *,
+            name: str,
+            namespace: str,
+            timeout: Optional[int] = None,
+    ):
+        """
+        Get an Index object for the given index.
+        The Index object provides methods to interact with and search on the index.
+        It is best practice to use Index objects to interact with indexes
+        rather than methods such as :meth:`index_get_status` or :meth:`vector_search`.
+        The index must exist in the AVS server.
+        To create an index object, use the :meth:`index_create` client method.
 
+        :param name: The name of the index.
+        :type name: str
+
+        :param namespace: The namespace of the index. # TODO is this the namespace with the index overhead or the namespace with the vectors?
+        :type namespace: str
+
+        Returns: index.Index: An index object for the given index.
+        """
+        index_info = self.index_get(
+            namespace=namespace,
+            name=name,
+            timeout=timeout,
+        )
+
+        # import in function to prevent circular imports
+        from . import index
+
+        return index.Index(
+            client=self,
+            name=name,
+            namespace=namespace,
+            vector_field=index_info.field,
+            dimensions=index_info.dimensions,
+            vector_distance_metric=index_info.vector_distance_metric,
+            sets=index_info.sets,
+            index_storage=index_info.storage,
+        )
 
 
     def add_user(

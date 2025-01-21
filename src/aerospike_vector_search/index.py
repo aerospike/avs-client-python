@@ -20,14 +20,14 @@ class Index():
             sets: Optional[str] = None,
             index_storage: Optional[types.IndexStorage] = None,
         ):
-        self._client = client
-        self._name = name
-        self._namespace = namespace
-        self._vector_field = vector_field
-        self._dimensions = dimensions
-        self._vector_distance_metric = vector_distance_metric
-        self._sets = sets
-        self._index_storage = index_storage
+        self._client: Client = client
+        self._name: str = name
+        self._namespace: str = namespace
+        self._vector_field: str = vector_field
+        self._dimensions: int = dimensions
+        self._vector_distance_metric: types.VectorDistanceMetric = vector_distance_metric
+        self._sets: Optional[str] = sets
+        self._index_storage: Optional[types.IndexStorage] = index_storage
     
     def vector_search(
             self,
