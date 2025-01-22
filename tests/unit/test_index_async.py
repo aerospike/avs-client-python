@@ -204,7 +204,8 @@ async def test_index_is_indexed_no_params():
         key=key,
         index_name="test_index",
         index_namespace="test_namespace",
-        set_name="test_sets",
+        # NOTE: set_name is the set for the record, not the index, so it should be None
+        set_name=None,
         timeout=None,
     )
 
