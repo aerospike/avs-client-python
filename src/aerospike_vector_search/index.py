@@ -212,7 +212,7 @@ class Index():
             namespace=self._namespace,
             key=key,
             index_name=self._name,
-            index_namespace=self._namespace, #TODO does this need to be the index overhead namespace?
+            index_namespace=self._namespace,
             set_name=set_name,
             timeout=timeout,
         )
