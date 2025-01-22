@@ -85,7 +85,6 @@ def test_index_is_indexed(session_vector_client, index_obj, record):
 
     # Wait for the index to stabilize
     wait_for_index(session_vector_client, DEFAULT_NAMESPACE, index_name)
-    breakpoint()
 
     indexed = index_obj.is_indexed(key=record)
 
