@@ -12,7 +12,57 @@ class Index():
     It provides methods to interact with the index, such as performing vector searches,
     updating index configuration, and getting index status.
 
+    You should create an Index object by calling the :meth:`aerospike_vector_search.Client.index` method.
+
     Using Index objects is the recommended way to interact with AVS indexes.
+
+    Example::
+        import aerospike_vector_search as avs
+
+        # Create and connect a client
+        client = avs.Client(
+            seeds=avs.types.HostPort(
+                host="127.0.0.1",
+                port=5000,
+            ),
+            # comment out the below line if you are not using a load balancer
+            # or are not using a single node AVS cluster.
+            is_loadbalancer=True,
+        )
+
+        # Create the index in AVS
+        client.index_create(
+            namespace="test",
+            name="test_index",
+            vector_field="vector",
+            dimensions=3,
+        )
+
+        # Get an index object targeting the index we just created
+        index = client.index(
+            namespace="test",
+            name="test_index",
+        )
+
+        # Now you can perform targeted operations on the index
+
+        # Get the index definition
+        index_info = index.get()
+
+        # Perform an HNSW similarity search on the index
+        search_results = index.vector_search(
+            query=[1.0, 2.0, 3.0],
+            limit=3,
+        )
+
+        # Delete the index from AVS.
+        index.drop()
+
+        # Close the client
+        # NOTE: This will also close any index objects created from this client
+        # Index objects need the client that created them to be open to function
+        # so only close the client when you are done with the index objects
+        client.close()
     """
     def __init__(
             self,

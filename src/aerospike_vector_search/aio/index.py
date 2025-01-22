@@ -14,7 +14,66 @@ class Index():
     It provides methods to interact with the index, such as performing vector searches,
     updating index configuration, and getting index status.
 
+    You should create an Index object by calling the :meth:`aerospike_vector_search.aio.Client.index` method.
+
     Using Index objects is the recommended way to interact with AVS indexes.
+
+    Example::
+        import asyncio
+
+        import aerospike_vector_search.aio as avs
+        from aerospike_vector_search import types
+
+        async def main():
+            # Create and connect a client
+            client = avs.Client(
+                seeds=types.HostPort(
+                    host="127.0.0.1",
+                    port=5000,
+                ),
+                # comment out the below line if you are not using a load balancer
+                # or are not using a single node AVS cluster.
+                is_loadbalancer=True,
+            )
+
+            # Create the index in AVS
+            await client.index_create(
+                namespace="test",
+                name="test_index",
+                vector_field="vector",
+                dimensions=3,
+            )
+
+            # Get an index object targeting the index we just created
+            index = await client.index(
+                namespace="test",
+                name="test_index",
+            )
+
+            # Now you can perform targeted operations on the index
+            tasks = []
+
+            # Get the index definition
+            tasks.append(index.get())
+
+            # Perform an HNSW similarity search on the index
+            tasks.append(index.vector_search(
+                query=[1.0, 2.0, 3.0],
+                limit=3,
+            ))
+
+            # Delete the index from AVS.
+            tasks.append(index.drop())
+
+            await asyncio.gather(*tasks)
+
+            # Close the client
+            # NOTE: This will also close any index objects created from this client
+            # Index objects need the client that created them to be open to function
+            # so only close the client when you are done with the index objects
+            await client.close()
+
+        asyncio.run(main())
     """
     def __init__(
             self,

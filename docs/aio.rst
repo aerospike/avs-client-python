@@ -9,3 +9,4 @@ This module contains clients with coroutine methods used for asynchronous progra
    :caption: Contents:
 
    aio_client
+   index_object

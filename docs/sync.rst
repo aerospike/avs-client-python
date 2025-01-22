@@ -9,3 +9,4 @@ This module contains clients with methods used for synchronous programming.
    :caption: Contents:
 
    client
+   index_object
