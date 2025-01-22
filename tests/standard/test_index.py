@@ -53,6 +53,39 @@ def test_index_vector_search(session_vector_client, index_obj, records):
         )
 
 
+def test_index_vector_search_with_vector_field(session_vector_client, index_obj, records):
+    # Wait for the index to stabilize
+    wait_for_index(session_vector_client, DEFAULT_NAMESPACE, index_obj._name)
+
+    query_vector = [0.0] * DEFAULT_INDEX_DIMENSION
+    neighbors = index_obj.vector_search(
+        query=query_vector,
+        limit=5,
+        # Include the vector field in the response
+        include_fields=[DEFAULT_VECTOR_FIELD],
+    )
+
+    assert isinstance(neighbors, list)
+    assert len(neighbors) == 5
+
+    for i, neighbor in enumerate(neighbors):
+        assert isinstance(neighbor, types.Neighbor)
+        # This expected data is based off of how the records fixture generates data
+        # by default, see conftest.py records and gen_records in utils.py
+        assert neighbor == types.Neighbor(
+            key=types.Key(
+                namespace=DEFAULT_NAMESPACE,
+                set='',
+                key=i,
+            ),
+            # When include_fields is used, only the specified fields are returned
+            # so we expect the vector field but not the "id" field
+            fields={DEFAULT_VECTOR_FIELD: [1.0 * i] * DEFAULT_INDEX_DIMENSION},
+            # This calculation only holds for squared euclidean distance
+            distance=(i ** 2) * DEFAULT_INDEX_DIMENSION,
+        )
+
+
 def test_index_vector_search_by_key(session_vector_client, index_obj, records):
     index_name = index_obj._name
 
@@ -75,6 +108,38 @@ def test_index_vector_search_by_key(session_vector_client, index_obj, records):
             ),
             # Index.vector_search excludes the vector bin by default so don't expect it
             fields={"id": i},
+            # This calculation only holds for squared euclidean distance
+            distance=(i ** 2) * DEFAULT_INDEX_DIMENSION,
+        )
+
+
+def test_index_vector_search_by_key_with_vector_field(session_vector_client, index_obj, records):
+    index_name = index_obj._name
+
+    # Wait for the index to stabilize
+    wait_for_index(session_vector_client, DEFAULT_NAMESPACE, index_name)
+
+    neighbors = index_obj.vector_search_by_key(
+        key=0,
+        limit=5,
+        include_fields=[DEFAULT_VECTOR_FIELD],
+    )
+
+    assert isinstance(neighbors, list)
+    assert len(neighbors) == 5
+    for i, neighbor in enumerate(neighbors):
+        assert isinstance(neighbor, types.Neighbor)
+        # This expected data is based off of how the records fixture generates data
+        # by default, see conftest.py records and gen_records in utils.py
+        assert neighbor == types.Neighbor(
+            key=types.Key(
+                namespace=DEFAULT_NAMESPACE,
+                set='',
+                key=i,
+            ),
+            # When include_fields is used, only the specified fields are returned
+            # so we expect the vector field but not the "id" field
+            fields={DEFAULT_VECTOR_FIELD: [1.0 * i] * DEFAULT_INDEX_DIMENSION},
             # This calculation only holds for squared euclidean distance
             distance=(i ** 2) * DEFAULT_INDEX_DIMENSION,
         )

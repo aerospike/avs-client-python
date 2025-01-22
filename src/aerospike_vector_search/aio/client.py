@@ -1151,8 +1151,8 @@ class Client(BaseClientMixin, AdminBaseClientMixin):
         """
         Get an Index object for the given index.
         The Index object provides methods to interact with and search on the index.
-        It is best practice to use Index objects to interact with indexes
-        rather than methods such as :meth:`index_get_status` or :meth:`vector_search`.
+        Index objects are the preferred way to interact with indexes
+        rather than methods such as :meth:`index_get_status` or :meth:`vector_search`
         The index must exist in the AVS server.
         To create an index object, use the :meth:`index_create` client method.
 

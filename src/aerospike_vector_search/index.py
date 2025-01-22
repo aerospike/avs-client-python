@@ -2,10 +2,18 @@ import logging
 from typing import Union, Optional
 
 from aerospike_vector_search.client import Client, types
+from .shared import helpers
 
 logger = logging.getLogger(__name__)
 
 class Index():
+    """
+    Index represents a HNSW index in Aerospike Vector Search (AVS).
+    It provides methods to interact with the index, such as performing vector searches,
+    updating index configuration, and getting index status.
+
+    Using Index objects is the recommended way to interact with AVS indexes.
+    """
     def __init__(
             self,
             *,
@@ -41,7 +49,9 @@ class Index():
         ) -> list[types.Neighbor]:
         """
         Perform a vector search against this index.
-
+        By default, the search results include all fields except the vector field.
+        To include the vector field, add it to the include_fields list.
+        
         :param query: The query vector for the search.
         :type query: list[Union[bool, float]]
 
@@ -80,13 +90,11 @@ class Index():
             This error could occur due to various reasons such as network issues, server-side failures, or invalid request parameters.
         """
 
-        # exclude vector data from the results by default to
-        # avoid sending large amounts of data over the network
-        # users can override this by passing the vector field in the include_fields
-        exclusions = [self._vector_field]
-
-        if exclude_fields:
-            exclusions.extend(exclude_fields)
+        exclusions = helpers._get_index_exclusions(
+            self._vector_field,
+            include_fields,
+            exclude_fields
+        )
 
         return self._client.vector_search(
             namespace=self._namespace,
@@ -114,7 +122,9 @@ class Index():
         ) -> list[types.Neighbor]:
         """
         Perform a vector search against this index using a record in Aerospike.
-
+        By default, the search results include all fields except the vector field.
+        To include the vector field, add it to the include_fields list.
+        
         :param key: The primary key of the record that stores the vector to use in the search.
         :type key: Union[int, str, bytes, bytearray]
 
@@ -159,14 +169,12 @@ class Index():
             This error could occur due to various reasons such as network issues, server-side failures, or invalid request parameters.
         """
 
-        # exclude vector data from the results by default to
-        # avoid sending large amounts of data over the network
-        # users can override this by passing the vector field in the include_fields
-        exclusions = [self._vector_field]
+        exclusions = helpers._get_index_exclusions(
+            self._vector_field,
+            include_fields,
+            exclude_fields
+        )
 
-        if exclude_fields:
-            exclusions.extend(exclude_fields)
-        
         return self._client.vector_search_by_key(
             search_namespace=self._namespace,
             index_name=self._name,
