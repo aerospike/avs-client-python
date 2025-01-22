@@ -28,7 +28,7 @@ class Index():
         self._vector_distance_metric: types.VectorDistanceMetric = vector_distance_metric
         self._sets: Optional[str] = sets
         self._index_storage: Optional[types.IndexStorage] = index_storage
-    
+
     def vector_search(
             self,
             *,
@@ -213,7 +213,7 @@ class Index():
             key=key,
             index_name=self._name,
             index_namespace=self._namespace, #TODO does this need to be the index overhead namespace?
-            set_name=set_name or self._sets,
+            set_name=set_name,
             timeout=timeout,
         )
 

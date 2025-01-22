@@ -215,7 +215,7 @@ class Index():
             key=key,
             index_name=self._name,
             index_namespace=self._namespace, #TODO does this need to be the index overhead namespace?
-            set_name=set_name or self._sets,
+            set_name=set_name,
             timeout=timeout,
         )
 

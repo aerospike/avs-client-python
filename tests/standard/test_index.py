@@ -80,6 +80,18 @@ def test_index_vector_search_by_key(session_vector_client, index_obj, records):
         )
 
 
+def test_index_is_indexed(session_vector_client, index_obj, record):
+    index_name = index_obj._name
+
+    # Wait for the index to stabilize
+    wait_for_index(session_vector_client, DEFAULT_NAMESPACE, index_name)
+    breakpoint()
+
+    indexed = index_obj.is_indexed(key=record)
+
+    assert indexed
+
+
 def test_index_get_percent_unmerged(session_vector_client, index_obj, records):
     index_name = index_obj._name
 
