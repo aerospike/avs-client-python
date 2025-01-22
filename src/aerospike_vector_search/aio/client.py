@@ -276,8 +276,6 @@ class Client(BaseClientMixin, AdminBaseClientMixin):
         exclude_fields: Optional[list[str]] = None,
         set_name: Optional[str] = None,
         timeout: Optional[int] = None,
-        # field_names is deprecated, use include_fields
-        field_names: Optional[list[str]] = None,
     ) -> types.RecordWithKey:
         """
         Read a record from Aerospike Vector Search.
@@ -308,9 +306,6 @@ class Client(BaseClientMixin, AdminBaseClientMixin):
         :param timeout: Time in seconds this operation will wait before raising an :class:`AVSServerError <aerospike_vector_search.types.AVSServerError>`. Defaults to None.
         :type timeout: int
 
-        :param field_names: Deprecated, use include_fields instead.
-        :type field_names: Optional[list[str]]
-
         Returns:
             types.RecordWithKey: A record with its associated key.
 
@@ -319,15 +314,6 @@ class Client(BaseClientMixin, AdminBaseClientMixin):
             This error could occur due to various reasons such as network issues, server-side failures, or invalid request parameters.
 
         """
-
-        # TODO remove this when 'field_names' is removed
-        if field_names is not None:
-            warnings.warn(
-                "The 'field_names' argument is deprecated. Use 'include_fields' instead",
-                FutureWarning,
-            )
-            include_fields = field_names
-
         await self._channel_provider._is_ready()
 
         (transact_stub, key, get_request, kwargs) = self._prepare_get(
@@ -591,8 +577,6 @@ class Client(BaseClientMixin, AdminBaseClientMixin):
         include_fields: Optional[list[str]] = None,
         exclude_fields: Optional[list[str]] = None,
         timeout: Optional[int] = None,
-        # field_names is deprecated, use include_fields
-        field_names: Optional[list[str]] = None,
     ) -> list[types.Neighbor]:
         """
         Perform a Hierarchical Navigable Small World (HNSW) vector search in Aerospike Vector Search.
@@ -630,9 +614,6 @@ class Client(BaseClientMixin, AdminBaseClientMixin):
         :param timeout: Time in seconds this operation will wait before raising an :class:`AVSServerError <aerospike_vector_search.types.AVSServerError>`. Defaults to None.
         :type timeout: int
 
-        :param field_names: Deprecated, use include_fields instead.
-        :type field_names: Optional[list[str]]
-
         Returns:
             list[types.Neighbor]: A list of neighbors records found by the search.
 
@@ -640,15 +621,6 @@ class Client(BaseClientMixin, AdminBaseClientMixin):
             AVSServerError: Raised if an error occurs during the RPC communication with the server while attempting to vector search.
             This error could occur due to various reasons such as network issues, server-side failures, or invalid request parameters.
         """
-
-        # TODO remove this when 'field_names' is removed
-        if field_names is not None:
-            warnings.warn(
-                "The 'field_names' argument is deprecated. Use 'include_fields' instead",
-                FutureWarning,
-            )
-            include_fields = field_names
-
         await self._channel_provider._is_ready()
 
         (transact_stub, vector_search_request, kwargs) = self._prepare_vector_search(
