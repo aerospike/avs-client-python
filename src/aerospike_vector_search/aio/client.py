@@ -1159,7 +1159,7 @@ class Client(BaseClientMixin, AdminBaseClientMixin):
         :param name: The name of the index.
         :type name: str
 
-        :param namespace: The namespace of the index. # TODO is this the namespace with the index overhead or the namespace with the vectors?
+        :param namespace: The namespace of the index. #TODO is this the namespace with the index overhead or the namespace with the vectors?
         :type namespace: str
 
         Returns: index.Index: An index object for the given index.
