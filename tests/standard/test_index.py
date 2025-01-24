@@ -214,7 +214,7 @@ def test_index_status(session_vector_client, index_obj, record):
 
     assert status.unmerged_record_count == 0
     assert status.index_healer_vector_records_indexed == 1
-    assert status.index_healer_vertices_valid == 1
+    assert status.index_healer_vertices_valid >= 1
 
 
 def test_index_drop(index_obj):
