@@ -504,7 +504,7 @@ class Client(BaseClientMixin, AdminBaseClientMixin):
         :param vector_field: The name of the field containing vector data.
         :type vector_field: str
 
-        :param limit: The maximum number of neighbors to return. K value.
+        :param limit: An optional maximum number of neighbors to return. K value. Defaults to 10.
         :type limit: int
 
         :param key_set: The name of the set from which to read the record to search by. Defaults to None.
@@ -591,7 +591,7 @@ class Client(BaseClientMixin, AdminBaseClientMixin):
         :param query: The query vector for the search.
         :type query: list[Union[bool, float]]
 
-        :param limit: The maximum number of neighbors to return. K value.
+        :param limit: An optional maximum number of neighbors to return. K value. Defaults to 10.
         :type limit: int
 
         :param search_params: Parameters for the HNSW algorithm.
