@@ -941,7 +941,7 @@ class Client(BaseClientMixin, AdminBaseClientMixin):
         self, *, namespace: str, name: str, timeout: Optional[int] = None
     ) -> None:
         """
-        Deletes the index from AVS.
+        Deletes an index from AVS.
 
         :param namespace: The namespace of the index.
         :type name: str
@@ -1025,7 +1025,7 @@ class Client(BaseClientMixin, AdminBaseClientMixin):
         timeout: Optional[int] = None,
     ) -> types.IndexDefinition:
         """
-        Retrieve information related to the index from AVS.
+        Retrieve information related to an index.
 
         :param namespace: The namespace of the index.
         :type namespace: str
@@ -1106,8 +1106,8 @@ class Client(BaseClientMixin, AdminBaseClientMixin):
             timeout: Optional[int] = None,
     ):
         """
-        Get an Index object for the given index.
-        The Index object provides methods to interact with and search on the index.
+        Get an Index object for a given index.
+        The Index object provides methods to interact with and search on an index.
         Index objects are the preferred way to interact with indexes
         rather than methods such as :meth:`index_get_status` or :meth:`vector_search`
         The index must exist in the AVS server.
@@ -1118,6 +1118,9 @@ class Client(BaseClientMixin, AdminBaseClientMixin):
 
         :param namespace: The namespace of the index.
         :type namespace: str
+
+        :param timeout: Time in seconds this operation will wait before raising an :class:`AVSServerError <aerospike_vector_search.types.AVSServerError>`. Defaults to None.
+        :type timeout: int
 
         Returns: index.Index: An index object for the given index.
         """

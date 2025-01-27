@@ -451,7 +451,7 @@ class Client(BaseClientMixin, AdminBaseClientMixin):
         :param namespace: The namespace for the record.
         :type namespace: str
 
-        :param key: The key for the record.
+        :param key: The primary key for the record.
         :type key: Union[int, str, bytes, bytearray, np.generic, np.ndarray]
 
         :param index_name: The name of the index.
@@ -507,7 +507,7 @@ class Client(BaseClientMixin, AdminBaseClientMixin):
         timeout: Optional[int] = None,
     ) -> list[types.Neighbor]:
         """
-        Perform a Hierarchical Navigable Small World (HNSW) vector search in Aerospike Vector Search by primary record key.
+        Perform a vector search against this index using a record in Aerospike.
 
         :param search_namespace: The namespace that stores the records to be searched.
         :type search_namespace: str
@@ -527,7 +527,7 @@ class Client(BaseClientMixin, AdminBaseClientMixin):
         :param limit: The maximum number of neighbors to return. K value.
         :type limit: int
 
-        :param key_set: The name of the set from which to read the record to search by. Defaults to None.
+        :param key_set: The set that stores the record, if any. Defaults to None.
         :type key_set: Optional[str]
         
         :param search_params: Parameters for the HNSW algorithm.
@@ -931,7 +931,7 @@ class Client(BaseClientMixin, AdminBaseClientMixin):
         :param index_labels: Optional labels associated with the index. Defaults to None.
         :type index_labels: Optional[dict[str, str]]
 
-        :param hnsw_update_params: Parameters for updating HNSW index settings.
+        :param hnsw_update_params: Parameters for updating HNSW index settings. Defaults to None.
         :type hnsw_update_params: Optional[types.HnswIndexUpdate]
 
         :param timeout: Timeout  in seconds for internal index update tasks. Defaults to 100_000.
@@ -967,7 +967,7 @@ class Client(BaseClientMixin, AdminBaseClientMixin):
         self, *, namespace: str, name: str, timeout: Optional[int] = None
     ) -> None:
         """
-        Drop an index.
+        Deletes an index from AVS.
 
         :param namespace: The namespace of the index.
         :type name: str
@@ -1055,7 +1055,7 @@ class Client(BaseClientMixin, AdminBaseClientMixin):
         apply_defaults: Optional[bool] = True,
     ) -> types.IndexDefinition:
         """
-        Retrieve the information related with an index.
+        Retrieve information related to an index.
 
         :param namespace: The namespace of the index.
         :type name: str
@@ -1149,9 +1149,9 @@ class Client(BaseClientMixin, AdminBaseClientMixin):
             timeout: Optional[int] = None,
     ):
         """
-        Get an Index object for the given index.
-        The Index object provides methods to interact with and search on the index.
-        Index objects are the preferred way to interact with indexes
+        Get an Index object for a given index.
+        The Index object provides methods to interact with and search on an index.
+        Index objects are the preferred way to interact with indexes,
         rather than methods such as :meth:`index_get_status` or :meth:`vector_search`
         The index must exist in the AVS server.
         To create an index object, use the :meth:`index_create` client method.
@@ -1161,6 +1161,9 @@ class Client(BaseClientMixin, AdminBaseClientMixin):
 
         :param namespace: The namespace of the index.
         :type namespace: str
+
+        :param timeout: Time in seconds this operation will wait before raising an :class:`AVSServerError <aerospike_vector_search.types.AVSServerError>`. Defaults to None.
+        :type timeout: int
 
         Returns: index.Index: An index object for the given index.
         """

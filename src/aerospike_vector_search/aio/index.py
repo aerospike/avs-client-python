@@ -141,9 +141,6 @@ class Index():
         :param timeout: Time in seconds this operation will wait before raising an :class:`AVSServerError <aerospike_vector_search.types.AVSServerError>`. Defaults to None.
         :type timeout: int
 
-        :param field_names: Deprecated, use include_fields instead.
-        :type field_names: Optional[list[str]]
-
         Returns:
             list[types.Neighbor]: A list of neighbors records found by the search.
 
