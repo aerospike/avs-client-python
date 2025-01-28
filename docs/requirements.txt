@@ -1,3 +1,6 @@
 sphinx_rtd_theme
-aerospike-vector-search
+# The below path marks this local pacakge as a requirement (aerospike-vector-search)
+# You must install this requirements.txt file in the root of the project
+# in order for the relative path to work
+./
 numpy
