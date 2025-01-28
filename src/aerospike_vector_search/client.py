@@ -464,7 +464,7 @@ class Client(BaseClientMixin, AdminBaseClientMixin):
         key: Union[int, str, bytes, bytearray],
         key_namespace: str,
         vector_field: str,
-        limit: int,
+        limit: int = 10,
         key_set: Optional[str] = None,
         search_params: Optional[types.HnswSearchParams] = None,
         include_fields: Optional[list[str]] = None,
@@ -489,7 +489,7 @@ class Client(BaseClientMixin, AdminBaseClientMixin):
         :param vector_field: The name of the field containing vector data.
         :type vector_field: str
 
-        :param limit: The maximum number of neighbors to return. K value.
+        :param limit: An optional maximum number of neighbors to return. K value. Defaults to 10.
         :type limit: int
 
         :param key_set: The set that stores the record, if any. Defaults to None.
@@ -553,7 +553,7 @@ class Client(BaseClientMixin, AdminBaseClientMixin):
         namespace: str,
         index_name: str,
         query: list[Union[bool, float]],
-        limit: int,
+        limit: int = 10,
         search_params: Optional[types.HnswSearchParams] = None,
         include_fields: Optional[list[str]] = None,
         exclude_fields: Optional[list[str]] = None,
@@ -571,7 +571,7 @@ class Client(BaseClientMixin, AdminBaseClientMixin):
         :param query: The query vector for the search.
         :type query: list[Union[bool, float]]
 
-        :param limit: The maximum number of neighbors to return. K value.
+        :param limit: An optional maximum number of neighbors to return. K value. Defaults to 10.
         :type limit: int
 
         :param search_params: Parameters for the HNSW algorithm.
