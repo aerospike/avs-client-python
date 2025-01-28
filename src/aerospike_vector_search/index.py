@@ -13,11 +13,12 @@ class Index():
     updating index configuration, and getting index status.
 
     You should create an Index object by calling the :meth:`aerospike_vector_search.Client.index` method.
-    NOTE: Creating an index object has some overhead, so they should be reused where possible.
+    Creating an index object has some overhead, so they should be reused where possible.
 
     Using Index objects is the recommended way to interact with AVS indexes.
 
-    Example::
+    .. code-block:: python
+
         import aerospike_vector_search as avs
 
         # Create and connect a client
