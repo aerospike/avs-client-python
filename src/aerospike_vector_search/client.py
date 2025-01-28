@@ -266,8 +266,6 @@ class Client(BaseClientMixin, AdminBaseClientMixin):
         exclude_fields: Optional[list[str]] = None,
         set_name: Optional[str] = None,
         timeout: Optional[int] = None,
-        # field_names is deprecated, use include_fields
-        field_names: Optional[list[str]] = None,
     ) -> types.RecordWithKey:
         """
         Read a record from Aerospike Vector Search.
@@ -298,9 +296,6 @@ class Client(BaseClientMixin, AdminBaseClientMixin):
         :param timeout: Time in seconds this operation will wait before raising an :class:`AVSServerError <aerospike_vector_search.types.AVSServerError>`. Defaults to None.
         :type timeout: int
 
-        :param field_names: Deprecated, use include_fields instead.
-        :type field_names: Optional[list[str]]
-
         Returns:
             types.RecordWithKey: A record with its associated key.
 
@@ -308,16 +303,6 @@ class Client(BaseClientMixin, AdminBaseClientMixin):
             AVSServerError: Raised if an error occurs during the RPC communication with the server while attempting to get a vector.
             This error could occur due to various reasons such as network issues, server-side failures, or invalid request parameters.
         """
-
-        # TODO remove this when 'field_names' is removed
-        if field_names is not None:
-            warnings.warn(
-                "The 'field_names' argument is deprecated. Use 'include_fields' instead",
-                FutureWarning,
-            )
-            include_fields = field_names
-
-
         (transact_stub, key, get_request, kwargs) = self._prepare_get(
             namespace, key, include_fields, exclude_fields, set_name, timeout, logger
         )
@@ -531,9 +516,6 @@ class Client(BaseClientMixin, AdminBaseClientMixin):
         :param timeout: Time in seconds this operation will wait before raising an :class:`AVSServerError <aerospike_vector_search.types.AVSServerError>`. Defaults to None.
         :type timeout: int
 
-        :param field_names: Deprecated, use include_fields instead.
-        :type field_names: Optional[list[str]]
-
         Returns:
             list[types.Neighbor]: A list of neighbors records found by the search.
 
@@ -576,8 +558,6 @@ class Client(BaseClientMixin, AdminBaseClientMixin):
         include_fields: Optional[list[str]] = None,
         exclude_fields: Optional[list[str]] = None,
         timeout: Optional[int] = None,
-        # field_names is deprecated, use include_fields
-        field_names: Optional[list[str]] = None,
     ) -> list[types.Neighbor]:
         """
         Perform a Hierarchical Navigable Small World (HNSW) vector search in Aerospike Vector Search.
@@ -615,9 +595,6 @@ class Client(BaseClientMixin, AdminBaseClientMixin):
         :param timeout: Time in seconds this operation will wait before raising an :class:`AVSServerError <aerospike_vector_search.types.AVSServerError>`. Defaults to None.
         :type timeout: int
 
-        :param field_names: Deprecated, use include_fields instead.
-        :type field_names: Optional[list[str]]
-
         Returns:
             list[types.Neighbor]: A list of neighbors records found by the search.
 
@@ -625,15 +602,6 @@ class Client(BaseClientMixin, AdminBaseClientMixin):
             AVSServerError: Raised if an error occurs during the RPC communication with the server while attempting to vector search.
             This error could occur due to various reasons such as network issues, server-side failures, or invalid request parameters.
         """
-
-        # TODO remove this when 'field_names' is removed
-        if field_names is not None:
-            warnings.warn(
-                "The 'field_names' argument is deprecated. Use 'include_fields' instead",
-                FutureWarning,
-            )
-            include_fields = field_names
-
         (transact_stub, vector_search_request, kwargs) = self._prepare_vector_search(
             namespace,
             index_name,
@@ -716,83 +684,6 @@ class Client(BaseClientMixin, AdminBaseClientMixin):
             verticies = 100
 
         return (unmergedIndexRecords / verticies) * 100.0
-
-    def wait_for_index_completion(
-        self,
-        *,
-        namespace: str,
-        name: str,
-        timeout: int = sys.maxsize,
-        wait_interval: int = 12,
-        validation_threshold: int = 2,
-    ) -> None:
-        """
-        Wait for the index to have no pending index update operations.
-
-        :deprecated: This method is deprecated and will be removed. Use 'index_get_percent_unmerged' to monitor indexes.
-
-        :param namespace (str): The namespace of the index.
-        :type namespace: str
-
-        :param name (str): The name of the index.
-        :type name: str
-
-        :param timeout (int, optional): The maximum time (in seconds) to wait for the index to complete.
-            Defaults to sys.maxsize.
-        :type timeout: int
-
-        :param wait_interval: The time (in seconds) to wait between index completion status request to the server.
-            Lowering this value increases the chance that the index completion status is incorrect, which can result in poor search accuracy.
-        :type wait_interval: int
-
-        Raises:
-            Exception: Raised when the timeout occurs while waiting for index completion.
-            AVSServerError: Raised if an error occurs during the RPC communication with the server while attempting to wait for index completion.
-            This error could occur due to various reasons such as network issues, server-side failures, or invalid request parameters.
-
-        Note:
-            The function polls the index status with a wait interval of 10 seconds until either
-            the timeout is reached or the index has no pending index update operations.
-        """
-
-        warnings.warn(
-            "The 'wait_for_index_completion' method is deprecated and will be removed."
-                "Use 'index_get_percent_unmerged' to monitor indexes.",
-            DeprecationWarning,
-            # make sure the stack trace in the warning points to the caller
-            # for easier user debugging
-            stacklevel=2,
-        )
-
-        (
-            index_stub,
-            wait_interval_float,
-            start_time,
-            unmerged_record_initialized,
-            validation_count,
-            index_completion_request,
-        ) = self._prepare_wait_for_index_waiting(namespace, name, wait_interval)
-
-        while True:
-            try:
-                index_status = index_stub.GetStatus(
-                    index_completion_request,
-                    credentials=self._channel_provider.get_token(),
-                )
-            except grpc.RpcError as e:
-
-                logger.error("Failed waiting for index completion with error: %s", e)
-                raise types.AVSServerError(rpc_error=e)
-            if self._check_completion_condition(
-                start_time, timeout, index_status, unmerged_record_initialized
-            ):
-                if validation_count == validation_threshold:
-                    return
-                else:
-                    validation_count += 1
-            else:
-                validation_count = 0
-            time.sleep(wait_interval_float)
 
     def index_create(
         self,
