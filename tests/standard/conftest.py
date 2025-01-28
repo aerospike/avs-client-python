@@ -127,6 +127,17 @@ async def new_wrapped_async_client(
     )
 
 
+async def new_wrapped_async_index(
+    client,
+    name,
+    namespace,
+):
+    return client.index(
+        name=name,
+        namespace=namespace,
+    )
+
+
 class AsyncClientWrapper():
     def __init__(self, client, loop):
         self.client = client
@@ -206,6 +217,22 @@ def session_vector_client(
 
     yield client
     client.close()
+
+
+@pytest.fixture(scope="function")
+def index_obj(event_loop, async_client, session_vector_client, index):
+    if async_client:
+        idxobj = AsyncClientWrapper(session_vector_client.index(
+            name=index,
+            namespace=DEFAULT_NAMESPACE,
+        ), event_loop)
+    else:
+        idxobj = session_vector_client.index(
+            name=index,
+            namespace=DEFAULT_NAMESPACE,
+        )
+
+    yield idxobj
 
 
 @pytest.fixture()

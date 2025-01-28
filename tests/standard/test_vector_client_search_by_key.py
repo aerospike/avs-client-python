@@ -40,7 +40,7 @@ class vector_search_by_key_test_case:
     [
         # test string key
         vector_search_by_key_test_case(
-            index_name="basic_search",
+            index_name="BSSK",
             index_dimensions=3,
             vector_field="vector",
             limit=2,
@@ -93,7 +93,7 @@ class vector_search_by_key_test_case:
         ),
         # test int key
         vector_search_by_key_test_case(
-            index_name="field_filter",
+            index_name="BSIK",
             index_dimensions=3,
             vector_field="vector",
             limit=3,
@@ -136,7 +136,7 @@ class vector_search_by_key_test_case:
         ),
         # test bytes key
         vector_search_by_key_test_case(
-            index_name="field_filter",
+            index_name="BSBK",
             index_dimensions=3,
             vector_field="vector",
             limit=3,
@@ -214,7 +214,7 @@ class vector_search_by_key_test_case:
         # ),
         # test with set name
         vector_search_by_key_test_case(
-            index_name="basic_search",
+            index_name="BSSN",
             index_dimensions=3,
             vector_field="vector",
             limit=2,

@@ -51,3 +51,24 @@ def _get_credentials(username: str, password: str) -> Optional[types_pb2.Credent
         username=username,
         passwordCredentials=types_pb2.PasswordCredentials(password=password),
     )
+
+# _get_index_exclusions is a helper function used in Index object search methods
+# to determine which fields to exclude from the results. By default the vector field
+# is excluded from the results to avoid sending large amounts of data over the network.
+# Users can override this behavior by passing the vector field in the include_fields.
+def _get_index_exclusions(vector_field: str, include_fields: Optional[list[str]], exclude_fields: Optional[list[str]]) -> list[str]:
+        # exclude vector data from the results by default to
+        # avoid sending large amounts of data over the network
+        # users can override this by passing the vector field in the include_fields
+        exclusions = [vector_field]
+
+        if exclude_fields:
+            exclusions.extend(exclude_fields)
+
+        # if the user wants to include the vector field in the results
+        # we need to remove it from the exclusions list
+        # because exclude_fields takes priority over include_fields
+        if include_fields and vector_field in include_fields:
+            exclusions.remove(vector_field)
+        
+        return exclusions 

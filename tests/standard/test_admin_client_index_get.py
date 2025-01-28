@@ -1,5 +1,5 @@
 from utils import DEFAULT_NAMESPACE, DEFAULT_INDEX_DIMENSION, DEFAULT_VECTOR_FIELD
-from aerospike_vector_search import AVSServerError
+from aerospike_vector_search import AVSServerError, types
 
 import grpc
 from hypothesis import given, settings, Verbosity
@@ -27,7 +27,7 @@ def test_index_get(session_vector_client, empty_test_case, index):
 
     # Defaults
     assert result["sets"] == ""
-    assert result["vector_distance_metric"] == 0
+    assert result["vector_distance_metric"] == types.VectorDistanceMetric.SQUARED_EUCLIDEAN
 
     assert result["hnsw_params"]["max_mem_queue_size"] == 1000000
     assert result["hnsw_params"]["index_caching_params"]["max_entries"] == 2000000
@@ -58,7 +58,7 @@ async def test_index_get_no_defaults(session_vector_client, empty_test_case, ind
 
     # Defaults
     assert result["sets"] == ""
-    assert result["vector_distance_metric"] == 0
+    assert result["vector_distance_metric"] == types.VectorDistanceMetric.SQUARED_EUCLIDEAN
 
     assert result["hnsw_params"]["m"] == 0
     assert result["hnsw_params"]["ef"] == 0

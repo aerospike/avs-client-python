@@ -433,7 +433,7 @@ class Client(BaseClientMixin, AdminBaseClientMixin):
         :param namespace: The namespace for the record.
         :type namespace: str
 
-        :param key: The key for the record.
+        :param key: The primary key for the record.
         :type key: Union[int, str, bytes, bytearray, np.generic, np.ndarray]
 
         :param index_name: The name of the index.
@@ -487,7 +487,7 @@ class Client(BaseClientMixin, AdminBaseClientMixin):
         timeout: Optional[int] = None,
     ) -> list[types.Neighbor]:
         """
-        Perform a Hierarchical Navigable Small World (HNSW) vector search in Aerospike Vector Search by primary record key.
+        Perform a vector search against this index using a record in Aerospike.
 
         :param search_namespace: The namespace that stores the records to be searched.
         :type search_namespace: str
@@ -507,7 +507,7 @@ class Client(BaseClientMixin, AdminBaseClientMixin):
         :param limit: The maximum number of neighbors to return. K value.
         :type limit: int
 
-        :param key_set: The name of the set from which to read the record to search by. Defaults to None.
+        :param key_set: The set that stores the record, if any. Defaults to None.
         :type key_set: Optional[str]
         
         :param search_params: Parameters for the HNSW algorithm.
@@ -908,7 +908,7 @@ class Client(BaseClientMixin, AdminBaseClientMixin):
         :param index_labels: Optional labels associated with the index. Defaults to None.
         :type index_labels: Optional[dict[str, str]]
 
-        :param hnsw_update_params: Parameters for updating HNSW index settings.
+        :param hnsw_update_params: Parameters for updating HNSW index settings. Defaults to None.
         :type hnsw_update_params: Optional[types.HnswIndexUpdate]
 
         :param timeout: Time in seconds (default 100_000) this operation will wait before raising an error.
@@ -941,7 +941,7 @@ class Client(BaseClientMixin, AdminBaseClientMixin):
         self, *, namespace: str, name: str, timeout: Optional[int] = None
     ) -> None:
         """
-        Drop an index.
+        Deletes an index from AVS.
 
         :param namespace: The namespace of the index.
         :type name: str
@@ -1021,11 +1021,11 @@ class Client(BaseClientMixin, AdminBaseClientMixin):
         *,
         namespace: str,
         name: str,
-        timeout: Optional[int] = None,
         apply_defaults: Optional[bool] = True,
+        timeout: Optional[int] = None,
     ) -> types.IndexDefinition:
         """
-        Retrieve the information related with an index.
+        Retrieve information related to an index.
 
         :param namespace: The namespace of the index.
         :type namespace: str
@@ -1033,11 +1033,11 @@ class Client(BaseClientMixin, AdminBaseClientMixin):
         :param name: The name of the index.
         :type name: str
 
-        :param timeout: Time in seconds this operation will wait before raising an :class:`AVSServerError <aerospike_vector_search.types.AVSServerError>`. Defaults to None.
-        :type timeout: int
-
         :param apply_defaults: Apply default values to parameters which are not set by user. Defaults to True.
         :type apply_defaults: bool
+
+        :param timeout: Time in seconds this operation will wait before raising an :class:`AVSServerError <aerospike_vector_search.types.AVSServerError>`. Defaults to None.
+        :type timeout: int
 
         Returns: dict[str, Union[int, str]: Information about an index.
 
@@ -1082,12 +1082,6 @@ class Client(BaseClientMixin, AdminBaseClientMixin):
         Raises:
             AVSServerError: Raised if an error occurs during the RPC communication with the server while attempting to get the index status.
             This error could occur due to various reasons such as network issues, server-side failures, or invalid request parameters.
-
-        Note:
-            This method retrieves the status of the specified index. If index_get_status is called the vector client puts some records into Aerospike Vector Search,
-            the records may not immediately begin to merge into the index.
-
-            Warning: This API is subject to change.
         """
         (index_stub, index_get_status_request, kwargs) = self._prepare_index_get_status(
             namespace, name, timeout, logger
@@ -1104,7 +1098,51 @@ class Client(BaseClientMixin, AdminBaseClientMixin):
             logger.error("Failed to get index status with error: %s", e)
             raise types.AVSServerError(rpc_error=e)
 
+    def index(
+            self,
+            *,
+            name: str,
+            namespace: str,
+            timeout: Optional[int] = None,
+    ):
+        """
+        Get an Index object for a given index.
+        The Index object provides methods to interact with and search on an index.
+        Index objects are the preferred way to interact with indexes,
+        rather than methods such as :meth:`index_get_status` or :meth:`vector_search`
+        The index must exist in the AVS server.
+        To create an index object, use the :meth:`index_create` client method.
 
+        :param name: The name of the index.
+        :type name: str
+
+        :param namespace: The namespace of the index.
+        :type namespace: str
+
+        :param timeout: Time in seconds this operation will wait before raising an :class:`AVSServerError <aerospike_vector_search.types.AVSServerError>`. Defaults to None.
+        :type timeout: int
+
+        Returns: index.Index: An index object for the given index.
+        """
+        index_info = self.index_get(
+            namespace=namespace,
+            name=name,
+            timeout=timeout,
+        )
+
+        # import in function to prevent circular imports
+        from . import index
+
+        return index.Index(
+            client=self,
+            name=name,
+            namespace=namespace,
+            vector_field=index_info.field,
+            dimensions=index_info.dimensions,
+            vector_distance_metric=index_info.vector_distance_metric,
+            sets=index_info.sets,
+            index_storage=index_info.storage,
+        )
 
 
     def add_user(

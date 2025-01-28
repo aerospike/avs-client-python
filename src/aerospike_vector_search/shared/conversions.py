@@ -98,7 +98,7 @@ def fromIndexDefintion(input_data: types_pb2.IndexDefinition) -> types.IndexDefi
             name=input_data.id.name,
         ),
         dimensions=input_data.dimensions,
-        vector_distance_metric=input_data.vectorDistanceMetric,
+        vector_distance_metric=types.VectorDistanceMetric(input_data.vectorDistanceMetric),
         field=input_data.field,
         sets=input_data.setFilter,
         hnsw_params=types.HnswParams(
