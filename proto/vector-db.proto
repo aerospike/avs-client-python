@@ -20,6 +20,9 @@ message AboutResponse {
 
   // Assigned node roles.
   repeated NodeRole roles = 2;
+
+  // Self node id.
+  NodeId selfNodeId = 3;
 }
 
 // Cluster Id
@@ -43,6 +46,12 @@ enum NodeRole {
 
   // Node will handle key value read operations.
   KV_READ = 2;
+
+  // Node will handle standalone index building.
+  STANDALONE_INDEXER = 3;
+
+  // Node will handle key value write operations.
+  KV_WRITE = 4;
 }
 
 // Server endpoint.
