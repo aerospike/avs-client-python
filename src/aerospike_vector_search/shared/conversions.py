@@ -133,6 +133,7 @@ def fromIndexDefintion(input_data: types_pb2.IndexDefinition) -> types.IndexDefi
         storage=types.IndexStorage(
             namespace=input_data.storage.namespace, set_name=input_data.storage.set
         ),
+        index_mode=types.IndexMode(input_data.indexMode),
     )
 
 
@@ -163,6 +164,31 @@ def fromVectorDbValue(input_vector: types_pb2.Value) -> Any:
 
     return None
 
+def fromStandAloneIndexMetricsResponse(response: types_pb2.StandAloneIndexMetrics) -> types.StandaloneIndexMetrics:
+    """
+    Converts a protobuf StandAloneIndexMetrics into a StandAloneIndexMetrics object.
+
+    Parameters:
+    -----------
+    response : types_pb2.StandAloneIndexMetrics
+        A protobuf StandAloneIndexMetrics object.
+
+    Returns:
+    --------
+    StandAloneIndexMetrics
+        An instance of StandAloneIndexMetrics with the values from the protobuf message.
+    """
+    result = types.StandaloneIndexMetrics(
+        index_id=types.IndexId(
+            namespace=response.indexId.namespace,
+            name=response.indexId.name
+        ),
+        index_state=types.StandaloneIndexState(response.standaloneIndexState),
+        inserted_record_count=response.insertedRecordCount,
+    )
+    return result
+
+
 def fromIndexStatusResponse(response: 'index_pb2.IndexStatusResponse') -> IndexStatusResponse:
         """
         Converts a protobuf IndexStatusResponse into an IndexStatusResponse object.
@@ -181,4 +207,6 @@ def fromIndexStatusResponse(response: 'index_pb2.IndexStatusResponse') -> IndexS
         result.unmerged_record_count = response.unmergedRecordCount
         result.index_healer_vector_records_indexed = response.indexHealerVectorRecordsIndexed
         result.index_healer_vertices_valid = response.indexHealerVerticesValid
+        result.standalone_metrics = fromStandAloneIndexMetricsResponse(response.standaloneIndexMetrics)
+        result.index_readiness = types.IndexReadiness(response.status)
         return result

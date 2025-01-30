@@ -189,15 +189,11 @@ class VectorDistanceMetric(enum.Enum):
     Each metric provides a different method for comparing vectors, affecting how distances and similarities are computed in vector-based operations.
     """
 
-    SQUARED_EUCLIDEAN: types_pb2.VectorDistanceMetric = (
-        types_pb2.VectorDistanceMetric.SQUARED_EUCLIDEAN
-    )
-    COSINE: types_pb2.VectorDistanceMetric = types_pb2.VectorDistanceMetric.COSINE
-    DOT_PRODUCT: types_pb2.VectorDistanceMetric = (
-        types_pb2.VectorDistanceMetric.DOT_PRODUCT
-    )
-    MANHATTAN: types_pb2.VectorDistanceMetric = types_pb2.VectorDistanceMetric.MANHATTAN
-    HAMMING: types_pb2.VectorDistanceMetric = types_pb2.VectorDistanceMetric.HAMMING
+    SQUARED_EUCLIDEAN = types_pb2.VectorDistanceMetric.SQUARED_EUCLIDEAN
+    COSINE = types_pb2.VectorDistanceMetric.COSINE
+    DOT_PRODUCT = types_pb2.VectorDistanceMetric.DOT_PRODUCT
+    MANHATTAN = types_pb2.VectorDistanceMetric.MANHATTAN
+    HAMMING = types_pb2.VectorDistanceMetric.HAMMING
 
 
 class Role(object):
@@ -898,6 +894,24 @@ class IndexId(object):
         return setattr(self, key, value)
 
 
+class IndexMode(enum.Enum):
+    """
+    Index mode.
+
+    This enumeration defines the modes an index can operate in:
+
+    - **DISTRIBUTED**: The index is maintained by any node in the cluster.
+    - **STANDALONE**: The index is maintained by a single node in the cluster. The node must have the standalone-indexer role.
+
+    DISTRIBUTED is used when an index has streaming updates and needs to searchable.
+    STANDALONE is used when an index needs to index offline data quickly and does not need to be searchable.
+    STANDALONE indexes switch to DISTRIBUTED mode when they finish offline indexing.
+    """
+
+    DISTRIBUTED = types_pb2.IndexMode.DISTRIBUTED
+    STANDALONE = types_pb2.IndexMode.STANDALONE
+
+
 # TBD add index type in future refactoring
 class IndexDefinition(object):
     """
@@ -933,12 +947,13 @@ class IndexDefinition(object):
         *,
         id: str,
         dimensions: int,
-        vector_distance_metric: types_pb2.VectorDistanceMetric = types_pb2.VectorDistanceMetric.SQUARED_EUCLIDEAN,
+        vector_distance_metric: VectorDistanceMetric = VectorDistanceMetric.SQUARED_EUCLIDEAN,
         field: str,
         sets: str,
         hnsw_params: HnswParams,
         storage: Optional[IndexStorage] = None,
         index_labels: dict[str, str],
+        index_mode: IndexMode = IndexMode.DISTRIBUTED
     ) -> None:
         self.id = id
         self.dimensions = dimensions
@@ -948,12 +963,13 @@ class IndexDefinition(object):
         self.hnsw_params = hnsw_params
         self.storage = storage
         self.index_labels = index_labels
+        self.index_mode = index_mode
 
     def __repr__(self) -> str:
         return (
             f"IndexDefinition(id={self.id!r}, dimensions={self.dimensions}, field={self.field!r}, sets={self.sets!r},"
             f"vector_distance_metric={self.vector_distance_metric!r}, hnsw_params={self.hnsw_params!r}, storage={self.storage!r}, "
-            f"index_labels={self.index_labels}"
+            f"index_labels={self.index_labels}, index_mode={self.index_mode!r})"
         )
 
     # TODO make this representation consistent with HNSWParams, i.e. use newlines and indentation, or remove it completely
@@ -961,7 +977,7 @@ class IndexDefinition(object):
         return (
             f"IndexDefinition(id={self.id}, dimensions={self.dimensions}, field={self.field}, sets={self.sets!r}, "
             f"vector_distance_metric={self.vector_distance_metric}, hnsw_params={self.hnsw_params}, storage={self.storage}, "
-            f"index_labels={self.index_labels}"
+            f"index_labels={self.index_labels}, index_mode={self.index_mode}"
         )
 
     def __eq__(self, other) -> bool:
@@ -976,6 +992,7 @@ class IndexDefinition(object):
             and self.hnsw_params == other.hnsw_params
             and self.storage == other.storage
             and self.index_labels == other.index_labels
+            and self.index_mode == other.index_mode
         )
 
     def __getitem__(self, key):
@@ -1028,6 +1045,88 @@ class AVSClientError(AVSError):
         return f"AVSClientError(message={self.message})"
 
 
+class IndexReadiness(enum.Enum):
+    """
+    Index ready status.
+
+    This enumeration defines the readiness of an index:
+
+    - **READY**: The index is ready to handle updates and queries.
+    - **NOT_READY**: The index is not yet fully built and shouldn't be considered ready to handle updates or queries.
+
+    This corresponds to the Status protobuf message.
+    """
+
+    READY = types_pb2.Status.READY
+    NOT_READY = types_pb2.Status.NOT_READY
+
+
+class StandaloneIndexState(enum.Enum):
+    """
+    Standalone index state.
+
+    This enumeration defines the states a standalone index can be in:
+
+    - **CREATING**: Index is being created.
+    - **CREATED**: Index has been created but is not yet persisted.
+    - **PERSISTING**: The index is being persisted to storage.
+    - **PERSISTED**: The index has been persisted to storage.
+    - **UPDATING**: The index is being marked DISTRIBUTED.
+    - **UPDATED**: The index has been updated.
+    - **FAILED**: The index has failed.
+    """
+
+    CREATING = types_pb2.StandaloneIndexState.CREATING
+    CREATED = types_pb2.StandaloneIndexState.CREATED
+    PERSISTING = types_pb2.StandaloneIndexState.PERSISTING
+    PERSISTED = types_pb2.StandaloneIndexState.PERSISTED
+    UPDATING = types_pb2.StandaloneIndexState.UPDATING
+    UPDATED = types_pb2.StandaloneIndexState.UPDATED
+    FAILED = types_pb2.StandaloneIndexState.FAILED
+
+
+class StandaloneIndexMetrics:
+    """
+    Represents metrics for a standalone index.
+
+    Attributes:
+    -----------
+    index_id : IndexID
+        The ID of the index with these metrics.
+    
+    index_state : StandaloneIndexState
+        The state of the standalone index.
+    
+    inserted_record_count : int
+        The number of records inserted into the standalone index.
+        For state CREATING, this is the number of records inserted so far, i.e. the localStoreInsertedCount AVS server metric.
+        For state PERSISTING, this is the number of records persisted so far, i.e. the persistentStorePersistedCount AVS server metric.
+    """
+
+    def __init__(
+        self,
+        *,
+        index_id: IndexId,
+        index_state: StandaloneIndexState,
+        inserted_record_count: int
+    ) -> None:
+        self.index_id = index_id
+        self.index_state = index_state
+        self.inserted_record_count = inserted_record_count
+
+    def __str__(self) -> str:
+        return (
+            f"StandaloneIndexMetrics(index_id={self.index_id}, index_state={self.index_state}, "
+            f"inserted_record_count={self.inserted_record_count})"
+        )
+
+    def __repr__(self) -> str:
+        return (
+            f"StandaloneIndexMetrics(index_id={self.index_id!r}, index_state={self.index_state!r}, "
+            f"inserted_record_count={self.inserted_record_count!r})"
+        )
+
+
 class IndexStatusResponse:
     """
     Represents the response containing index status information.
@@ -1042,37 +1141,39 @@ class IndexStatusResponse:
 
     index_healer_vertices_valid : int
         The number of vertices in the main index (0 if the healer has not yet run).
+    
+    standalone_metrics : Optional[StandaloneIndexMetrics]
+        Extra metrics populated if the index is in standalone mode.
+    
+    index_readiness : Optional[IndexReady]
+        The readiness of the index.
     """
 
-    def __init__(self,
-                 unmerged_record_count: int = 0,
-                 index_healer_vector_records_indexed: int = 0,
-                 index_healer_vertices_valid: int = 0) -> None:
-        """
-        Initializes the IndexStatusResponse with the provided values.
-
-        Parameters:
-        -----------
-        unmerged_record_count : int, optional
-            The number of unmerged index records (default is 0).
-
-        index_healer_vector_records_indexed : int, optional
-            The number of vector records indexed (default is 0).
-
-        index_healer_vertices_valid : int, optional
-            The number of vertices in the main index (default is 0).
-        """
+    def __init__(
+            self,
+            unmerged_record_count: int = 0,
+            index_healer_vector_records_indexed: int = 0,
+            index_healer_vertices_valid: int = 0,
+            standalone_metrics: Optional[StandaloneIndexMetrics] = None,
+            index_readiness: Optional[IndexReadiness] = None
+        ) -> None:
         self.unmerged_record_count: int = unmerged_record_count
         self.index_healer_vector_records_indexed: int = index_healer_vector_records_indexed
         self.index_healer_vertices_valid: int = index_healer_vertices_valid
+        self.standalone_metrics: Optional[StandaloneIndexMetrics] = standalone_metrics
+        self.index_readiness: Optional[IndexReadiness] = index_readiness
 
     def __str__(self) -> str:
         return (f"IndexStatusResponse("
                 f"unmerged_record_count={self.unmerged_record_count}, "
                 f"index_healer_vector_records_indexed={self.index_healer_vector_records_indexed}, "
-                f"index_healer_vertices_valid={self.index_healer_vertices_valid})")
+                f"index_healer_vertices_valid={self.index_healer_vertices_valid}, "
+                f"standalone_metrics={self.standalone_metrics}, "
+                f"index_readiness={self.index_readiness})")
 
     def __repr__(self) -> str:
         return (f"IndexStatusResponse(unmerged_record_count={self.unmerged_record_count}, "
                 f"index_healer_vector_records_indexed={self.index_healer_vector_records_indexed}, "
-                f"index_healer_vertices_valid={self.index_healer_vertices_valid})")
+                f"index_healer_vertices_valid={self.index_healer_vertices_valid}, "
+                f"standalone_metrics={self.standalone_metrics!r}, " 
+                f"index_readiness={self.index_readiness!r})")
