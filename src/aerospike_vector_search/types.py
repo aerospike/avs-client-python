@@ -174,7 +174,7 @@ class Neighbor(object):
         )
 
 
-class VectorDistanceMetric(enum.Enum):
+class VectorDistanceMetric(enum.IntEnum):
     """
     Enumeration of vector distance metrics used for comparing vectors.
 
@@ -894,7 +894,7 @@ class IndexId(object):
         return setattr(self, key, value)
 
 
-class IndexMode(enum.Enum):
+class IndexMode(enum.IntEnum):
     """
     Index mode.
 
@@ -940,6 +940,9 @@ class IndexDefinition(object):
 
     :param index_labels: Metadata associated with the index. Defaults to None.
     :type index_labels: Optional[dict[str, str]]
+
+    :param index_mode: Index mode.
+    :type index_mode: IndexMode default IndexMode.DISTRIBUTED
     """
 
     def __init__(
@@ -1094,7 +1097,7 @@ class StandaloneIndexMetrics:
     index_id : IndexID
         The ID of the index with these metrics.
     
-    index_state : StandaloneIndexState
+    state : StandaloneIndexState
         The state of the standalone index.
     
     inserted_record_count : int
@@ -1107,22 +1110,22 @@ class StandaloneIndexMetrics:
         self,
         *,
         index_id: IndexId,
-        index_state: StandaloneIndexState,
+        state: StandaloneIndexState,
         inserted_record_count: int
     ) -> None:
         self.index_id = index_id
-        self.index_state = index_state
+        self.state = state
         self.inserted_record_count = inserted_record_count
 
     def __str__(self) -> str:
         return (
-            f"StandaloneIndexMetrics(index_id={self.index_id}, index_state={self.index_state}, "
+            f"StandaloneIndexMetrics(index_id={self.index_id}, state={self.state}, "
             f"inserted_record_count={self.inserted_record_count})"
         )
 
     def __repr__(self) -> str:
         return (
-            f"StandaloneIndexMetrics(index_id={self.index_id!r}, index_state={self.index_state!r}, "
+            f"StandaloneIndexMetrics(index_id={self.index_id!r}, state={self.state!r}, "
             f"inserted_record_count={self.inserted_record_count!r})"
         )
 

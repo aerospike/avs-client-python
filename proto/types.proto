@@ -371,8 +371,8 @@ message IndexDefinition {
 
 // Determines the mode of index update and maintenance.
 enum IndexMode {
-  // The DISTRIBUTED mode indicates the index is updated/maintained by any node
-  // of the cluster.
+  // The DISTRIBUTED mode indicates the index is updated/maintained on a node
+  // with the indexer role.
   DISTRIBUTED = 0;
 
   // The STANDALONE mode indicates the index is updated/maintained on a node
@@ -382,7 +382,7 @@ enum IndexMode {
 
 // Determines the status of index.
 enum Status {
-  // This status indicates that the index can handle updates and queries.
+  // This status indicates that the index is ready to handle updates and queries.
   READY = 0;
   // This status indicates that the index is not yet fully built and shouldn't
   // be considered ready to handle updates and queries.
@@ -404,9 +404,9 @@ enum StandaloneIndexState {
   PERSISTING = 2;
   // Index has been persisted to the storage.
   PERSISTED = 3;
-  // Index is being marked ONLINE.
+  // Index is being marked DISTRIBUTED.
   UPDATING = 4;
-  // Index has been marked ONLINE.
+  // Index has been marked DISTRIBUTED.
   UPDATED = 5;
   // Error case. Index building would be retried from the scratch.
   FAILED = 6;

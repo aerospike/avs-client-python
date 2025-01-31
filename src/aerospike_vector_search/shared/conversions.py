@@ -1,7 +1,7 @@
 from typing import Any
 
 from .. import types
-from .proto_generated import types_pb2
+from .proto_generated import types_pb2, index_pb2
 from ..types import IndexStatusResponse
 
 
@@ -133,7 +133,7 @@ def fromIndexDefintion(input_data: types_pb2.IndexDefinition) -> types.IndexDefi
         storage=types.IndexStorage(
             namespace=input_data.storage.namespace, set_name=input_data.storage.set
         ),
-        index_mode=types.IndexMode(input_data.indexMode),
+        index_mode=types.IndexMode(input_data.mode),
     )
 
 
@@ -164,26 +164,26 @@ def fromVectorDbValue(input_vector: types_pb2.Value) -> Any:
 
     return None
 
-def fromStandAloneIndexMetricsResponse(response: types_pb2.StandAloneIndexMetrics) -> types.StandaloneIndexMetrics:
+def fromStandAloneIndexMetricsResponse(response: index_pb2.StandaloneIndexMetrics) -> types.StandaloneIndexMetrics:
     """
-    Converts a protobuf StandAloneIndexMetrics into a StandAloneIndexMetrics object.
+    Converts a protobuf StandaloneIndexMetrics into a StandaloneIndexMetrics object.
 
     Parameters:
     -----------
-    response : types_pb2.StandAloneIndexMetrics
-        A protobuf StandAloneIndexMetrics object.
+    response : types_pb2.StandaloneIndexMetrics
+        A protobuf StandaloneIndexMetrics object.
 
     Returns:
     --------
-    StandAloneIndexMetrics
-        An instance of StandAloneIndexMetrics with the values from the protobuf message.
+    StandaloneIndexMetrics
+        An instance of StandaloneIndexMetrics with the values from the protobuf message.
     """
     result = types.StandaloneIndexMetrics(
         index_id=types.IndexId(
             namespace=response.indexId.namespace,
             name=response.indexId.name
         ),
-        index_state=types.StandaloneIndexState(response.standaloneIndexState),
+        state=types.StandaloneIndexState(response.state),
         inserted_record_count=response.insertedRecordCount,
     )
     return result

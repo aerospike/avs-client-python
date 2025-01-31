@@ -35,7 +35,7 @@ message IndexStatusResponse {
   int64 indexHealerVerticesValid = 4;
 
   // Status of the index.
-  optional Status status = 5;
+  Status status = 5;
 }
 
 message GcInvalidVerticesRequest {

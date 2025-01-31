@@ -699,6 +699,7 @@ class Client(BaseClientMixin, AdminBaseClientMixin):
         index_params: Optional[types.HnswParams] = None,
         index_labels: Optional[dict[str, str]] = None,
         index_storage: Optional[types.IndexStorage] = None,
+        index_mode: Optional[types.IndexMode] = None,
         timeout: Optional[int] = 100_000,
     ) -> None:
         """
@@ -735,6 +736,9 @@ class Client(BaseClientMixin, AdminBaseClientMixin):
         :param index_storage: Namespace and set where index overhead (non-vector data) is stored.
         :type index_storage: Optional[types.IndexStorage]
 
+        :param index_mode: The mode of the index. Defaults to distributed.
+        :type index_mode: Optional[types.IndexMode]
+
         :param timeout: Time in seconds this operation will wait before raising an :class:`AVSServerError <aerospike_vector_search.types.AVSServerError>`. Defaults to None.
         :type timeout: int
 
@@ -757,6 +761,7 @@ class Client(BaseClientMixin, AdminBaseClientMixin):
             index_params,
             index_labels,
             index_storage,
+            index_mode,
             timeout,
             logger,
         )
@@ -770,13 +775,7 @@ class Client(BaseClientMixin, AdminBaseClientMixin):
         except grpc.RpcError as e:
             logger.error("Failed to create index with error: %s", e)
             raise types.AVSServerError(rpc_error=e)
-        try:
-            self._wait_for_index_creation(
-                namespace=namespace, name=name, timeout=100_000
-            )
-        except grpc.RpcError as e:
-            logger.error("Failed waiting for creation with error: %s", e)
-            raise types.AVSServerError(rpc_error=e)
+
 
     def index_update(
             self,

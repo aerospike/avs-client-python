@@ -33,13 +33,14 @@ class BaseClient(object):
             index_params: Optional[types.HnswParams],
             index_labels: Optional[dict[str, str]],
             index_storage: Optional[types.IndexStorage],
+            index_mode: Optional[types.IndexMode],
             timeout: Optional[int],
             logger: logging.Logger
     ) -> Tuple[index_pb2_grpc.IndexServiceStub, index_pb2.IndexCreateRequest, dict[str, Any]] :
 
         logger.debug(
             "Creating index: namespace=%s, name=%s, vector_field=%s, dimensions=%d, vector_distance_metric=%s, "
-            "sets=%s, index_params=%s, index_labels=%s, index_storage=%s, timeout=%s",
+            "sets=%s, index_params=%s, index_labels=%s, index_storage=%s, index_mode=%s, timeout=%s",
             namespace,
             name,
             vector_field,
@@ -49,6 +50,7 @@ class BaseClient(object):
             index_params,
             index_labels,
             index_storage,
+            index_mode,
             timeout,
         )
 
@@ -77,6 +79,7 @@ class BaseClient(object):
             dimensions=dimensions,
             labels=index_labels,
             storage=index_storage,
+            mode=index_mode,
         )
         index_create_request = index_pb2.IndexCreateRequest(definition=index_definition)
         return (index_stub, index_create_request, kwargs)
