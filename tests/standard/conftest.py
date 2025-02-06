@@ -7,7 +7,7 @@ from aerospike_vector_search import Client
 from aerospike_vector_search.aio import Client as AsyncClient
 from aerospike_vector_search import types, AVSServerError
 
-from utils import gen_records, DEFAULT_NAMESPACE, DEFAULT_INDEX_DIMENSION, DEFAULT_VECTOR_FIELD
+from utils import gen_records, DEFAULT_NAMESPACE, DEFAULT_INDEX_DIMENSION, DEFAULT_VECTOR_FIELD, DEFAULT_INDEX_MODE
 import grpc
 import pytest
 
@@ -20,6 +20,14 @@ DEFAULT_INDEX_ARGS = {
     "namespace": DEFAULT_NAMESPACE,
     "vector_field": DEFAULT_VECTOR_FIELD,
     "dimensions": DEFAULT_INDEX_DIMENSION,
+    "mode": DEFAULT_INDEX_MODE,
+}
+
+STANDALONE_INDEX_ARGS = {
+    "namespace": DEFAULT_NAMESPACE,
+    "vector_field": DEFAULT_VECTOR_FIELD,
+    "dimensions": DEFAULT_INDEX_DIMENSION,
+    "mode": types.IndexMode.STANDALONE,
 }
 
 DEFAULT_RECORD_GENERATOR = gen_records
@@ -247,6 +255,7 @@ def index(session_vector_client, index_name, request):
     namespace = args.get("namespace", DEFAULT_NAMESPACE)
     vector_field = args.get("vector_field", DEFAULT_VECTOR_FIELD) 
     dimensions = args.get("dimensions", DEFAULT_INDEX_DIMENSION)
+    mode = args.get("mode", DEFAULT_INDEX_MODE)
     session_vector_client.index_create(
         name = index_name,
         namespace = namespace,
@@ -264,7 +273,8 @@ def index(session_vector_client, index_name, request):
                 # for fast indexing
                 schedule="* * * * * ?"
             )
-        )
+        ),
+        mode=mode
     )
     yield index_name
     try:

@@ -941,8 +941,8 @@ class IndexDefinition(object):
     :param index_labels: Metadata associated with the index. Defaults to None.
     :type index_labels: Optional[dict[str, str]]
 
-    :param index_mode: Index mode.
-    :type index_mode: IndexMode default IndexMode.DISTRIBUTED
+    :param mode: Index mode.
+    :type mode: IndexMode default IndexMode.DISTRIBUTED
     """
 
     def __init__(
@@ -956,7 +956,7 @@ class IndexDefinition(object):
         hnsw_params: HnswParams,
         storage: Optional[IndexStorage] = None,
         index_labels: dict[str, str],
-        index_mode: IndexMode = IndexMode.DISTRIBUTED
+        mode: IndexMode = IndexMode.DISTRIBUTED
     ) -> None:
         self.id = id
         self.dimensions = dimensions
@@ -966,13 +966,13 @@ class IndexDefinition(object):
         self.hnsw_params = hnsw_params
         self.storage = storage
         self.index_labels = index_labels
-        self.index_mode = index_mode
+        self.mode = mode
 
     def __repr__(self) -> str:
         return (
             f"IndexDefinition(id={self.id!r}, dimensions={self.dimensions}, field={self.field!r}, sets={self.sets!r},"
             f"vector_distance_metric={self.vector_distance_metric!r}, hnsw_params={self.hnsw_params!r}, storage={self.storage!r}, "
-            f"index_labels={self.index_labels}, index_mode={self.index_mode!r})"
+            f"index_labels={self.index_labels}, mode={self.mode!r})"
         )
 
     # TODO make this representation consistent with HNSWParams, i.e. use newlines and indentation, or remove it completely
@@ -980,7 +980,7 @@ class IndexDefinition(object):
         return (
             f"IndexDefinition(id={self.id}, dimensions={self.dimensions}, field={self.field}, sets={self.sets!r}, "
             f"vector_distance_metric={self.vector_distance_metric}, hnsw_params={self.hnsw_params}, storage={self.storage}, "
-            f"index_labels={self.index_labels}, index_mode={self.index_mode}"
+            f"index_labels={self.index_labels}, mode={self.mode}"
         )
 
     def __eq__(self, other) -> bool:
@@ -995,7 +995,7 @@ class IndexDefinition(object):
             and self.hnsw_params == other.hnsw_params
             and self.storage == other.storage
             and self.index_labels == other.index_labels
-            and self.index_mode == other.index_mode
+            and self.mode == other.mode
         )
 
     def __getitem__(self, key):
@@ -1160,11 +1160,11 @@ class IndexStatusResponse:
             standalone_metrics: Optional[StandaloneIndexMetrics] = None,
             index_readiness: Optional[IndexReadiness] = None
         ) -> None:
-        self.unmerged_record_count: int = unmerged_record_count
-        self.index_healer_vector_records_indexed: int = index_healer_vector_records_indexed
-        self.index_healer_vertices_valid: int = index_healer_vertices_valid
-        self.standalone_metrics: Optional[StandaloneIndexMetrics] = standalone_metrics
-        self.index_readiness: Optional[IndexReadiness] = index_readiness
+        self.unmerged_record_count = unmerged_record_count
+        self.index_healer_vector_records_indexed = index_healer_vector_records_indexed
+        self.index_healer_vertices_valid = index_healer_vertices_valid
+        self.standalone_metrics = standalone_metrics
+        self.index_readiness = index_readiness
 
     def __str__(self) -> str:
         return (f"IndexStatusResponse("

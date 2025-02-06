@@ -28,7 +28,8 @@ class index_create_test_case:
         index_params,
         index_labels,
         index_storage,
-        timeout
+        timeout,
+        mode=None,
     ):
         self.namespace = namespace
         self.vector_field = vector_field
@@ -42,6 +43,7 @@ class index_create_test_case:
         self.index_labels = index_labels
         self.index_storage = index_storage
         self.timeout = timeout
+        self.mode = mode
 
 
 #@given(random_name=index_strategy())
@@ -653,6 +655,88 @@ def test_index_create_index_storage(session_vector_client, test_case, random_nam
             assert result["storage"]["namespace"] == test_case.index_storage.namespace
             assert result["storage"]["set_name"] == test_case.index_storage.set_name
     assert found == True
+
+
+@pytest.mark.parametrize(
+    "test_case, expected",
+    [
+        (
+            index_create_test_case(
+                namespace=DEFAULT_NAMESPACE,
+                vector_field="standalone",
+                dimensions=1024,
+                vector_distance_metric=None,
+                sets=None,
+                index_params=None,
+                index_labels=None,
+                index_storage=None,
+                timeout=None,
+                mode=types.IndexMode.STANDALONE,
+            ),
+            types.IndexMode.STANDALONE,
+        ),
+        (
+            index_create_test_case(
+                namespace=DEFAULT_NAMESPACE,
+                vector_field="distributed",
+                dimensions=1024,
+                vector_distance_metric=None,
+                sets=None,
+                index_params=None,
+                index_labels=None,
+                index_storage=None,
+                timeout=None,
+                mode=types.IndexMode.DISTRIBUTED,
+            ),
+            types.IndexMode.DISTRIBUTED,
+        ),
+        (
+            index_create_test_case(
+                namespace=DEFAULT_NAMESPACE,
+                vector_field="mode_none",
+                dimensions=1024,
+                vector_distance_metric=None,
+                sets=None,
+                index_params=None,
+                index_labels=None,
+                index_storage=None,
+                timeout=None,
+                mode=None,
+            ),
+            types.IndexMode.DISTRIBUTED,
+        )
+    ],
+)
+def test_index_create_with_mode(
+        session_vector_client, test_case, expected, random_name
+):
+    try:
+        session_vector_client.index_drop(namespace=DEFAULT_NAMESPACE, name=random_name)
+    except AVSServerError as se:
+        if se.rpc_error.code() != grpc.StatusCode.NOT_FOUND:
+            pass
+    session_vector_client.index_create(
+        namespace=test_case.namespace,
+        name=random_name,
+        vector_field=test_case.vector_field,
+        dimensions=test_case.dimensions,
+        vector_distance_metric=test_case.vector_distance_metric,
+        sets=test_case.sets,
+        index_params=test_case.index_params,
+        index_labels=test_case.index_labels,
+        index_storage=test_case.index_storage,
+        timeout=test_case.timeout,
+        mode=test_case.mode,
+    )
+
+    results = session_vector_client.index_list()
+    found = False
+    for result in results:
+        if result["id"]["name"] == random_name:
+            found = True
+            assert result["mode"] == expected
+    assert found == True
+    drop_specified_index(session_vector_client, test_case.namespace, random_name)
 
 
 #@given(random_name=index_strategy())

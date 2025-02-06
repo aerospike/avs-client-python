@@ -14,7 +14,8 @@ class index_update_test_case:
             initial_labels,
             update_labels,
             hnsw_index_update,
-            timeout
+            timeout,
+            mode=None
     ):
         self.vector_field = vector_field
         self.dimensions = dimensions
@@ -22,6 +23,7 @@ class index_update_test_case:
         self.update_labels = update_labels
         self.hnsw_index_update = hnsw_index_update
         self.timeout = timeout
+        self.mode = mode
 
 
 @pytest.mark.parametrize(
@@ -41,6 +43,7 @@ class index_update_test_case:
                 enable_vector_integrity_check=False,
             ),
             timeout=None,
+            mode=types.IndexMode.STANDALONE,
         ),
     ],
 )
@@ -52,6 +55,7 @@ def test_index_update(session_vector_client, test_case, index):
         index_labels=test_case.update_labels,
         hnsw_update_params=test_case.hnsw_index_update,
         timeout=100_000,
+        mode=test_case.mode,
     )
     #wait for index to get updated
     time.sleep(10)
@@ -83,3 +87,6 @@ def test_index_update(session_vector_client, test_case, index):
         assert result["hnsw_params"]["healer_params"]["max_scan_rate_per_node"] == test_case.hnsw_index_update.healer_params.max_scan_rate_per_node
 
     assert result["hnsw_params"]["enable_vector_integrity_check"] == test_case.hnsw_index_update.enable_vector_integrity_check
+
+    assert result["index_labels"] == test_case.update_labels
+    assert result["mode"] == test_case.mode

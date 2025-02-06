@@ -90,6 +90,7 @@ class BaseClient(object):
             name: str,
             index_labels: Optional[dict[str, str]],
             hnsw_update_params: Optional[types.HnswIndexUpdate],
+            index_mode: Optional[types.IndexMode],
             timeout: Optional[int],
             logger: logging.Logger
     ) -> tuple[index_pb2_grpc.IndexServiceStub, index_pb2.IndexUpdateRequest, dict[str, Any]]:
@@ -98,11 +99,12 @@ class BaseClient(object):
         """
 
         logger.debug(
-            "Updating index: namespace=%s, name=%s, labels=%s, hnsw_update_params=%s, timeout=%s",
+            "Updating index: namespace=%s, name=%s, labels=%s, hnsw_update_params=%s, index_mode=%s, timeout=%s",
             namespace,
             name,
             index_labels,
             hnsw_update_params,
+            index_mode,
             timeout,
         )
 
@@ -123,6 +125,7 @@ class BaseClient(object):
             indexId=index_id,
             labels=index_labels,
             hnswIndexUpdate=hnsw_update,
+            mode=index_mode,
         )
 
         return (index_stub, index_update_request, kwargs)

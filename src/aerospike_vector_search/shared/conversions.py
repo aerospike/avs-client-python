@@ -133,7 +133,7 @@ def fromIndexDefintion(input_data: types_pb2.IndexDefinition) -> types.IndexDefi
         storage=types.IndexStorage(
             namespace=input_data.storage.namespace, set_name=input_data.storage.set
         ),
-        index_mode=types.IndexMode(input_data.mode),
+        mode=types.IndexMode(input_data.mode),
     )
 
 
