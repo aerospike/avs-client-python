@@ -99,7 +99,7 @@ jobs:
 
     - name: Run integration tests
       run: |
-        docker run -d  --network=host -p 5000:5000 --name aerospike-vector-search -v ./aerospike-vector-search.yml:/etc/aerospike-vector-search/aerospike-vector-search.yml -v ./features.conf:/etc/aerospike-vector-search/features.conf aerospike/aerospike-vector-search:1.0.0
+        docker run -d  --network=host -p 5000:5000 --name aerospike-vector-search -v ./aerospike-vector-search.yml:/etc/aerospike-vector-search/aerospike-vector-search.yml -v ./features.conf:/etc/aerospike-vector-search/features.conf aerospike.jfrog.io/docker/aerospike/aerospike-vector-search-private:1.0.1-SNAPSHOT
     
         docker run -d --name aerospike -p 3000:3000 -v .:/etc/aerospike aerospike/aerospike-server-enterprise:latest 
 
@@ -183,7 +183,7 @@ jobs:
     - name: Run unit tests
       run: |
 
-        docker run -d --name aerospike-vector-search --network=host -p 5000:5000   -v $(pwd):/etc/aerospike-vector-search aerospike/aerospike-vector-search:1.0.0
+        docker run -d --name aerospike-vector-search --network=host -p 5000:5000   -v $(pwd):/etc/aerospike-vector-search aerospike.jfrog.io/docker/aerospike/aerospike-vector-search-private:1.0.1-SNAPSHOT
         docker run -d --name aerospike -p 3000:3000 -v .:/etc/aerospike aerospike/aerospike-server-enterprise:latest 
 
         sleep 5
@@ -265,7 +265,7 @@ jobs:
     - name: Run unit tests
       run: |
 
-        docker run -d --name aerospike-vector-search --network=host -p 5000:5000   -v $(pwd):/etc/aerospike-vector-search aerospike/aerospike-vector-search:1.0.0
+        docker run -d --name aerospike-vector-search --network=host -p 5000:5000   -v $(pwd):/etc/aerospike-vector-search aerospike.jfrog.io/docker/aerospike/aerospike-vector-search-private:1.0.1-SNAPSHOT
         docker run -d --name aerospike -p 3000:3000 -v .:/etc/aerospike aerospike/aerospike-server-enterprise:latest 
 
         sleep 5
@@ -346,7 +346,7 @@ jobs:
     - name: Run unit tests
       run: |
 
-        docker run -d --name aerospike-vector-search --network=host -p 5000:5000   -v $(pwd):/etc/aerospike-vector-search aerospike/aerospike-vector-search:1.0.0
+        docker run -d --name aerospike-vector-search --network=host -p 5000:5000   -v $(pwd):/etc/aerospike-vector-search aerospike.jfrog.io/docker/aerospike/aerospike-vector-search-private:1.0.1-SNAPSHOT
         docker run -d --name aerospike -p 3000:3000 -v .:/etc/aerospike aerospike/aerospike-server-enterprise:latest 
 
         sleep 5
@@ -430,7 +430,7 @@ jobs:
     - name: Run unit tests
       run: |
 
-        docker run -d --name aerospike-vector-search --network=host -p 5000:5000  -v $(pwd):/etc/aerospike-vector-search aerospike/aerospike-vector-search:1.0.0
+        docker run -d --name aerospike-vector-search --network=host -p 5000:5000  -v $(pwd):/etc/aerospike-vector-search aerospike.jfrog.io/docker/aerospike/aerospike-vector-search-private:1.0.1-SNAPSHOT
         docker run -d --name aerospike -p 3000:3000 -v .:/etc/aerospike aerospike/aerospike-server-enterprise:latest 
 
         sleep 5
@@ -508,7 +508,7 @@ jobs:
     - name: Run unit tests
       run: |
 
-        docker run -d --name aerospike-vector-search --network=host -p 5000:5000  -v $(pwd):/etc/aerospike-vector-search aerospike/aerospike-vector-search:1.0.0
+        docker run -d --name aerospike-vector-search --network=host -p 5000:5000  -v $(pwd):/etc/aerospike-vector-search aerospike.jfrog.io/docker/aerospike/aerospike-vector-search-private:1.0.1-SNAPSHOT
         docker run -d --name aerospike -p 3000:3000 -v .:/etc/aerospike aerospike/aerospike-server-enterprise:latest 
 
         sleep 5
@@ -587,7 +587,7 @@ jobs:
     - name: Run unit tests
       run: |
 
-        docker run -d --name aerospike-vector-search --network=host -p 5000:5000  -v $(pwd):/etc/aerospike-vector-search aerospike/aerospike-vector-search:1.0.0
+        docker run -d --name aerospike-vector-search --network=host -p 5000:5000  -v $(pwd):/etc/aerospike-vector-search aerospike.jfrog.io/docker/aerospike/aerospike-vector-search-private:1.0.1-SNAPSHOT
         docker run -d --name aerospike -p 3000:3000 -v .:/etc/aerospike aerospike/aerospike-server-enterprise:latest 
 
         sleep 5
@@ -661,7 +661,7 @@ jobs:
     - name: Run unit tests
       run: |
 
-        docker run -d --name aerospike-vector-search --network=host -p 5000:5000  -v $(pwd):/etc/aerospike-vector-search aerospike/aerospike-vector-search:1.0.0
+        docker run -d --name aerospike-vector-search --network=host -p 5000:5000  -v $(pwd):/etc/aerospike-vector-search aerospike.jfrog.io/docker/aerospike/aerospike-vector-search-private:1.0.1-SNAPSHOT
         docker run -d --name aerospike -p 3000:3000 -v .:/etc/aerospike aerospike/aerospike-server-enterprise:latest 
 
         sleep 5
