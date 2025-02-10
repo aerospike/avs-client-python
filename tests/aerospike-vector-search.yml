@@ -13,9 +13,12 @@ cluster:
   # indexer is standard.
   # standalone-indexer is required for standalone index tests.
   node-roles:
-    - standalone-indexer
-    - indexer
     - index-query
+    - index-update
+    - kv-read
+    - standalone-indexer
+    - kv-write
+    - indexer
 
 # If TLS is desired, TLS configuration ids used
 # and associated TLS configurations.
