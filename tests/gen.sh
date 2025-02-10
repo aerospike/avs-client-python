@@ -357,12 +357,12 @@ security:
 EOF
 )
 
-			sed -i '96,100d' "aerospike-vector-search.yml"
+			sed -i '107,111d' "aerospike-vector-search.yml"
 
 			echo "$security_stanza" | envsubst >  "assets/security_stanza.txt"
 
 
-			sed -i '95r assets/security_stanza.txt' aerospike-vector-search.yml
+			sed -i '106r assets/security_stanza.txt' aerospike-vector-search.yml
 
 		fi
 	fi
@@ -398,11 +398,11 @@ tls:
 EOF
 )
 
-		sed -i '15,27d' "aerospike-vector-search.yml"
+		sed -i '26,38d' "aerospike-vector-search.yml"
 
 		echo "$tls_stanza" | envsubst > "assets/tls_stanza.txt"
 
-		sed -i '14r assets/tls_stanza.txt' aerospike-vector-search.yml
+		sed -i '25r assets/tls_stanza.txt' aerospike-vector-search.yml
 
 		if [[ "$port" == "" ]]; then
 			read -p "Specify a port address:" port
@@ -423,11 +423,11 @@ EOF
 EOF
 )
 
-		sed -i '56,65d' "aerospike-vector-search.yml"
+		sed -i '67,76d' "aerospike-vector-search.yml"
 
 		echo "$service_stanza" | envsubst > "assets/service_stanza.txt"
 
-		sed -i '55r assets/service_stanza.txt' aerospike-vector-search.yml
+		sed -i '66r assets/service_stanza.txt' aerospike-vector-search.yml
 		if [[ "$host" == "" ]]; then
 			read -p "Specify a host address:" host
 
@@ -455,11 +455,11 @@ tls:
     #  - child
 EOF
 )
-		sed -i '15,27d' "aerospike-vector-search.yml"
+		sed -i '26,38d' "aerospike-vector-search.yml"
 
 		echo "$tls_stanza" | envsubst > "assets/tls_stanza.txt"
 
-		sed -i '14r assets/tls_stanza.txt' aerospike-vector-search.yml
+		sed -i '25r assets/tls_stanza.txt' aerospike-vector-search.yml
 		if [[ "$port" == "" ]]; then
 			read -p "Specify a port address:" port
 
@@ -482,10 +482,10 @@ EOF
 EOF
 )
 
-		sed -i '56,65d' "aerospike-vector-search.yml"
+		sed -i '67,76d' "aerospike-vector-search.yml"
 
 		echo "$service_stanza" | envsubst >  "assets/service_stanza.txt"
-		sed -i '55r assets/service_stanza.txt' aerospike-vector-search.yml
+		sed -i '66r assets/service_stanza.txt' aerospike-vector-search.yml
 
 
 
