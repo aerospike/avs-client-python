@@ -15,6 +15,7 @@ cluster:
   node-roles:
     - standalone-indexer
     - indexer
+    - index-query
 
 # If TLS is desired, TLS configuration ids used
 # and associated TLS configurations.
