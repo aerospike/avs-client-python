@@ -1,5 +1,7 @@
 #!/bin/bash
 
+set -e
+
 function generate_derivative_certs() {
 
 	openssl genrsa -out $1.key 2048
