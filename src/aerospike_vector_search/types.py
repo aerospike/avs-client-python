@@ -3,6 +3,113 @@ from typing import Any, Optional
 
 from .shared.proto_generated import types_pb2
 
+###########################
+#### ENUMS ################
+###########################
+
+class _ProtoEnum(enum.Enum):
+    """
+    Base class for enums that map to protobuf enums.
+    """
+
+    @classmethod
+    def from_proto(cls, value):
+        """
+        Convert a protobuf enum value to a Python enum value.
+        """
+        return cls(value)
+
+    def to_proto(self):
+        """
+        Convert a Python enum value to a protobuf enum value.
+        """
+        return self.value
+
+
+class IndexReadiness(_ProtoEnum):
+    """
+    Index ready status.
+
+    This enumeration defines the readiness of an index:
+
+    - **READY**: The index is ready to handle updates and queries.
+    - **NOT_READY**: The index is not yet fully built and shouldn't be considered ready to handle updates or queries.
+
+    This corresponds to the Status protobuf message.
+    """
+
+    READY = types_pb2.Status.READY
+    NOT_READY = types_pb2.Status.NOT_READY
+
+
+class StandaloneIndexState(_ProtoEnum):
+    """
+    Standalone index state.
+
+    This enumeration defines the states a standalone index can be in:
+
+    - **CREATING**: Index is being created.
+    - **CREATED**: Index has been created but is not yet persisted.
+    - **PERSISTING**: The index is being persisted to storage.
+    - **PERSISTED**: The index has been persisted to storage.
+    - **UPDATING**: The index is being marked DISTRIBUTED.
+    - **UPDATED**: The index has been updated.
+    - **FAILED**: The index has failed.
+    """
+
+    CREATING = types_pb2.StandaloneIndexState.CREATING
+    CREATED = types_pb2.StandaloneIndexState.CREATED
+    PERSISTING = types_pb2.StandaloneIndexState.PERSISTING
+    PERSISTED = types_pb2.StandaloneIndexState.PERSISTED
+    UPDATING = types_pb2.StandaloneIndexState.UPDATING
+    UPDATED = types_pb2.StandaloneIndexState.UPDATED
+    FAILED = types_pb2.StandaloneIndexState.FAILED
+
+
+class VectorDistanceMetric(_ProtoEnum):
+    """
+    Enumeration of vector distance metrics used for comparing vectors.
+
+    This enumeration defines various metrics for calculating the distance or similarity between vectors:
+
+    - **SQUARED_EUCLIDEAN**: Represents the squared Euclidean distance metric.
+    - **COSINE**: Represents the cosine similarity metric.
+    - **DOT_PRODUCT**: Represents the dot product similarity metric.
+    - **MANHATTAN**: Represents the Manhattan distance (L1 norm) metric.
+    - **HAMMING**: Represents the Hamming distance metric.
+
+    Each metric provides a different method for comparing vectors, affecting how distances and similarities are computed in vector-based operations.
+    """
+
+    SQUARED_EUCLIDEAN = types_pb2.VectorDistanceMetric.SQUARED_EUCLIDEAN
+    COSINE = types_pb2.VectorDistanceMetric.COSINE
+    DOT_PRODUCT = types_pb2.VectorDistanceMetric.DOT_PRODUCT
+    MANHATTAN = types_pb2.VectorDistanceMetric.MANHATTAN
+    HAMMING = types_pb2.VectorDistanceMetric.HAMMING
+
+
+class IndexMode(_ProtoEnum):
+    """
+    Index mode.
+
+    This enumeration defines the modes an index can operate in:
+
+    - **DISTRIBUTED**: The index is maintained by any node in the cluster.
+    - **STANDALONE**: The index is maintained by a single node in the cluster. The node must have the standalone-indexer role.
+
+    DISTRIBUTED is used when an index has streaming updates and needs to searchable.
+    STANDALONE is used when an index needs to index offline data quickly and does not need to be searchable.
+    STANDALONE indexes switch to DISTRIBUTED mode when they finish indexing.
+    """
+
+    DISTRIBUTED = types_pb2.IndexMode.DISTRIBUTED
+    STANDALONE = types_pb2.IndexMode.STANDALONE
+
+
+###########################
+#### DATA CLASSES #########
+###########################
+
 
 class HostPort(object):
     """
@@ -172,28 +279,6 @@ class Neighbor(object):
             and self.key == other.key
             and self.fields == other.fields
         )
-
-
-class VectorDistanceMetric(enum.IntEnum):
-    """
-    Enumeration of vector distance metrics used for comparing vectors.
-
-    This enumeration defines various metrics for calculating the distance or similarity between vectors:
-
-    - **SQUARED_EUCLIDEAN**: Represents the squared Euclidean distance metric.
-    - **COSINE**: Represents the cosine similarity metric.
-    - **DOT_PRODUCT**: Represents the dot product similarity metric.
-    - **MANHATTAN**: Represents the Manhattan distance (L1 norm) metric.
-    - **HAMMING**: Represents the Hamming distance metric.
-
-    Each metric provides a different method for comparing vectors, affecting how distances and similarities are computed in vector-based operations.
-    """
-
-    SQUARED_EUCLIDEAN = types_pb2.VectorDistanceMetric.SQUARED_EUCLIDEAN
-    COSINE = types_pb2.VectorDistanceMetric.COSINE
-    DOT_PRODUCT = types_pb2.VectorDistanceMetric.DOT_PRODUCT
-    MANHATTAN = types_pb2.VectorDistanceMetric.MANHATTAN
-    HAMMING = types_pb2.VectorDistanceMetric.HAMMING
 
 
 class Role(object):
@@ -894,24 +979,6 @@ class IndexId(object):
         return setattr(self, key, value)
 
 
-class IndexMode(enum.IntEnum):
-    """
-    Index mode.
-
-    This enumeration defines the modes an index can operate in:
-
-    - **DISTRIBUTED**: The index is maintained by any node in the cluster.
-    - **STANDALONE**: The index is maintained by a single node in the cluster. The node must have the standalone-indexer role.
-
-    DISTRIBUTED is used when an index has streaming updates and needs to searchable.
-    STANDALONE is used when an index needs to index offline data quickly and does not need to be searchable.
-    STANDALONE indexes switch to DISTRIBUTED mode when they finish offline indexing.
-    """
-
-    DISTRIBUTED = types_pb2.IndexMode.DISTRIBUTED
-    STANDALONE = types_pb2.IndexMode.STANDALONE
-
-
 # TBD add index type in future refactoring
 class IndexDefinition(object):
     """
@@ -1046,46 +1113,6 @@ class AVSClientError(AVSError):
 
     def __str__(self) -> str:
         return f"AVSClientError(message={self.message})"
-
-
-class IndexReadiness(enum.Enum):
-    """
-    Index ready status.
-
-    This enumeration defines the readiness of an index:
-
-    - **READY**: The index is ready to handle updates and queries.
-    - **NOT_READY**: The index is not yet fully built and shouldn't be considered ready to handle updates or queries.
-
-    This corresponds to the Status protobuf message.
-    """
-
-    READY = types_pb2.Status.READY
-    NOT_READY = types_pb2.Status.NOT_READY
-
-
-class StandaloneIndexState(enum.Enum):
-    """
-    Standalone index state.
-
-    This enumeration defines the states a standalone index can be in:
-
-    - **CREATING**: Index is being created.
-    - **CREATED**: Index has been created but is not yet persisted.
-    - **PERSISTING**: The index is being persisted to storage.
-    - **PERSISTED**: The index has been persisted to storage.
-    - **UPDATING**: The index is being marked DISTRIBUTED.
-    - **UPDATED**: The index has been updated.
-    - **FAILED**: The index has failed.
-    """
-
-    CREATING = types_pb2.StandaloneIndexState.CREATING
-    CREATED = types_pb2.StandaloneIndexState.CREATED
-    PERSISTING = types_pb2.StandaloneIndexState.PERSISTING
-    PERSISTED = types_pb2.StandaloneIndexState.PERSISTED
-    UPDATING = types_pb2.StandaloneIndexState.UPDATING
-    UPDATED = types_pb2.StandaloneIndexState.UPDATED
-    FAILED = types_pb2.StandaloneIndexState.FAILED
 
 
 class StandaloneIndexMetrics:
