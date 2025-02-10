@@ -43,7 +43,7 @@ class index_update_test_case:
                 enable_vector_integrity_check=False,
             ),
             timeout=None,
-            mode=types.IndexMode.STANDALONE,
+            mode=types.IndexMode.DISTRIBUTED,
         ),
     ],
 )
