@@ -184,7 +184,7 @@ mkdir -p tls
 mkdir -p tls/jwt
 cp assets/aerospike-vector-search.yml aerospike-vector-search.yml
 cp assets/aerospike.conf aerospike.conf
-cp assets/features.conf features.conf
+# cp assets/features.conf features.conf
 
 echo "Welcome to the AVS Configuration generator"
 
