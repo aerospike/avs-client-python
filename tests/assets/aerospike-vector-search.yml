@@ -9,6 +9,13 @@ cluster:
   #  It will be auto-generated if not specified.
   # node-id: a1
 
+  # Roles of the node in the cluster.
+  # indexer is standard.
+  # standalone-indexer is required for standalone index tests.
+  node-roles:
+    - standalone-indexer
+    - indexer
+
 # If TLS is desired, TLS configuration ids used
 # and associated TLS configurations.
 #
