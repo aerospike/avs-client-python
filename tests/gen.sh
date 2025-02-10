@@ -134,7 +134,7 @@ while [[ $# -gt 0 ]]; do
 done
 
 #if [[ "$for_testing" == "y" ]]; then
-#	mv_command="mv !(tls|assets|rbac|standard|requirements.txt|setup.py|utils.py|__init__.py|siftsmall|service_configs) tls/"
+#	mv_command="mv !(tls|assets|rbac|standard|requirements.txt|utils.py|__init__.py|service_configs) tls/"
 #	file_count=$(find . -type f | wc -l)
 #	dir_count=$(find . -type d | wc -l)
 #	total_count=$((file_count + dir_count))
@@ -499,7 +499,7 @@ fi
 
 shopt -s extglob  # Enable extended globbing
 
-mv !(tls|assets|rbac|standard|requirements.txt|setup.py|utils.py|__init__.py|siftsmall|service_configs) tls/
+mv !(tls|assets|rbac|standard|requirements.txt|utils.py|__init__.py|service_configs) tls/
 
 mv tls/gen.sh gen.sh
 

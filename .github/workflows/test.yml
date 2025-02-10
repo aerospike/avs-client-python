@@ -69,7 +69,6 @@ jobs:
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
-        python setup.py
         pip install -r requirements.txt
 
       working-directory: tests
@@ -143,7 +142,6 @@ jobs:
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
-        python setup.py
         pip install -r requirements.txt
       working-directory: tests
 
@@ -227,7 +225,6 @@ jobs:
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
-        python setup.py
         pip install -r requirements.txt
       working-directory: tests
 
@@ -306,7 +303,6 @@ jobs:
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
-        python setup.py
         pip install -r requirements.txt
       working-directory: tests
 
@@ -392,7 +388,6 @@ jobs:
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
-        python setup.py
         pip install -r requirements.txt
       working-directory: tests
 
@@ -470,7 +465,6 @@ jobs:
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
-        python setup.py
         pip install -r requirements.txt
       working-directory: tests
 
@@ -548,7 +542,6 @@ jobs:
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
-        python setup.py
         pip install -r requirements.txt
       working-directory: tests
 
@@ -626,7 +619,6 @@ jobs:
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
-        python setup.py
         pip install -r requirements.txt
       working-directory: tests
 
@@ -743,7 +735,6 @@ jobs:
 #    - name: Install dependencies
 #      run: |
 #        python -m pip install --upgrade pip
-#        python setup.py
 #        pip install -r requirements.txt
 #
 #      working-directory: tests
