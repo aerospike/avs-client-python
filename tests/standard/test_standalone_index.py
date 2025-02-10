@@ -5,33 +5,26 @@ from utils import DEFAULT_NAMESPACE, DEFAULT_INDEX_DIMENSION, DEFAULT_VECTOR_FIE
 
 import aerospike_vector_search as avs
 
-def test_standalone_index(session_vector_client):
+@pytest.mark.parametrize(
+    "index",
+    [
+        {
+            "mode": avs.types.IndexMode.STANDALONE,
+        },
+    ],
+    indirect=True,
+)
+def test_standalone_index(session_vector_client, index_obj):
     # TODO: when the client is able to tell if the cluster
     # has a node with the standalone indexer role
     # we should skip this test if there is no standalone indexer node
     
     c = session_vector_client
 
-    index_name = "standalone_idx"
-    mode = avs.types.IndexMode.STANDALONE
-
-    c.index_create(
-        namespace=DEFAULT_NAMESPACE,
-        name=index_name,
-        vector_field=DEFAULT_VECTOR_FIELD,
-        dimensions=DEFAULT_INDEX_DIMENSION,
-        mode=mode,
-    )
-
-    index = c.index(
-        namespace=DEFAULT_NAMESPACE,
-        name=index_name,
-    )
-
-    index_def = index.get()
+    index_def = index_obj.get()
     assert index_def.mode == avs.types.IndexMode.STANDALONE
 
-    status = index.status()
+    status = index_obj.status()
     assert status.index_readiness == avs.types.IndexReadiness.NOT_READY
 
     # we have written no records, so the index should be stuck in the creating state
@@ -52,21 +45,19 @@ def test_standalone_index(session_vector_client):
             pytest.fail("standalone index did not transition to READY state, maybe no node in the cluster has the standalone indexer role")
 
         time.sleep(0.5)
-        status = index.status()
+        status = index_obj.status()
         max_retries -= 1
 
     # at this point, the index mode should switch to DISTRIBUTED
-    index_def = index.get()
+    index_def = index_obj.get()
     assert index_def.mode == avs.types.IndexMode.DISTRIBUTED
 
-    status = index.status()
+    status = index_obj.status()
     assert status.index_readiness == avs.types.IndexReadiness.READY
 
     # test that the index is searchable
 
-    neighbors = c.vector_search(
-        namespace=DEFAULT_NAMESPACE,
-        index_name=index_name,
+    neighbors = index_obj.vector_search(
         query=[0.0] * DEFAULT_INDEX_DIMENSION,
         limit=3,
     )
@@ -79,21 +70,9 @@ def test_standalone_index(session_vector_client):
 
     assert len(neighbors) == 3
 
-    # test that the index can be dropped
-    index.drop()
-    time.sleep(0.5)
 
-    # verify that the index was dropped
-    with pytest.raises(avs.AVSServerError):
-        index.get()
-
-
-def test_standalone_index_update(session_vector_client, index):
+def test_standalone_index_update(session_vector_client, index_obj):
     c = session_vector_client
-    index_obj = c.index(
-        namespace=DEFAULT_NAMESPACE,
-        name=index,
-    )
 
     index_def = index_obj.get()
     # by default the index fixture creates a distributed index
@@ -109,7 +88,7 @@ def test_standalone_index_update(session_vector_client, index):
     # update the index back to distributed mode and verify using the client
     c.index_update(
         namespace=DEFAULT_NAMESPACE,
-        name=index,
+        name=index_obj._name,
         mode=avs.types.IndexMode.DISTRIBUTED,
     )
 
