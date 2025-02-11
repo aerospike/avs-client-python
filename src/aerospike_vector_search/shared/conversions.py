@@ -207,6 +207,6 @@ def fromIndexStatusResponse(response: 'index_pb2.IndexStatusResponse') -> IndexS
             unmerged_record_count=response.unmergedRecordCount,
             index_healer_vector_records_indexed=response.indexHealerVectorRecordsIndexed,
             index_healer_vertices_valid=response.indexHealerVerticesValid,
-            standalone_metrics=response.standaloneIndexMetrics,
+            standalone_metrics=fromStandAloneIndexMetricsResponse(response.standaloneIndexMetrics),
             readiness=types.IndexReadiness(response.status)
         )
