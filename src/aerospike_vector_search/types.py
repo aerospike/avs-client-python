@@ -1175,7 +1175,7 @@ class IndexStatusResponse:
     standalone_metrics : Optional[StandaloneIndexMetrics]
         Extra metrics populated if the index is in standalone mode.
     
-    index_readiness : Optional[IndexReady]
+    readiness : Optional[IndexReady]
         The readiness of the index.
     """
 
@@ -1185,13 +1185,13 @@ class IndexStatusResponse:
             index_healer_vector_records_indexed: int = 0,
             index_healer_vertices_valid: int = 0,
             standalone_metrics: Optional[StandaloneIndexMetrics] = None,
-            index_readiness: Optional[IndexReadiness] = None
+            readiness: Optional[IndexReadiness] = None
         ) -> None:
         self.unmerged_record_count = unmerged_record_count
         self.index_healer_vector_records_indexed = index_healer_vector_records_indexed
         self.index_healer_vertices_valid = index_healer_vertices_valid
         self.standalone_metrics = standalone_metrics
-        self.readiness = index_readiness
+        self.readiness = readiness
 
     def __str__(self) -> str:
         return (f"IndexStatusResponse("
@@ -1199,11 +1199,11 @@ class IndexStatusResponse:
                 f"index_healer_vector_records_indexed={self.index_healer_vector_records_indexed}, "
                 f"index_healer_vertices_valid={self.index_healer_vertices_valid}, "
                 f"standalone_metrics={self.standalone_metrics}, "
-                f"index_readiness={self.readiness})")
+                f"readiness={self.readiness})")
 
     def __repr__(self) -> str:
         return (f"IndexStatusResponse(unmerged_record_count={self.unmerged_record_count}, "
                 f"index_healer_vector_records_indexed={self.index_healer_vector_records_indexed}, "
                 f"index_healer_vertices_valid={self.index_healer_vertices_valid}, "
                 f"standalone_metrics={self.standalone_metrics!r}, " 
-                f"index_readiness={self.readiness!r})")
+                f"readiness={self.readiness!r})")
