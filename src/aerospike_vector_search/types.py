@@ -13,13 +13,13 @@ class _ProtoEnum(enum.Enum):
     """
 
     @classmethod
-    def from_proto(cls, value):
+    def _from_proto(cls, value):
         """
         Convert a protobuf enum value to a Python enum value.
         """
         return cls(value)
 
-    def to_proto(self):
+    def _to_proto(self):
         """
         Convert a Python enum value to a protobuf enum value.
         """
@@ -1131,6 +1131,7 @@ class StandaloneIndexMetrics:
         The number of records inserted into the standalone index.
         For state CREATING, this is the number of records inserted so far, i.e. the localStoreInsertedCount AVS server metric.
         For state PERSISTING, this is the number of records persisted so far, i.e. the persistentStorePersistedCount AVS server metric.
+        For other states, it is set to 0 and should be ignored.
     """
 
     def __init__(
@@ -1175,17 +1176,18 @@ class IndexStatusResponse:
     standalone_metrics : Optional[StandaloneIndexMetrics]
         Extra metrics populated if the index is in standalone mode.
     
-    readiness : Optional[IndexReady]
+    readiness : IndexReady
         The readiness of the index.
     """
 
     def __init__(
             self,
-            unmerged_record_count: int = 0,
-            index_healer_vector_records_indexed: int = 0,
-            index_healer_vertices_valid: int = 0,
-            standalone_metrics: Optional[StandaloneIndexMetrics] = None,
-            readiness: Optional[IndexReadiness] = None
+            *,
+            unmerged_record_count: int,
+            index_healer_vector_records_indexed: int,
+            index_healer_vertices_valid: int,
+            standalone_metrics: Optional[StandaloneIndexMetrics],
+            readiness: IndexReadiness,
         ) -> None:
         self.unmerged_record_count = unmerged_record_count
         self.index_healer_vector_records_indexed = index_healer_vector_records_indexed

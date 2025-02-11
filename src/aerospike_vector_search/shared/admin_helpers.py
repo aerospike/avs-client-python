@@ -68,8 +68,10 @@ class BaseClient(object):
         index_id = self._get_index_id(namespace, name)
         index_stub = self._get_index_stub()
 
-        vector_distance_metric = vector_distance_metric.to_proto() 
-        index_mode = index_mode.to_proto() if index_mode is not None else None
+        vector_distance_metric = vector_distance_metric._to_proto()
+
+        if index_mode is not None:
+            index_mode = index_mode._to_proto()
 
         index_definition = types_pb2.IndexDefinition(
             id=index_id,
@@ -121,7 +123,8 @@ class BaseClient(object):
         if hnsw_update_params is not None:
             hnsw_update = hnsw_update_params._to_pb2()
 
-        index_mode = index_mode.to_proto() if index_mode is not None else None
+        if index_mode is not None:
+            index_mode = index_mode._to_proto()
 
         # Create the IndexUpdateRequest with optional fields
         index_update_request = index_pb2.IndexUpdateRequest(

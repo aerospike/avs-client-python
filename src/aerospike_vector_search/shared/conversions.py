@@ -203,10 +203,10 @@ def fromIndexStatusResponse(response: 'index_pb2.IndexStatusResponse') -> IndexS
         IndexStatusResponse
             An instance of IndexStatusResponse with the values from the protobuf message.
         """
-        result = IndexStatusResponse()
-        result.unmerged_record_count = response.unmergedRecordCount
-        result.index_healer_vector_records_indexed = response.indexHealerVectorRecordsIndexed
-        result.index_healer_vertices_valid = response.indexHealerVerticesValid
-        result.standalone_metrics = fromStandAloneIndexMetricsResponse(response.standaloneIndexMetrics)
-        result.readiness = types.IndexReadiness(response.status)
-        return result
+        return IndexStatusResponse(
+            unmerged_record_count=response.unmergedRecordCount,
+            index_healer_vector_records_indexed=response.indexHealerVectorRecordsIndexed,
+            index_healer_vertices_valid=response.indexHealerVerticesValid,
+            standalone_metrics=response.standaloneMetrics,
+            readiness=types.IndexReadiness(response.status)
+        )
