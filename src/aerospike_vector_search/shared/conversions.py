@@ -208,5 +208,5 @@ def fromIndexStatusResponse(response: 'index_pb2.IndexStatusResponse') -> IndexS
         result.index_healer_vector_records_indexed = response.indexHealerVectorRecordsIndexed
         result.index_healer_vertices_valid = response.indexHealerVerticesValid
         result.standalone_metrics = fromStandAloneIndexMetricsResponse(response.standaloneIndexMetrics)
-        result.index_readiness = types.IndexReadiness(response.status)
+        result.readiness = types.IndexReadiness(response.status)
         return result

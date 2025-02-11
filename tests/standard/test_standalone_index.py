@@ -25,7 +25,7 @@ def test_standalone_index(session_vector_client, index_obj):
     assert index_def.mode == avs.types.IndexMode.STANDALONE
 
     status = index_obj.status()
-    assert status.index_readiness == avs.types.IndexReadiness.NOT_READY
+    assert status.readiness == avs.types.IndexReadiness.NOT_READY
 
     # we have written no records, so the index should be stuck in the creating state
     assert status.standalone_metrics.state == avs.types.StandaloneIndexState.CREATING
@@ -40,7 +40,7 @@ def test_standalone_index(session_vector_client, index_obj):
 
     # wait for the index to process the records and transition to the UPDATING state
     max_retries = 1000
-    while status.index_readiness != avs.types.IndexReadiness.READY:
+    while status.readiness != avs.types.IndexReadiness.READY:
         if max_retries <= 0:
             pytest.fail("standalone index did not transition to READY state, maybe no node in the cluster has the standalone indexer role")
 
@@ -53,7 +53,7 @@ def test_standalone_index(session_vector_client, index_obj):
     assert index_def.mode == avs.types.IndexMode.DISTRIBUTED
 
     status = index_obj.status()
-    assert status.index_readiness == avs.types.IndexReadiness.READY
+    assert status.readiness == avs.types.IndexReadiness.READY
 
     # test that the index is searchable
 
