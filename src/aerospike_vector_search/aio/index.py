@@ -322,6 +322,7 @@ class Index():
             *,
             labels: Optional[dict[str, str]] = None,
             hnsw_update_params: Optional[types.HnswIndexUpdate] = None,
+            mode: Optional[types.IndexMode] = None,
             timeout: Optional[int] = None,
         ) -> None:
         """
@@ -332,6 +333,9 @@ class Index():
 
         :param hnsw_update_params: Parameters for updating HNSW index settings. Defaults to None.
         :type hnsw_update_params: Optional[types.HnswIndexUpdate]
+
+        :param mode: The mode of the index. Defaults to distributed.
+        :type mode: Optional[types.IndexMode]
 
         :param timeout: Time in seconds this operation will wait before raising an error. Defaults to None.
         :type timeout: int
@@ -345,6 +349,7 @@ class Index():
             name=self._name,
             index_labels=labels,
             hnsw_update_params=hnsw_update_params,
+            mode=mode,
             timeout=timeout,
         )
     

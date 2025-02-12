@@ -33,13 +33,14 @@ class BaseClient(object):
             index_params: Optional[types.HnswParams],
             index_labels: Optional[dict[str, str]],
             index_storage: Optional[types.IndexStorage],
+            index_mode: Optional[types.IndexMode],
             timeout: Optional[int],
             logger: logging.Logger
     ) -> Tuple[index_pb2_grpc.IndexServiceStub, index_pb2.IndexCreateRequest, dict[str, Any]] :
 
         logger.debug(
             "Creating index: namespace=%s, name=%s, vector_field=%s, dimensions=%d, vector_distance_metric=%s, "
-            "sets=%s, index_params=%s, index_labels=%s, index_storage=%s, timeout=%s",
+            "sets=%s, index_params=%s, index_labels=%s, index_storage=%s, index_mode=%s, timeout=%s",
             namespace,
             name,
             vector_field,
@@ -49,6 +50,7 @@ class BaseClient(object):
             index_params,
             index_labels,
             index_storage,
+            index_mode,
             timeout,
         )
 
@@ -64,9 +66,12 @@ class BaseClient(object):
             index_storage = index_storage._to_pb2()
 
         index_id = self._get_index_id(namespace, name)
-        vector_distance_metric = vector_distance_metric.value
-
         index_stub = self._get_index_stub()
+
+        vector_distance_metric = vector_distance_metric._to_proto()
+
+        if index_mode is not None:
+            index_mode = index_mode._to_proto()
 
         index_definition = types_pb2.IndexDefinition(
             id=index_id,
@@ -77,6 +82,7 @@ class BaseClient(object):
             dimensions=dimensions,
             labels=index_labels,
             storage=index_storage,
+            mode=index_mode,
         )
         index_create_request = index_pb2.IndexCreateRequest(definition=index_definition)
         return (index_stub, index_create_request, kwargs)
@@ -87,6 +93,7 @@ class BaseClient(object):
             name: str,
             index_labels: Optional[dict[str, str]],
             hnsw_update_params: Optional[types.HnswIndexUpdate],
+            index_mode: Optional[types.IndexMode],
             timeout: Optional[int],
             logger: logging.Logger
     ) -> tuple[index_pb2_grpc.IndexServiceStub, index_pb2.IndexUpdateRequest, dict[str, Any]]:
@@ -95,11 +102,12 @@ class BaseClient(object):
         """
 
         logger.debug(
-            "Updating index: namespace=%s, name=%s, labels=%s, hnsw_update_params=%s, timeout=%s",
+            "Updating index: namespace=%s, name=%s, labels=%s, hnsw_update_params=%s, index_mode=%s, timeout=%s",
             namespace,
             name,
             index_labels,
             hnsw_update_params,
+            index_mode,
             timeout,
         )
 
@@ -115,11 +123,15 @@ class BaseClient(object):
         if hnsw_update_params is not None:
             hnsw_update = hnsw_update_params._to_pb2()
 
+        if index_mode is not None:
+            index_mode = index_mode._to_proto()
+
         # Create the IndexUpdateRequest with optional fields
         index_update_request = index_pb2.IndexUpdateRequest(
             indexId=index_id,
             labels=index_labels,
             hnswIndexUpdate=hnsw_update,
+            mode=index_mode,
         )
 
         return (index_stub, index_update_request, kwargs)

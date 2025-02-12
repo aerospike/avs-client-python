@@ -2,6 +2,7 @@ import random
 import time
 import string
 
+from aerospike_vector_search import types
 import hypothesis.strategies as st
 from hypothesis import given
 import pytest
@@ -11,6 +12,7 @@ import pytest
 DEFAULT_NAMESPACE = "test"
 DEFAULT_INDEX_DIMENSION = 128
 DEFAULT_VECTOR_FIELD = "vector"
+DEFAULT_INDEX_MODE = types.IndexMode.DISTRIBUTED
 
 
 def random_int():

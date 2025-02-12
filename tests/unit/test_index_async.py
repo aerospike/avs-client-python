@@ -274,6 +274,7 @@ async def test_index_update():
         timeout=1000,
         hnsw_update_params=updates,
         labels={"test": "label"},
+        mode=types.IndexMode.STANDALONE,
     )
 
     mock_client.index_update.assert_called_once_with(
@@ -281,6 +282,7 @@ async def test_index_update():
         name="test_index",
         index_labels={"test": "label"},
         hnsw_update_params=updates,
+        mode=types.IndexMode.STANDALONE,
         timeout=1000,
     )
 
@@ -304,6 +306,7 @@ async def test_index_update_no_params():
         name="test_index",
         index_labels=None,
         hnsw_update_params=None,
+        mode=None,
         timeout=None,
     )
 

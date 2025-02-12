@@ -1,7 +1,7 @@
 from typing import Any
 
 from .. import types
-from .proto_generated import types_pb2
+from .proto_generated import types_pb2, index_pb2
 from ..types import IndexStatusResponse
 
 
@@ -133,6 +133,7 @@ def fromIndexDefintion(input_data: types_pb2.IndexDefinition) -> types.IndexDefi
         storage=types.IndexStorage(
             namespace=input_data.storage.namespace, set_name=input_data.storage.set
         ),
+        mode=types.IndexMode(input_data.mode),
     )
 
 
@@ -163,6 +164,31 @@ def fromVectorDbValue(input_vector: types_pb2.Value) -> Any:
 
     return None
 
+def fromStandAloneIndexMetricsResponse(response: index_pb2.StandaloneIndexMetrics) -> types.StandaloneIndexMetrics:
+    """
+    Converts a protobuf StandaloneIndexMetrics into a StandaloneIndexMetrics object.
+
+    Parameters:
+    -----------
+    response : types_pb2.StandaloneIndexMetrics
+        A protobuf StandaloneIndexMetrics object.
+
+    Returns:
+    --------
+    StandaloneIndexMetrics
+        An instance of StandaloneIndexMetrics with the values from the protobuf message.
+    """
+    result = types.StandaloneIndexMetrics(
+        index_id=types.IndexId(
+            namespace=response.indexId.namespace,
+            name=response.indexId.name
+        ),
+        state=types.StandaloneIndexState(response.state),
+        inserted_record_count=response.insertedRecordCount,
+    )
+    return result
+
+
 def fromIndexStatusResponse(response: 'index_pb2.IndexStatusResponse') -> IndexStatusResponse:
         """
         Converts a protobuf IndexStatusResponse into an IndexStatusResponse object.
@@ -177,8 +203,10 @@ def fromIndexStatusResponse(response: 'index_pb2.IndexStatusResponse') -> IndexS
         IndexStatusResponse
             An instance of IndexStatusResponse with the values from the protobuf message.
         """
-        result = IndexStatusResponse()
-        result.unmerged_record_count = response.unmergedRecordCount
-        result.index_healer_vector_records_indexed = response.indexHealerVectorRecordsIndexed
-        result.index_healer_vertices_valid = response.indexHealerVerticesValid
-        return result
+        return IndexStatusResponse(
+            unmerged_record_count=response.unmergedRecordCount,
+            index_healer_vector_records_indexed=response.indexHealerVectorRecordsIndexed,
+            index_healer_vertices_valid=response.indexHealerVerticesValid,
+            standalone_metrics=fromStandAloneIndexMetricsResponse(response.standaloneIndexMetrics),
+            readiness=types.IndexReadiness(response.status)
+        )

@@ -699,6 +699,7 @@ class Client(BaseClientMixin, AdminBaseClientMixin):
         index_params: Optional[types.HnswParams] = None,
         index_labels: Optional[dict[str, str]] = None,
         index_storage: Optional[types.IndexStorage] = None,
+        mode: Optional[types.IndexMode] = None,
         timeout: Optional[int] = 100_000,
     ) -> None:
         """
@@ -735,6 +736,9 @@ class Client(BaseClientMixin, AdminBaseClientMixin):
         :param index_storage: Namespace and set where index overhead (non-vector data) is stored.
         :type index_storage: Optional[types.IndexStorage]
 
+        :param mode: The mode of the index. Defaults to distributed.
+        :type mode: Optional[types.IndexMode]
+
         :param timeout: Time in seconds this operation will wait before raising an :class:`AVSServerError <aerospike_vector_search.types.AVSServerError>`. Defaults to None.
         :type timeout: int
 
@@ -757,6 +761,7 @@ class Client(BaseClientMixin, AdminBaseClientMixin):
             index_params,
             index_labels,
             index_storage,
+            mode,
             timeout,
             logger,
         )
@@ -778,6 +783,7 @@ class Client(BaseClientMixin, AdminBaseClientMixin):
             logger.error("Failed waiting for creation with error: %s", e)
             raise types.AVSServerError(rpc_error=e)
 
+
     def index_update(
             self,
             *,
@@ -785,6 +791,7 @@ class Client(BaseClientMixin, AdminBaseClientMixin):
             name: str,
             index_labels: Optional[dict[str, str]] = None,
             hnsw_update_params: Optional[types.HnswIndexUpdate] = None,
+            mode: Optional[types.IndexMode] = None,
             timeout: Optional[int] = 100_000,
     ) -> None:
         """
@@ -802,6 +809,9 @@ class Client(BaseClientMixin, AdminBaseClientMixin):
         :param hnsw_update_params: Parameters for updating HNSW index settings. Defaults to None.
         :type hnsw_update_params: Optional[types.HnswIndexUpdate]
 
+        :param mode: The mode of the index. Defaults to distributed.
+        :type mode: Optional[types.IndexMode]
+
         :param timeout: Time in seconds (default 100_000) this operation will wait before raising an error.
         :type timeout: int
 
@@ -813,6 +823,7 @@ class Client(BaseClientMixin, AdminBaseClientMixin):
             name = name,
             index_labels = index_labels,
             hnsw_update_params = hnsw_update_params,
+            index_mode = mode,
             timeout = timeout,
             logger = logger,
         )

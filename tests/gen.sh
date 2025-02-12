@@ -1,5 +1,7 @@
 #!/bin/bash
 
+set -e
+
 function generate_derivative_certs() {
 
 	openssl genrsa -out $1.key 2048
@@ -134,7 +136,7 @@ while [[ $# -gt 0 ]]; do
 done
 
 #if [[ "$for_testing" == "y" ]]; then
-#	mv_command="mv !(tls|assets|rbac|standard|requirements.txt|setup.py|utils.py|__init__.py|siftsmall|service_configs) tls/"
+#	mv_command="mv !(tls|assets|rbac|standard|requirements.txt|utils.py|__init__.py|service_configs) tls/"
 #	file_count=$(find . -type f | wc -l)
 #	dir_count=$(find . -type d | wc -l)
 #	total_count=$((file_count + dir_count))
@@ -182,7 +184,7 @@ mkdir -p tls
 mkdir -p tls/jwt
 cp assets/aerospike-vector-search.yml aerospike-vector-search.yml
 cp assets/aerospike.conf aerospike.conf
-cp assets/features.conf features.conf
+# cp assets/features.conf features.conf
 
 echo "Welcome to the AVS Configuration generator"
 
@@ -355,12 +357,12 @@ security:
 EOF
 )
 
-			sed -i '96,100d' "aerospike-vector-search.yml"
+			sed -i '107,111d' "aerospike-vector-search.yml"
 
 			echo "$security_stanza" | envsubst >  "assets/security_stanza.txt"
 
 
-			sed -i '95r assets/security_stanza.txt' aerospike-vector-search.yml
+			sed -i '106r assets/security_stanza.txt' aerospike-vector-search.yml
 
 		fi
 	fi
@@ -396,11 +398,11 @@ tls:
 EOF
 )
 
-		sed -i '15,27d' "aerospike-vector-search.yml"
+		sed -i '26,38d' "aerospike-vector-search.yml"
 
 		echo "$tls_stanza" | envsubst > "assets/tls_stanza.txt"
 
-		sed -i '14r assets/tls_stanza.txt' aerospike-vector-search.yml
+		sed -i '25r assets/tls_stanza.txt' aerospike-vector-search.yml
 
 		if [[ "$port" == "" ]]; then
 			read -p "Specify a port address:" port
@@ -421,11 +423,11 @@ EOF
 EOF
 )
 
-		sed -i '56,65d' "aerospike-vector-search.yml"
+		sed -i '67,76d' "aerospike-vector-search.yml"
 
 		echo "$service_stanza" | envsubst > "assets/service_stanza.txt"
 
-		sed -i '55r assets/service_stanza.txt' aerospike-vector-search.yml
+		sed -i '66r assets/service_stanza.txt' aerospike-vector-search.yml
 		if [[ "$host" == "" ]]; then
 			read -p "Specify a host address:" host
 
@@ -453,11 +455,11 @@ tls:
     #  - child
 EOF
 )
-		sed -i '15,27d' "aerospike-vector-search.yml"
+		sed -i '26,38d' "aerospike-vector-search.yml"
 
 		echo "$tls_stanza" | envsubst > "assets/tls_stanza.txt"
 
-		sed -i '14r assets/tls_stanza.txt' aerospike-vector-search.yml
+		sed -i '25r assets/tls_stanza.txt' aerospike-vector-search.yml
 		if [[ "$port" == "" ]]; then
 			read -p "Specify a port address:" port
 
@@ -480,10 +482,10 @@ EOF
 EOF
 )
 
-		sed -i '56,65d' "aerospike-vector-search.yml"
+		sed -i '67,76d' "aerospike-vector-search.yml"
 
 		echo "$service_stanza" | envsubst >  "assets/service_stanza.txt"
-		sed -i '55r assets/service_stanza.txt' aerospike-vector-search.yml
+		sed -i '66r assets/service_stanza.txt' aerospike-vector-search.yml
 
 
 
@@ -499,7 +501,7 @@ fi
 
 shopt -s extglob  # Enable extended globbing
 
-mv !(tls|assets|rbac|standard|requirements.txt|setup.py|utils.py|__init__.py|siftsmall|service_configs) tls/
+mv !(tls|assets|rbac|standard|requirements.txt|utils.py|__init__.py|service_configs) tls/
 
 mv tls/gen.sh gen.sh
 
