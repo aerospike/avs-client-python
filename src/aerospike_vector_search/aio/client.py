@@ -1089,6 +1089,33 @@ class Client(BaseClientMixin, AdminBaseClientMixin):
             index_storage=index_info.storage,
         )
 
+    async def indexes_in_sync(
+            self,
+            *,
+            timeout: Optional[int] = None,
+    ):
+        """
+        Waits for indexes to be in sync across the cluster.
+        This call returns when all nodes in the AVS cluster have the same copy of the index.
+
+        You can use this call after creating, deleting, or updating an index to ensure that the changes are propagated to all nodes.
+
+        :param timeout: Time in seconds this operation will wait before raising an :class:`AVSServerError <aerospike_vector_search.types.AVSServerError>`. Defaults to None.
+        :type timeout: int
+        """
+        index_stub, request, kwargs = self._prepare_indexes_in_sync(timeout, logger)
+
+        try:
+            response = await index_stub.AreIndicesInSync(
+                request,
+                credentials=self._channel_provider.get_token(),
+                **kwargs,
+            )
+            return fromIndexStatusResponse(response)
+        except grpc.RpcError as e:
+            logger.error("Failed waiting for indices to sync with error: %s", e)
+            raise types.AVSServerError(rpc_error=e)
+
     async def add_user(
         self,
         *,

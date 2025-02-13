@@ -378,6 +378,22 @@ class BaseClient(object):
 
         return (index_stub, req, kwargs)
 
+    def _prepare_indexes_in_sync(self, timeout: Optional[int], logger: Logger) -> (
+        Tuple)[index_pb2_grpc.IndexServiceStub, index_pb2_grpc.google_dot_protobuf_dot_empty__pb2.Empty, dict[str, Any]]:
+
+        logger.debug(
+            "Waiting for indexes to be in sync: timeout=%s",
+            timeout,
+        )
+
+        kwargs = {}
+        if timeout is not None:
+            kwargs["timeout"] = timeout
+
+        index_stub = helpers._create_index_service_stub(self)
+        req = index_pb2_grpc.google_dot_protobuf_dot_empty__pb2.Empty()
+
+        return (index_stub, req, kwargs)
 
 
     def _check_timeout(self, start_time: float, timeout: int):
