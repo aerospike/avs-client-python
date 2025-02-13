@@ -1398,7 +1398,7 @@ class Client(BaseClientMixin, AdminBaseClientMixin):
             self.closed = True
             self._channel_provider.close()
 
-            # Patch all public methods to raise a ClosedError
+            # Patch all public methods to raise a AVSClientErrorClosed
             # the idea is to prevent use after the client is closed
             # without having to check if the client is closed in every method
             _patch_public_methods(self, _raise_closed)

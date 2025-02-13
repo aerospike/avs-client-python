@@ -1115,8 +1115,7 @@ class AVSClientError(AVSError):
 
 class AVSClientErrorClosed(AVSClientError):
     """
-    Exception raised for errors caused by an AVS client being closed.
-    You may have tried to use a client method after closing it.
+    Raised when an operation is attempted on a closed client.
 
     :param message: error message raised by the AVS Client. Defaults to None.
     :type message: str
