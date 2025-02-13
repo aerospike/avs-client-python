@@ -3,11 +3,6 @@ from aerospike_vector_search import types
 
 
 def test_close(session_vector_client):
-    session_vector_client.close()
-    assert session_vector_client.closed == True
-
-
-def test_use_after_close(session_vector_client):
     client = session_vector_client
     assert client.closed == False
 
