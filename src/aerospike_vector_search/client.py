@@ -1063,12 +1063,11 @@ class Client(BaseClientMixin, AdminBaseClientMixin):
         index_stub, request, kwargs = self._prepare_indexes_in_sync(timeout, logger)
 
         try:
-            response = index_stub.AreIndicesInSync(
+            _ = index_stub.AreIndicesInSync(
                 request,
                 credentials=self._channel_provider.get_token(),
                 **kwargs,
             )
-            return fromIndexStatusResponse(response)
         except grpc.RpcError as e:
             logger.error("Failed waiting for indices to sync with error: %s", e)
             raise types.AVSServerError(rpc_error=e)
