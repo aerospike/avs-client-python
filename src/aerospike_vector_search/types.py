@@ -1088,8 +1088,7 @@ class AVSServerError(AVSError):
     Custom exception raised for errors related to the AVS server.
 
     :param rpc_error: exception thrown by the grpc Python library on server calls. Defaults to None.
-    :type set_name: grpc.RpcError
-
+    :type rpc_error: grpc.RpcError
     """
 
     def __init__(self, *, rpc_error) -> None:
@@ -1103,9 +1102,8 @@ class AVSClientError(AVSError):
     """
     Custom exception raised for errors related to AVS client-side failures.
 
-    :param message: error messaging raised by the AVS Client. Defaults to None.
-    :type set_name: str
-
+    :param message: error message raised by the AVS Client. Defaults to None.
+    :type message: str
     """
 
     def __init__(self, *, message) -> None:
@@ -1113,6 +1111,19 @@ class AVSClientError(AVSError):
 
     def __str__(self) -> str:
         return f"AVSClientError(message={self.message})"
+
+
+class AVSClientErrorClosed(AVSClientError):
+    """
+    Exception raised for errors caused by an AVS client being closed.
+    You may have tried to use a client method after closing it.
+
+    :param message: error message raised by the AVS Client. Defaults to None.
+    :type message: str
+    """
+
+    def __str__(self) -> str:
+        return f"AVSClientErrorClosed(message={self.message})"
 
 
 class StandaloneIndexMetrics:
