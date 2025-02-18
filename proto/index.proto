@@ -106,4 +106,8 @@ service IndexService {
 
   // Garbage collect vertices identified as invalid before cutoff timestamp.
   rpc GcInvalidVertices(GcInvalidVerticesRequest) returns (google.protobuf.Empty) {}
+
+  // Indicates if indices are in sync across the cluster. This call will eventually return
+  // true when all nodes in the AVS cluster have the same copy of the index.
+  rpc AreIndicesInSync(google.protobuf.Empty) returns (Boolean) {}
 }
