@@ -7,7 +7,7 @@
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
 
 project = "aerospike-vector-search"
-copyright = "2024, Dominic Pelini"
+copyright = "2025, Aerospike Inc."
 author = "Dominic Pelini"
 release = "0.6.1"
 
@@ -27,3 +27,7 @@ exclude_patterns = ["_build", "Thumbs.db", ".DS_Store"]
 
 html_theme = "sphinx_rtd_theme"
 html_static_path = ["_static"]
+
+# -- Options for autodoc -----------------------------------------------------
+# https://www.sphinx-doc.org/en/master/usage/extensions/autodoc.html
+maximum_signature_line_length = 80
