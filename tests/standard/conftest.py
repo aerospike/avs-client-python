@@ -224,7 +224,9 @@ def session_vector_client(
         )
 
     yield client
-    client.close()
+
+    if not client.closed:
+        client.close()
 
 
 @pytest.fixture(scope="function")

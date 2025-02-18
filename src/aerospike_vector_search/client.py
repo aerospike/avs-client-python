@@ -10,6 +10,7 @@ import numpy as np
 from . import types
 from .internal import channel_provider
 from .shared.client_helpers import BaseClient as BaseClientMixin
+from .shared.client_helpers import _patch_public_methods, _raise_closed
 from .shared.admin_helpers import BaseClient as AdminBaseClientMixin
 from .shared.conversions import fromIndexStatusResponse
 
@@ -83,6 +84,7 @@ class Client(BaseClientMixin, AdminBaseClientMixin):
             service_config_path,
             ssl_target_name_override,
         )
+        self.closed = False
 
     def insert(
         self,
@@ -1392,7 +1394,14 @@ class Client(BaseClientMixin, AdminBaseClientMixin):
         Note:
             This method should be called when the client is no longer needed to release resources.
         """
-        self._channel_provider.close()
+        if not self.closed:
+            self.closed = True
+            self._channel_provider.close()
+
+            # Patch all public methods to raise a AVSClientErrorClosed
+            # the idea is to prevent use after the client is closed
+            # without having to check if the client is closed in every method
+            _patch_public_methods(self, _raise_closed)
 
     def __enter__(self):
         """

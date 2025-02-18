@@ -9,7 +9,7 @@ from .proto_generated import transact_pb2_grpc
 from .. import types
 from .proto_generated import types_pb2
 from . import helpers
-from ..types import AVSClientError
+from ..types import AVSClientError, AVSClientErrorClosed
 
 
 class BaseClient(object):
@@ -402,3 +402,16 @@ class BaseClient(object):
             return True
         else:
             return False
+
+
+# A dummy method to replace client functionality once the connection is closed.
+def _raise_closed(*args, **kwargs):
+    raise AVSClientErrorClosed(message="Cannot execute method: client is closed.")
+
+
+# A helper used to patch all public methods of the client with the _raise_closed method
+def _patch_public_methods(obj, method):
+    for attr_name in dir(obj):
+        attr = getattr(obj, attr_name)
+        if callable(attr) and not attr_name.startswith("_"):
+            setattr(obj, attr_name, method)
