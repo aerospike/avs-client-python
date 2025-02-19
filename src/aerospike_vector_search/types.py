@@ -410,23 +410,19 @@ class HnswHealerParams(object):
     """
     Parameters to configure the HNSW healer
 
-    :param max_scan_rate_per_node: Maximum allowed record scan rate per vector db node.  Default is the global healer config, which is configured in the AVS Server.
+    :param max_scan_rate_per_node: Maximum allowed record scan rate per vector db node.  Defaults to 1_000.
     :type max_scan_rate_per_node: Optional[int]
 
-    :param max_scan_page_size: Maximum number of records in a single scanned page.
-        Default is the global healer config, which is configured in the AVS Server.
+    :param max_scan_page_size: Maximum number of records in a single scanned page. Defaults to 10_000.
     :type max_scan_page_size: Optional[int]
 
-    :param re_index_percent: Percentage of good records randomly selected for reindexing in a healer cycle.
-        Default is the global healer config, which is configured in the AVS Server.
+    :param re_index_percent: Percentage of good records randomly selected for reindexing in a healer cycle. Defaults to 10.
     :type re_index_percent: Optional[int]
 
-    :param schedule: The quartz cron expression defining schedule at which the healer cycle is invoked.
-        Default is the global healer config, which is configured in the AVS Server.
+    :param schedule: The quartz cron expression defining schedule at which the healer cycle is invoked. Defaults to "0 0/15 * ? * * *" (every 15 minutes).
     :type schedule: Optional[str]
 
-    :param parallelism: Maximum number of records to heal in parallel.
-        Default is the global healer config, which is configured in the AVS Server.
+    :param parallelism: Maximum number of records to heal in parallel. Defaults to 1.
     :type parallelism: Optional[int]
     """
 
@@ -502,11 +498,10 @@ class HnswCachingParams(object):
     """
     Parameters to configure the HNSW index cache
 
-    :param max_entries: maximum number of entries to cache.  Default is the global cache config, which is configured in the AVS Server.
+    :param max_entries: maximum number of entries to cache.  Defaults to 2_000_000.
     :type max_entries: Optional[int]
 
-    :param expiry: Cache entries will expire after this time in milliseconds has expired after the entry was add to the cache.
-        Default is the global cache config, which is configured in the AVS Server.
+    :param expiry: Cache entries will expire after this time in milliseconds has expired after the entry was add to the cache. Defaults to 3_600_000 (1 hour).
     :type expiry: Optional[int]
 
     """
@@ -554,11 +549,11 @@ class HnswIndexMergeParams(object):
     Parameters to configure the HNSW index merge behavior.
 
     :param index_parallelism: The number of vectors merged in parallel from an indexing record batch-index to the main
-        index. Default is the global healer config, which is configured in the AVS Server.
+        index. Defaults to 10 * times the number of available CPU cores.
     :type index_parallelism: Optional[int]
 
     :param reindex_parallelism: The number of vectors merged in parallel from an indexing record batch-index to the main
-        index. Default is the global healer config, which is configured in the AVS Server.
+        index. Defaults to the maximum of 1 or index_parallelism / 3.
     :type reindex_parallelism: Optional[int]
     """
 
@@ -621,7 +616,7 @@ class HnswParams(object):
     :param batching_params: Parameters related to configuring batch processing, such as the maximum number of records per batch and batching interval. Optional, Defaults to HnswBatchingParams().
     :type batching_params: HnswBatchingParams
 
-    :param max_mem_queue_size: Maximum size of in-memory queue for inserted/updated vector records. Optional, Defaults to the corresponding config on the AVS Server.
+    :param max_mem_queue_size: Maximum size of in-memory queue for inserted/updated vector records. Optional, Defaults to 1_000_000 bytes.
     :type max_mem_queue_size: Optional[int]
 
     :param index_caching_params: Parameters related to configuring caching for the HNSW index. Optional, Defaults to HnswCachingParams().
@@ -747,7 +742,7 @@ class HnswSearchParams(object):
     :param ef: The parameter 'ef' controls the trade-off between search quality and search efficiency.
         It determines the size of the dynamic list of nearest neighbors (candidates) examined during the
         search phase. Larger values of 'ef' typically yield higher recall but slower search times.
-        Defaults to None, meaning the algorithm uses a library-defined default value.
+        Defaults to 100.
     :type ef: Optional[int]
 
     Notes:
@@ -990,8 +985,8 @@ class IndexDefinition(object):
     :param dimensions: Number of dimensions.
     :type dimensions: int
 
-    :param vector_distance_metric: Metric used to evaluate vector searches on the given index
-    :type vector_distance_metric: VectorDistanceMetric default VectorDistanceMetric.SQUARED_EUCLIDEAN
+    :param vector_distance_metric: Metric used to evaluate vector searches on the given index. Defaults to :attr:VectorDistanceMetric.SQUARED_EUCLIDEAN
+    :type vector_distance_metric: VectorDistanceMetric
 
     :param field: Field name.
     :type field: str
@@ -1002,14 +997,14 @@ class IndexDefinition(object):
     :param hnsw_params: HNSW parameters.
     :type hnsw_params: HnswParams
 
-    :param storage: Index storage details.
-    :type storage: Optional[IndexStorage] default None
+    :param storage: Index storage details. Defaults to None.
+    :type storage: Optional[IndexStorage]
 
     :param index_labels: Metadata associated with the index. Defaults to None.
     :type index_labels: Optional[dict[str, str]]
 
-    :param mode: Index mode.
-    :type mode: IndexMode default IndexMode.DISTRIBUTED
+    :param mode: Index mode. Defaults to :attr:IndexMode.DISTRIBUTED.
+    :type mode: IndexMode
     """
 
     def __init__(
