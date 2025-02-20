@@ -616,7 +616,7 @@ class HnswParams(object):
     :param batching_params: Parameters related to configuring batch processing, such as the maximum number of records per batch and batching interval. Optional, Defaults to HnswBatchingParams().
     :type batching_params: HnswBatchingParams
 
-    :param max_mem_queue_size: Maximum size of in-memory queue for inserted/updated vector records. Optional, Defaults to 1_000_000 bytes.
+    :param max_mem_queue_size: Maximum size of in-memory queue for inserted/updated vector records. Optional, Defaults to 1_000_000 records.
     :type max_mem_queue_size: Optional[int]
 
     :param index_caching_params: Parameters related to configuring caching for the HNSW index. Optional, Defaults to HnswCachingParams().
