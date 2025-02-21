@@ -18,11 +18,11 @@ from ..shared.conversions import fromIndexStatusResponse
 logger = logging.getLogger(__name__)
 
 
-async def _ensure_indexes_in_sync(func):
+def _ensure_indexes_in_sync(func):
     """Decorator to ensure indexes are in sync after an index operation."""
     @functools.wraps(func)
     async def wrapper(self, *args, **kwargs):
-        result = func(self, *args, **kwargs)  # Call the original function
+        result = await func(self, *args, **kwargs)  # Call the original function
         await self._indexes_in_sync()  # Ensure indexes are in sync
         return result
     return wrapper
