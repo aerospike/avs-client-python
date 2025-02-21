@@ -1,3 +1,4 @@
+import functools
 import logging
 import sys
 import time
@@ -15,6 +16,16 @@ from .shared.admin_helpers import BaseClient as AdminBaseClientMixin
 from .shared.conversions import fromIndexStatusResponse
 
 logger = logging.getLogger(__name__)
+
+
+def _ensure_indexes_in_sync(func):
+    """Decorator to ensure indexes are in sync after an index operation."""
+    @functools.wraps(func)
+    def wrapper(self, *args, **kwargs):
+        result = func(self, *args, **kwargs)  # Call the original function
+        self._indexes_in_sync()  # Ensure indexes are in sync
+        return result
+    return wrapper
 
 
 class Client(BaseClientMixin, AdminBaseClientMixin):
@@ -687,6 +698,7 @@ class Client(BaseClientMixin, AdminBaseClientMixin):
 
         return (unmergedIndexRecords / vertices) * 100.0
 
+    @_ensure_indexes_in_sync
     def index_create(
         self,
         *,
@@ -786,7 +798,7 @@ class Client(BaseClientMixin, AdminBaseClientMixin):
             logger.error("Failed waiting for creation with error: %s", e)
             raise types.AVSServerError(rpc_error=e)
 
-
+    @_ensure_indexes_in_sync
     def index_update(
             self,
             *,
@@ -841,7 +853,7 @@ class Client(BaseClientMixin, AdminBaseClientMixin):
             logger.error("Failed to update index with error: %s", e)
             raise types.AVSServerError(rpc_error=e)
 
-
+    @_ensure_indexes_in_sync
     def index_drop(
         self, *, namespace: str, name: str, timeout: Optional[int] = None
     ) -> None:
@@ -1049,7 +1061,7 @@ class Client(BaseClientMixin, AdminBaseClientMixin):
             index_storage=index_info.storage,
         )
 
-    def indexes_in_sync(
+    def _indexes_in_sync(
             self,
             *,
             timeout: Optional[int] = None,
@@ -1057,8 +1069,6 @@ class Client(BaseClientMixin, AdminBaseClientMixin):
         """
         Waits for indexes to be in sync across the cluster.
         This call returns when all nodes in the AVS cluster have the same copy of the index.
-
-        You can use this call after creating, deleting, or updating an index to ensure that the changes are propagated to all nodes.
 
         :param timeout: Time in seconds this operation will wait before raising an :class:`AVSServerError <aerospike_vector_search.types.AVSServerError>`. Defaults to None.
         :type timeout: int

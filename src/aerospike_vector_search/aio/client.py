@@ -1,3 +1,4 @@
+import functools
 import asyncio
 import logging
 import sys
@@ -15,6 +16,16 @@ from ..shared.admin_helpers import BaseClient as AdminBaseClientMixin
 from ..shared.conversions import fromIndexStatusResponse
 
 logger = logging.getLogger(__name__)
+
+
+async def _ensure_indexes_in_sync(func):
+    """Decorator to ensure indexes are in sync after an index operation."""
+    @functools.wraps(func)
+    async def wrapper(self, *args, **kwargs):
+        result = func(self, *args, **kwargs)  # Call the original function
+        await self._indexes_in_sync()  # Ensure indexes are in sync
+        return result
+    return wrapper
 
 
 class Client(BaseClientMixin, AdminBaseClientMixin):
@@ -708,6 +719,7 @@ class Client(BaseClientMixin, AdminBaseClientMixin):
 
         return (unmergedIndexRecords / vertices) * 100.0
 
+    @_ensure_indexes_in_sync
     async def index_create(
         self,
         *,
@@ -808,7 +820,7 @@ class Client(BaseClientMixin, AdminBaseClientMixin):
             logger.error("Failed waiting for creation with error: %s", e)
             raise types.AVSServerError(rpc_error=e)
 
-
+    @_ensure_indexes_in_sync
     async def index_update(
         self,
         *,
@@ -866,7 +878,7 @@ class Client(BaseClientMixin, AdminBaseClientMixin):
             logger.error("Failed to update index with error: %s", e)
             raise types.AVSServerError(rpc_error=e)
 
-
+    @_ensure_indexes_in_sync
     async def index_drop(
         self, *, namespace: str, name: str, timeout: Optional[int] = None
     ) -> None:
