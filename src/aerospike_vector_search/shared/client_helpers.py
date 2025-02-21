@@ -352,12 +352,6 @@ class BaseClient(object):
         else:
             raise Exception("Invalid key type" + str(type(key)))
         return key
-
-    def _prepare_wait_for_index_waiting(self, namespace: str, name: str, wait_interval: int) -> (
-        Tuple)[index_pb2_grpc.IndexServiceStub, float, float, bool, int, index_pb2.IndexGetRequest]:
-        return helpers._prepare_wait_for_index_waiting(
-            self, namespace, name, wait_interval
-        )
     
     def _prepare_index_get_percent_unmerged(self, namespace: str, name: str, timeout: Optional[int], logger: Logger) -> (
         Tuple)[index_pb2_grpc.IndexServiceStub, index_pb2.IndexStatusRequest, dict[str, Any]]:

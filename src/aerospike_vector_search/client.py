@@ -790,13 +790,6 @@ class Client(BaseClientMixin, AdminBaseClientMixin):
         except grpc.RpcError as e:
             logger.error("Failed to create index with error: %s", e)
             raise types.AVSServerError(rpc_error=e)
-        try:
-            self._wait_for_index_creation(
-                namespace=namespace, name=name, timeout=100_000
-            )
-        except grpc.RpcError as e:
-            logger.error("Failed waiting for creation with error: %s", e)
-            raise types.AVSServerError(rpc_error=e)
 
     @_ensure_indexes_in_sync
     def index_update(
@@ -890,13 +883,6 @@ class Client(BaseClientMixin, AdminBaseClientMixin):
             )
         except grpc.RpcError as e:
             logger.error("Failed to drop index with error: %s", e)
-            raise types.AVSServerError(rpc_error=e)
-        try:
-            self._wait_for_index_deletion(
-                namespace=namespace, name=name, timeout=100_000
-            )
-        except grpc.RpcError as e:
-            logger.error("Failed waiting for deletion with error: %s", e)
             raise types.AVSServerError(rpc_error=e)
 
     def index_list(
@@ -1350,77 +1336,6 @@ class Client(BaseClientMixin, AdminBaseClientMixin):
             logger.error("Failed to list roles with error: %s", e)
             raise types.AVSServerError(rpc_error=e)
         return self._respond_list_roles(response)
-
-
-    def _wait_for_index_creation(
-        self,
-        *,
-        namespace: str,
-        name: str,
-        timeout: int = sys.maxsize,
-        wait_interval: float = 0.1,
-    ) -> None:
-        """
-        Wait for the index to be created.
-        """
-
-        (index_stub, wait_interval, start_time, _, _, index_creation_request) = (
-            self._prepare_wait_for_index_waiting(namespace, name, wait_interval)
-        )
-        while True:
-            self._check_timeout(start_time, timeout)
-            try:
-                index_stub.GetStatus(
-                    index_creation_request,
-                    credentials=self._channel_provider.get_token(),
-                )
-                logger.debug("Index created successfully")
-                # Index has been created
-                return
-            except grpc.RpcError as e:
-                if e.code() == grpc.StatusCode.NOT_FOUND:
-
-                    # Wait for some more time.
-                    time.sleep(wait_interval)
-                else:
-                    logger.error("Failed waiting for index creation with error: %s", e)
-                    raise types.AVSServerError(rpc_error=e)
-
-    def _wait_for_index_deletion(
-        self,
-        *,
-        namespace: str,
-        name: str,
-        timeout: int = sys.maxsize,
-        wait_interval: float = 0.1,
-    ) -> None:
-        """
-        Wait for the index to be deleted.
-        """
-
-        # Wait interval between polling
-        (index_stub, wait_interval, start_time, _, _, index_deletion_request) = (
-            self._prepare_wait_for_index_waiting(namespace, name, wait_interval)
-        )
-
-        while True:
-            self._check_timeout(start_time, timeout)
-
-            try:
-                index_stub.GetStatus(
-                    index_deletion_request,
-                    credentials=self._channel_provider.get_token(),
-                )
-                # Wait for some more time.
-                time.sleep(wait_interval)
-            except grpc.RpcError as e:
-                if e.code() == grpc.StatusCode.NOT_FOUND:
-                    logger.debug("Index deleted successfully")
-                    # Index has been created
-                    return
-                else:
-                    logger.error("Failed waiting for index deletion with error: %s", e)
-                    raise types.AVSServerError(rpc_error=e)
 
     def close(self):
         """
