@@ -1,8 +1,14 @@
 import time
+from typing import Union, Tuple, Optional
+
 from .. import types
 from .proto_generated import types_pb2, index_pb2
 from .proto_generated import index_pb2_grpc
-from typing import Union, Tuple, Optional
+
+import google.protobuf.empty_pb2
+
+
+empty = google.protobuf.empty_pb2.Empty()
 
 
 def _prepare_seeds(seeds: Union[types.HostPort, Tuple[types.HostPort, ...]]) -> Tuple[types.HostPort, ...]:

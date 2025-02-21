@@ -1106,7 +1106,7 @@ class Client(BaseClientMixin, AdminBaseClientMixin):
         index_stub, request, kwargs = self._prepare_indexes_in_sync(timeout, logger)
 
         try:
-            _ = index_stub.AreIndicesInSync(
+            await index_stub.AreIndicesInSync(
                 request,
                 credentials=self._channel_provider.get_token(),
                 **kwargs,

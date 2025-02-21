@@ -3,7 +3,6 @@ import logging
 from typing import Any, Optional, Tuple, List
 import time
 
-import google.protobuf.empty_pb2
 from google.protobuf.json_format import MessageToDict
 import grpc
 
@@ -13,8 +12,6 @@ from .proto_generated import types_pb2, user_admin_pb2, index_pb2
 from .. import types
 from . import conversions
 from ..types import AVSClientError, IndexDefinition, HostPort
-
-empty = google.protobuf.empty_pb2.Empty()
 
 
 class BaseClient(object):
@@ -287,7 +284,7 @@ class BaseClient(object):
             kwargs["timeout"] = timeout
 
         user_admin_stub = self._get_user_admin_stub()
-        list_users_request = empty
+        list_users_request = helpers.empty
 
         return (user_admin_stub, list_users_request, kwargs)
 
@@ -339,7 +336,7 @@ class BaseClient(object):
             kwargs["timeout"] = timeout
 
         user_admin_stub = self._get_user_admin_stub()
-        list_roles_request = empty
+        list_roles_request = helpers.empty
 
         return (user_admin_stub, list_roles_request, kwargs)
 

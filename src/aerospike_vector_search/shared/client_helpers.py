@@ -391,7 +391,7 @@ class BaseClient(object):
             kwargs["timeout"] = timeout
 
         index_stub = helpers._create_index_service_stub(self)
-        req = index_pb2_grpc.google_dot_protobuf_dot_empty__pb2.Empty()
+        req = helpers.empty
 
         return (index_stub, req, kwargs)
 
