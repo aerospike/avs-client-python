@@ -119,7 +119,7 @@ class Client(BaseClientMixin, AdminBaseClientMixin):
         :type ignore_mem_queue_full: int
 
         :param timeout: Time in seconds this operation will wait before raising an :class:`AVSServerError <aerospike_vector_search.types.AVSServerError>`. Defaults to None.
-        :type timeout: int
+        :type timeout: Optional[int]
 
         Raises:
             AVSServerError: Raised if an error occurs during the RPC communication with the server while attempting to insert a vector.
@@ -175,7 +175,7 @@ class Client(BaseClientMixin, AdminBaseClientMixin):
         :type ignore_mem_queue_full: int
 
         :param timeout: Time in seconds this operation will wait before raising an :class:`AVSServerError <aerospike_vector_search.types.AVSServerError>`. Defaults to None.
-        :type timeout: int
+        :type timeout: Optional[int]
 
         Raises:
             AVSServerError: Raised if an error occurs during the RPC communication with the server while attempting to update a vector.
@@ -233,7 +233,7 @@ class Client(BaseClientMixin, AdminBaseClientMixin):
         :type ignore_mem_queue_full: int
 
         :param timeout: Time in seconds this operation will wait before raising an :class:`AVSServerError <aerospike_vector_search.types.AVSServerError>`. Defaults to None.
-        :type timeout: int
+        :type timeout: Optional[int]
 
         Raises:
             AVSServerError: Raised if an error occurs during the RPC communication with the server while attempting to upsert a vector.
@@ -296,7 +296,7 @@ class Client(BaseClientMixin, AdminBaseClientMixin):
         :type set_name: Optional[str]
 
         :param timeout: Time in seconds this operation will wait before raising an :class:`AVSServerError <aerospike_vector_search.types.AVSServerError>`. Defaults to None.
-        :type timeout: int
+        :type timeout: Optional[int]
 
         Returns:
             types.RecordWithKey: A record with its associated key.
@@ -340,7 +340,7 @@ class Client(BaseClientMixin, AdminBaseClientMixin):
         :type set_name: str
 
         :param timeout: Time in seconds this operation will wait before raising an :class:`AVSServerError <aerospike_vector_search.types.AVSServerError>`. Defaults to None.
-        :type timeout: int
+        :type timeout: Optional[int]
 
         Returns:
             bool: True if the record exists, False otherwise.
@@ -385,7 +385,7 @@ class Client(BaseClientMixin, AdminBaseClientMixin):
         :type set_name: Optional[str]
 
         :param timeout: Time in seconds this operation will wait before raising an :class:`AVSServerError <aerospike_vector_search.types.AVSServerError>`. Defaults to None.
-        :type timeout: int
+        :type timeout: Optional[int]
 
         Raises:
             AVSServerError: Raised if an error occurs during the RPC communication with the server while attempting to delete the index.
@@ -426,14 +426,14 @@ class Client(BaseClientMixin, AdminBaseClientMixin):
         :param index_name: The name of the index.
         :type index_name: str
 
-        :param index_namespace: The namespace of the index. If None, defaults to the namespace of the record. Defaults to None.
+        :param index_namespace: The namespace of the index. If None, defaults to the namespace of the record.
         :type index_namespace: optional[str]
 
         :param set_name: The name of the set to which the record belongs. Defaults to None.
         :type set_name: optional[str]
 
         :param timeout: Time in seconds this operation will wait before raising an :class:`AVSServerError <aerospike_vector_search.types.AVSServerError>`. Defaults to None.
-        :type timeout: int
+        :type timeout: Optional[int]
 
         Returns:
             bool: True if the record is indexed, False otherwise.
@@ -516,7 +516,7 @@ class Client(BaseClientMixin, AdminBaseClientMixin):
         :type exclude_fields: Optional[list[str]]
 
         :param timeout: Time in seconds this operation will wait before raising an :class:`AVSServerError <aerospike_vector_search.types.AVSServerError>`. Defaults to None.
-        :type timeout: int
+        :type timeout: Optional[int]
 
         Returns:
             list[types.Neighbor]: A list of neighbors records found by the search.
@@ -595,7 +595,7 @@ class Client(BaseClientMixin, AdminBaseClientMixin):
         :type exclude_fields: Optional[list[str]]
 
         :param timeout: Time in seconds this operation will wait before raising an :class:`AVSServerError <aerospike_vector_search.types.AVSServerError>`. Defaults to None.
-        :type timeout: int
+        :type timeout: Optional[int]
 
         Returns:
             list[types.Neighbor]: A list of neighbors records found by the search.
@@ -637,7 +637,7 @@ class Client(BaseClientMixin, AdminBaseClientMixin):
         timeout: Optional[int] = None,
     ) -> float:
         """
-        Get the ratio of unmerged records to valid verticies in the index as a percentage.
+        Get the ratio of unmerged records to valid vertices in the index as a percentage.
         This is useful for determining the completeness of the index. Estimating
         the accuracy of search results, checking the progress of index healing,
         and determining if the index healer is keeping up with record writes.
@@ -654,7 +654,7 @@ class Client(BaseClientMixin, AdminBaseClientMixin):
         :type name: str
 
         :param timeout: Time in seconds this operation will wait before raising an :class:`AVSServerError <aerospike_vector_search.types.AVSServerError>`. Defaults to None.
-        :type timeout: int
+        :type timeout: Optional[int]
 
         Returns:
             float: The percentage of unmerged records in the index.
@@ -681,11 +681,11 @@ class Client(BaseClientMixin, AdminBaseClientMixin):
             raise types.AVSServerError(rpc_error=e)
 
         unmergedIndexRecords = index_status.unmergedRecordCount
-        verticies = index_status.indexHealerVerticesValid
-        if verticies == 0:
-            verticies = 100
+        vertices = index_status.indexHealerVerticesValid
+        if vertices == 0:
+            vertices = 100
 
-        return (unmergedIndexRecords / verticies) * 100.0
+        return (unmergedIndexRecords / vertices) * 100.0
 
     def index_create(
         self,
@@ -721,7 +721,7 @@ class Client(BaseClientMixin, AdminBaseClientMixin):
 
         :param vector_distance_metric:
             The distance metric used to compare when performing a vector search.
-            Defaults to :class:`VectorDistanceMetric.SQUARED_EUCLIDEAN`.
+            Defaults to :attr:`VectorDistanceMetric.SQUARED_EUCLIDEAN`.
         :type vector_distance_metric: types.VectorDistanceMetric
 
         :param sets: The set used for the index. Defaults to None.
@@ -736,13 +736,14 @@ class Client(BaseClientMixin, AdminBaseClientMixin):
         :type index_labels: Optional[dict[str, str]]
 
         :param index_storage: Namespace and set where index overhead (non-vector data) is stored.
+            The namespace defaults to the namespace of the index and the set defaults to the index name.
         :type index_storage: Optional[types.IndexStorage]
 
         :param mode: The mode of the index. Defaults to distributed.
         :type mode: Optional[types.IndexMode]
 
         :param timeout: Time in seconds this operation will wait before raising an :class:`AVSServerError <aerospike_vector_search.types.AVSServerError>`. Defaults to None.
-        :type timeout: int
+        :type timeout: Optional[int]
 
         Raises:
             AVSServerError: Raised if an error occurs during the RPC communication with the server while attempting to create the index.
@@ -814,8 +815,8 @@ class Client(BaseClientMixin, AdminBaseClientMixin):
         :param mode: The mode of the index. Defaults to distributed.
         :type mode: Optional[types.IndexMode]
 
-        :param timeout: Time in seconds (default 100_000) this operation will wait before raising an error.
-        :type timeout: int
+        :param timeout: Time in seconds this operation will wait before raising an error. Defaults to 100_000.
+        :type timeout: Optional[int]
 
         Raises:
             AVSServerError: Raised if an error occurs during the RPC communication with the server while attempting to update the index.
@@ -854,7 +855,7 @@ class Client(BaseClientMixin, AdminBaseClientMixin):
         :type name: str
 
         :param timeout: Time in seconds this operation will wait before raising an :class:`AVSServerError <aerospike_vector_search.types.AVSServerError>`. Defaults to None.
-        :type timeout: int
+        :type timeout: Optional[int]
 
         Raises:
             AVSServerError: Raised if an error occurs during the RPC communication with the server while attempting to drop the index.
@@ -893,7 +894,7 @@ class Client(BaseClientMixin, AdminBaseClientMixin):
         List all indices.
 
         :param timeout: Time in seconds this operation will wait before raising an :class:`AVSServerError <aerospike_vector_search.types.AVSServerError>`. Defaults to None.
-        :type timeout: int
+        :type timeout: Optional[int]
 
         :param apply_defaults: Apply default values to parameters which are not set by user. Defaults to True.
         :type apply_defaults: bool
@@ -941,7 +942,7 @@ class Client(BaseClientMixin, AdminBaseClientMixin):
         :type apply_defaults: bool
 
         :param timeout: Time in seconds this operation will wait before raising an :class:`AVSServerError <aerospike_vector_search.types.AVSServerError>`. Defaults to None.
-        :type timeout: int
+        :type timeout: Optional[int]
 
         Returns: dict[str, Union[int, str]: Information about an index.
 
@@ -979,7 +980,7 @@ class Client(BaseClientMixin, AdminBaseClientMixin):
         :type name: str
 
         :param timeout: Time in seconds this operation will wait before raising an :class:`AVSServerError <aerospike_vector_search.types.AVSServerError>`. Defaults to None.
-        :type timeout: int
+        :type Optional[timeout]: int
 
         Returns: IndexStatusResponse: AVS response containing index status information.
 
@@ -1024,7 +1025,7 @@ class Client(BaseClientMixin, AdminBaseClientMixin):
         :type namespace: str
 
         :param timeout: Time in seconds this operation will wait before raising an :class:`AVSServerError <aerospike_vector_search.types.AVSServerError>`. Defaults to None.
-        :type timeout: int
+        :type timeout: Optional[int]
 
         Returns: index.Index: An index object for the given index.
         """
@@ -1095,7 +1096,7 @@ class Client(BaseClientMixin, AdminBaseClientMixin):
         :type roles: list[str]
 
         :param timeout: Time in seconds this operation will wait before raising an :class:`AVSServerError <aerospike_vector_search.types.AVSServerError>`. Defaults to None.
-        :type timeout: int
+        :type timeout: Optional[int]
 
 
         Raises:
@@ -1130,7 +1131,7 @@ class Client(BaseClientMixin, AdminBaseClientMixin):
         :type password: str
 
         :param timeout: Time in seconds this operation will wait before raising an :class:`AVSServerError <aerospike_vector_search.types.AVSServerError>`. Defaults to None.
-        :type timeout: int
+        :type timeout: Optional[int]
 
 
         Raises:
@@ -1160,7 +1161,7 @@ class Client(BaseClientMixin, AdminBaseClientMixin):
         :type username: str
 
         :param timeout: Time in seconds this operation will wait before raising an :class:`AVSServerError <aerospike_vector_search.types.AVSServerError>`. Defaults to None.
-        :type timeout: int
+        :type timeout: Optional[int]
 
 
         Raises:
@@ -1190,7 +1191,7 @@ class Client(BaseClientMixin, AdminBaseClientMixin):
         :type username: str
 
         :param timeout: Time in seconds this operation will wait before raising an :class:`AVSServerError <aerospike_vector_search.types.AVSServerError>`. Defaults to None.
-        :type timeout: int
+        :type timeout: Optional[int]
 
         return: types.User: AVS User
 
@@ -1220,7 +1221,7 @@ class Client(BaseClientMixin, AdminBaseClientMixin):
         List all users existing on the AVS Server.
 
         :param timeout: Time in seconds this operation will wait before raising an :class:`AVSServerError <aerospike_vector_search.types.AVSServerError>`. Defaults to None.
-        :type timeout: int
+        :type timeout: Optional[int]
 
         return: list[types.User]: list of AVS Users
 
@@ -1257,7 +1258,7 @@ class Client(BaseClientMixin, AdminBaseClientMixin):
         :type roles: list[str]
 
         :param timeout: Time in seconds this operation will wait before raising an :class:`AVSServerError <aerospike_vector_search.types.AVSServerError>`. Defaults to None.
-        :type timeout: int
+        :type timeout: Optional[int]
 
         Raises:
             AVSServerError: Raised if an error occurs during the RPC communication with the server while attempting to grant roles.
@@ -1291,7 +1292,7 @@ class Client(BaseClientMixin, AdminBaseClientMixin):
         :type roles: list[str]
 
         :param timeout: Time in seconds this operation will wait before raising an :class:`AVSServerError <aerospike_vector_search.types.AVSServerError>`. Defaults to None.
-        :type timeout: int
+        :type timeout: Optional[int]
 
         Raises:
             AVSServerError: Raised if an error occurs during the RPC communication with the server while attempting to revoke roles.
@@ -1317,7 +1318,7 @@ class Client(BaseClientMixin, AdminBaseClientMixin):
         List roles available on the AVS server.
 
         :param timeout: Time in seconds this operation will wait before raising an :class:`AVSServerError <aerospike_vector_search.types.AVSServerError>`. Defaults to None.
-        :type timeout: int
+        :type timeout: Optional[int]
 
         returns: list[str]: Roles available in the AVS Server.
 
