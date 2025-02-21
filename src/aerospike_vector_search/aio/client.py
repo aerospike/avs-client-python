@@ -658,7 +658,7 @@ class Client(BaseClientMixin, AdminBaseClientMixin):
         timeout: Optional[int] = None,
     ) -> float:
         """
-        Get the ratio of unmerged records to valid verticies in the index as a percentage.
+        Get the ratio of unmerged records to valid vertices in the index as a percentage.
         This is useful for determining the completeness of the index. Estimating
         the accuracy of search results, checking the progress of index healing,
         and determining if the index healer is keeping up with record writes.
@@ -702,11 +702,11 @@ class Client(BaseClientMixin, AdminBaseClientMixin):
             raise types.AVSServerError(rpc_error=e)
 
         unmergedIndexRecords = index_status.unmergedRecordCount
-        verticies = index_status.indexHealerVerticesValid
-        if verticies == 0:
-            verticies = 100
+        vertices = index_status.indexHealerVerticesValid
+        if vertices == 0:
+            vertices = 100
 
-        return (unmergedIndexRecords / verticies) * 100.0
+        return (unmergedIndexRecords / vertices) * 100.0
 
     async def index_create(
         self,
@@ -742,7 +742,7 @@ class Client(BaseClientMixin, AdminBaseClientMixin):
 
         :param vector_distance_metric:
             The distance metric used to compare when performing a vector search.
-            Defaults to :class:`VectorDistanceMetric.SQUARED_EUCLIDEAN`.
+            Defaults to :attr:`VectorDistanceMetric.SQUARED_EUCLIDEAN`.
         :type vector_distance_metric: types.VectorDistanceMetric
 
         :param sets: The set used for the index. Defaults to None.

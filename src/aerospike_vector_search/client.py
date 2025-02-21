@@ -681,11 +681,11 @@ class Client(BaseClientMixin, AdminBaseClientMixin):
             raise types.AVSServerError(rpc_error=e)
 
         unmergedIndexRecords = index_status.unmergedRecordCount
-        verticies = index_status.indexHealerVerticesValid
-        if verticies == 0:
-            verticies = 100
+        vertices = index_status.indexHealerVerticesValid
+        if vertices == 0:
+            vertices = 100
 
-        return (unmergedIndexRecords / verticies) * 100.0
+        return (unmergedIndexRecords / vertices) * 100.0
 
     def index_create(
         self,

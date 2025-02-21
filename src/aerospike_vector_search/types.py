@@ -420,6 +420,7 @@ class HnswHealerParams(object):
     :type re_index_percent: Optional[int]
 
     :param schedule: The quartz cron expression defining schedule at which the healer cycle is invoked. Defaults to "0 0/15 * ? * * *" (every 15 minutes).
+        See more information on quartz cron expressions at https://www.quartz-scheduler.org/documentation/quartz-2.3.0/tutorials/crontrigger.html.
     :type schedule: Optional[str]
 
     :param parallelism: Maximum number of records to heal in parallel. Defaults to 1.
@@ -549,11 +550,11 @@ class HnswIndexMergeParams(object):
     Parameters to configure the HNSW index merge behavior.
 
     :param index_parallelism: The number of vectors merged in parallel from an indexing record batch-index to the main
-        index. Defaults to 10 * times the number of available CPU cores.
+        index. Defaults to 10 times the number of available CPU cores.
     :type index_parallelism: Optional[int]
 
     :param reindex_parallelism: The number of vectors merged in parallel from an indexing record batch-index to the main
-        index. Defaults to the maximum of 1 or index_parallelism / 3.
+        index. Defaults to either 1 or index_parallelism / 3, whichever is higher.
     :type reindex_parallelism: Optional[int]
     """
 
