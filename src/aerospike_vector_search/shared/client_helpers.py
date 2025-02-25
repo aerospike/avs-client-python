@@ -352,6 +352,12 @@ class BaseClient(object):
         else:
             raise Exception("Invalid key type" + str(type(key)))
         return key
+
+    def _prepare_wait_for_index_waiting(self, namespace: str, name: str, wait_interval: int) -> (
+        Tuple)[index_pb2_grpc.IndexServiceStub, float, float, bool, int, index_pb2.IndexGetRequest]:
+        return helpers._prepare_wait_for_index_waiting(
+            self, namespace, name, wait_interval
+        )
     
     def _prepare_index_get_percent_unmerged(self, namespace: str, name: str, timeout: Optional[int], logger: Logger) -> (
         Tuple)[index_pb2_grpc.IndexServiceStub, index_pb2.IndexStatusRequest, dict[str, Any]]:
@@ -392,26 +398,7 @@ class BaseClient(object):
 
     def _check_timeout(self, start_time: float, timeout: int):
         if start_time + timeout < time.monotonic():
-            raise AVSClientError(message="timed-out waiting for index creation")
-
-    def _check_completion_condition(
-        self, start_time: float, timeout:int , index_status, unmerged_record_initialized
-    ):
-        self._check_timeout(start_time, timeout)
-
-        if start_time + 10 < time.monotonic():
-            unmerged_record_initialized = True
-
-        if index_status.unmergedRecordCount > 0:
-            unmerged_record_initialized = True
-
-        if (
-            index_status.unmergedRecordCount == 0
-            and unmerged_record_initialized == True
-        ):
-            return True
-        else:
-            return False
+            raise AVSClientError(message="timeout expired")
 
 
 # A dummy method to replace client functionality once the connection is closed.
