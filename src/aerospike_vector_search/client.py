@@ -18,16 +18,6 @@ from .shared.conversions import fromIndexStatusResponse
 logger = logging.getLogger(__name__)
 
 
-def _ensure_indexes_in_sync(func):
-    """Decorator to ensure indexes are in sync after an index operation."""
-    @functools.wraps(func)
-    def wrapper(self, *args, **kwargs):
-        result = func(self, *args, **kwargs)  # Call the original function
-        self._indexes_in_sync()  # Ensure indexes are in sync
-        return result
-    return wrapper
-
-
 class Client(BaseClientMixin, AdminBaseClientMixin):
     """
     Aerospike Vector Search Client
@@ -698,7 +688,6 @@ class Client(BaseClientMixin, AdminBaseClientMixin):
 
         return (unmergedIndexRecords / vertices) * 100.0
 
-    @_ensure_indexes_in_sync
     def index_create(
         self,
         *,
@@ -797,8 +786,9 @@ class Client(BaseClientMixin, AdminBaseClientMixin):
         except grpc.RpcError as e:
             logger.error("Failed to create index with error: %s", e)
             raise types.AVSServerError(rpc_error=e)
+        # Ensure that the created index is synced across all nodes
+        self._indexes_in_sync()
 
-    @_ensure_indexes_in_sync
     def index_update(
             self,
             *,
@@ -852,8 +842,9 @@ class Client(BaseClientMixin, AdminBaseClientMixin):
         except grpc.RpcError as e:
             logger.error("Failed to update index with error: %s", e)
             raise types.AVSServerError(rpc_error=e)
+        # Ensure that the index changes are synced across all nodes
+        self._indexes_in_sync()
 
-    @_ensure_indexes_in_sync
     def index_drop(
         self, *, namespace: str, name: str, timeout: Optional[int] = None
     ) -> None:
@@ -898,6 +889,8 @@ class Client(BaseClientMixin, AdminBaseClientMixin):
         except grpc.RpcError as e:
             logger.error("Failed waiting for index deletion with error: %s", e)
             raise types.AVSServerError(rpc_error=e)
+        # Ensure that the index is deleted across all nodes
+        self._indexes_in_sync()
 
     def index_list(
         self, timeout: Optional[int] = None, apply_defaults: Optional[bool] = True
