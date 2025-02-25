@@ -212,7 +212,6 @@ class ChannelProvider(base_channel_provider.BaseChannelProvider):
         self._respond_authenticate(response.token)
 
     async def _check_server_version(self):
-        try:
             stub = vector_db_pb2_grpc.AboutServiceStub(self.get_channel())
             about_request = vector_db_pb2.AboutRequest()
 
@@ -221,13 +220,8 @@ class ChannelProvider(base_channel_provider.BaseChannelProvider):
                 self.current_server_version = response.version
             except grpc.RpcError as e:
                 logger.debug("Failed to retrieve server version: " + str(e))
-                self._tend_exception = types.AVSServerError(rpc_error=e)
+                raise types.AVSServerError(rpc_error=e)
             self.verify_compatible_server()
-
-        except Exception as e:
-            logger.debug("Failed to retrieve server version: " + str(e))
-            self._tend_exception = e
-            raise e
 
     def _create_channel(self, host: str, port: int) -> grpc.Channel:
         host = re.sub(r"%.*", "", host)
