@@ -1,4 +1,3 @@
-import functools
 import asyncio
 import logging
 import sys
