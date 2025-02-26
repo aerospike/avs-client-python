@@ -805,7 +805,7 @@ class Client(BaseClientMixin, AdminBaseClientMixin):
                 namespace=namespace, name=name, timeout=100_000
             )
         except grpc.RpcError as e:
-            logger.error("Failed waiting for creation with error: %s", e)
+            logger.error("Failed to create index with error: %s", e)
             raise types.AVSServerError(rpc_error=e)
         # Ensure that the created index is synced across all nodes
         await self._indexes_in_sync()
@@ -912,7 +912,7 @@ class Client(BaseClientMixin, AdminBaseClientMixin):
                 namespace=namespace, name=name, timeout=100_000
             )
         except grpc.RpcError as e:
-            logger.error("Failed waiting for deletion with error: %s", e)
+            logger.error("Failed waiting for index deletion with error: %s", e)
             raise types.AVSServerError(rpc_error=e)
         # Ensure that the index is deleted across all nodes
         await self._indexes_in_sync()

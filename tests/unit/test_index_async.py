@@ -1,5 +1,5 @@
 import pytest
-from unittest.mock import MagicMock, AsyncMock
+from unittest.mock import MagicMock
 
 from aerospike_vector_search import types
 from aerospike_vector_search.aio import Index, Client
@@ -255,7 +255,7 @@ async def test_index_get_percent_unmerged_no_params():
 
 
 async def test_index_update():
-    mock_client = AsyncMock(spec=Client)
+    mock_client = MagicMock(spec=Client)
     index = Index(
         client=mock_client,
         name="test_index",
@@ -288,7 +288,7 @@ async def test_index_update():
 
 
 async def test_index_update_no_params():
-    mock_client = AsyncMock(spec=Client)
+    mock_client = MagicMock(spec=Client)
     index = Index(
         client=mock_client,
         name="test_index",
@@ -403,7 +403,7 @@ async def test_index_status_no_params():
 
 
 async def test_index_drop():
-    mock_client = AsyncMock(spec=Client)
+    mock_client = MagicMock(spec=Client)
     index = Index(
         client=mock_client,
         name="test_index",
@@ -426,7 +426,7 @@ async def test_index_drop():
 
 
 async def test_index_drop_no_params():
-    mock_client = AsyncMock(spec=Client)
+    mock_client = MagicMock(spec=Client)
     index = Index(
         client=mock_client,
         name="test_index",
