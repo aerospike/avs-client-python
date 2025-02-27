@@ -215,17 +215,16 @@ class ChannelProvider(base_channel_provider.BaseChannelProvider):
         try:
             stub = vector_db_pb2_grpc.AboutServiceStub(self.get_channel())
             about_request = vector_db_pb2.AboutRequest()
-
-            try:
-                response = await stub.Get(about_request, credentials=self._token)
-                self.current_server_version = response.version
-            except grpc.RpcError as e:
-                logger.debug("Failed to retrieve server version: " + str(e))
-                self._tend_exception = types.AVSServerError(rpc_error=e)
+            response = await stub.Get(about_request, credentials=self._token)
+            self.current_server_version = response.version
             self.verify_compatible_server()
-
-        except Exception as e:
+        except grpc.RpcError as e:
+            e = types.AVSServerError(rpc_error=e)
             logger.debug("Failed to retrieve server version: " + str(e))
+            self._tend_exception = e
+            raise e
+        except Exception as e:
+            logger.debug("Failed to verify server version: " + str(e))
             self._tend_exception = e
             raise e
 
