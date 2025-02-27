@@ -805,9 +805,10 @@ class Client(BaseClientMixin, AdminBaseClientMixin):
                 namespace=namespace, name=name, timeout=100_000
             )
         except grpc.RpcError as e:
-            logger.error("Failed waiting for creation with error: %s", e)
+            logger.error("Failed to create index with error: %s", e)
             raise types.AVSServerError(rpc_error=e)
-
+        # Ensure that the created index is synced across all nodes
+        await self._indexes_in_sync()
 
     async def index_update(
         self,
@@ -865,7 +866,8 @@ class Client(BaseClientMixin, AdminBaseClientMixin):
         except grpc.RpcError as e:
             logger.error("Failed to update index with error: %s", e)
             raise types.AVSServerError(rpc_error=e)
-
+        # Ensure that the index changes are synced across all nodes
+        await self._indexes_in_sync()
 
     async def index_drop(
         self, *, namespace: str, name: str, timeout: Optional[int] = None
@@ -910,8 +912,10 @@ class Client(BaseClientMixin, AdminBaseClientMixin):
                 namespace=namespace, name=name, timeout=100_000
             )
         except grpc.RpcError as e:
-            logger.error("Failed waiting for deletion with error: %s", e)
+            logger.error("Failed waiting for index deletion with error: %s", e)
             raise types.AVSServerError(rpc_error=e)
+        # Ensure that the index is deleted across all nodes
+        await self._indexes_in_sync()
 
     async def index_list(
         self, timeout: Optional[int] = None, apply_defaults: Optional[bool] = True
@@ -1091,7 +1095,7 @@ class Client(BaseClientMixin, AdminBaseClientMixin):
             index_storage=index_info.storage,
         )
 
-    async def indexes_in_sync(
+    async def _indexes_in_sync(
             self,
             *,
             timeout: Optional[int] = None,
@@ -1099,8 +1103,6 @@ class Client(BaseClientMixin, AdminBaseClientMixin):
         """
         Waits for indexes to be in sync across the cluster.
         This call returns when all nodes in the AVS cluster have the same copy of the index.
-
-        You can use this call after creating, deleting, or updating an index to ensure that the changes are propagated to all nodes.
 
         :param timeout: Time in seconds this operation will wait before raising an :class:`AVSServerError <aerospike_vector_search.types.AVSServerError>`. Defaults to None.
         :type timeout: int
@@ -1418,7 +1420,13 @@ class Client(BaseClientMixin, AdminBaseClientMixin):
             self._prepare_wait_for_index_waiting(namespace, name, wait_interval)
         )
         while True:
-            self._check_timeout(start_time, timeout)
+
+            try:
+                self._check_timeout(start_time, timeout)
+            except types.AVSClientError as e:
+                logger.error("Failed waiting for index creation with error: %s", e)
+                raise
+
             try:
                 await index_stub.GetStatus(
                     index_creation_request,
@@ -1455,7 +1463,12 @@ class Client(BaseClientMixin, AdminBaseClientMixin):
         )
 
         while True:
-            self._check_timeout(start_time, timeout)
+
+            try:
+                self._check_timeout(start_time, timeout)
+            except types.AVSClientError as e:
+                logger.error("Failed waiting for index deletion with error: %s", e)
+                raise
 
             try:
                 await index_stub.GetStatus(

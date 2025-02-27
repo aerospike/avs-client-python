@@ -10,4 +10,4 @@ from utils import DEFAULT_NAMESPACE, DEFAULT_INDEX_DIMENSION, DEFAULT_VECTOR_FIE
 def test_index(session_vector_client, index):
     client = session_vector_client
     # long timeout just in case test environment is very slow
-    client.indexes_in_sync(timeout=9999)
+    client._indexes_in_sync(timeout=9999)

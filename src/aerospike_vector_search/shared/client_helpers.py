@@ -398,26 +398,7 @@ class BaseClient(object):
 
     def _check_timeout(self, start_time: float, timeout: int):
         if start_time + timeout < time.monotonic():
-            raise AVSClientError(message="timed-out waiting for index creation")
-
-    def _check_completion_condition(
-        self, start_time: float, timeout:int , index_status, unmerged_record_initialized
-    ):
-        self._check_timeout(start_time, timeout)
-
-        if start_time + 10 < time.monotonic():
-            unmerged_record_initialized = True
-
-        if index_status.unmergedRecordCount > 0:
-            unmerged_record_initialized = True
-
-        if (
-            index_status.unmergedRecordCount == 0
-            and unmerged_record_initialized == True
-        ):
-            return True
-        else:
-            return False
+            raise AVSClientError(message="timeout expired")
 
 
 # A dummy method to replace client functionality once the connection is closed.
