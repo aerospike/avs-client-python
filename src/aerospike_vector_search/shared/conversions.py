@@ -184,7 +184,8 @@ def fromStandAloneIndexMetricsResponse(response: index_pb2.StandaloneIndexMetric
             name=response.indexId.name
         ),
         state=types.StandaloneIndexState(response.state),
-        inserted_record_count=response.insertedRecordCount,
+        scanned_vector_record_count=response.scannedVectorRecordCount,
+        indexed_vector_record_count=response.indexedVectorRecordCount,
     )
     return result
 
