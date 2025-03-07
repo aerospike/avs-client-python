@@ -1133,11 +1133,11 @@ class StandaloneIndexMetrics:
     state : StandaloneIndexState
         The state of the standalone index.
     
-    inserted_record_count : int
-        The number of records inserted into the standalone index.
-        For state CREATING, this is the number of records inserted so far, i.e. the localStoreInsertedCount AVS server metric.
-        For state PERSISTING, this is the number of records persisted so far, i.e. the persistentStorePersistedCount AVS server metric.
-        For other states, it is set to 0 and should be ignored.
+    scanned_vector_record_count : int
+        The number of vector records scanned for indexing so far.
+    
+    indexed_vector_record_count : int
+        The number of vector records indexed so far.
     """
 
     def __init__(
@@ -1145,22 +1145,26 @@ class StandaloneIndexMetrics:
         *,
         index_id: IndexId,
         state: StandaloneIndexState,
-        inserted_record_count: int
+        scanned_vector_record_count: int,
+        indexed_vector_record_count: int
     ) -> None:
         self.index_id = index_id
         self.state = state
-        self.inserted_record_count = inserted_record_count
+        self.scanned_vector_record_count = scanned_vector_record_count
+        self.indexed_vector_record_count = indexed_vector_record_count
 
     def __str__(self) -> str:
         return (
             f"StandaloneIndexMetrics(index_id={self.index_id}, state={self.state}, "
-            f"inserted_record_count={self.inserted_record_count})"
+            f"scanned_vector_record_count={self.scanned_vector_record_count}, "
+            f"indexed_vector_record_count={self.indexed_vector_record_count})"
         )
 
     def __repr__(self) -> str:
         return (
             f"StandaloneIndexMetrics(index_id={self.index_id!r}, state={self.state!r}, "
-            f"inserted_record_count={self.inserted_record_count!r})"
+            f"scanned_vector_record_count={self.scanned_vector_record_count!r}, "
+            f"indexed_vector_record_count={self.indexed_vector_record_count!r})"
         )
 
 
