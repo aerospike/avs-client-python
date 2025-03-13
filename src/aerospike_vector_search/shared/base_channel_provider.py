@@ -11,6 +11,7 @@ from .proto_generated import auth_pb2_grpc
 from .proto_generated import vector_db_pb2, auth_pb2, types_pb2
 from .proto_generated import vector_db_pb2_grpc
 from .. import types
+from .token_manager import TokenManager
 
 logger = logging.getLogger(__name__)
 
@@ -53,17 +54,12 @@ class BaseChannelProvider(object):
 
         self.ssl_target_name_override = ssl_target_name_override
 
-        self._credentials : Optional[types_pb2.Credentials] = helpers._get_credentials(username, password)
-        if self._credentials:
-            self._token = True
-        else:
-            self._token = None
-
+        # Initialize the token manager
+        self._token_manager = TokenManager(username, password)
+        
         self._root_certificate = root_certificate
         self._certificate_chain = certificate_chain
         self._private_key = private_key
-        self._ttl = 0
-        self._ttl_start = 0
         self._ttl_threshold = 0.9
         # dict of Node Number and ChannelAndEndponts object
         self._node_channels: dict[int, ChannelAndEndpoints] = {}
@@ -76,8 +72,8 @@ class BaseChannelProvider(object):
         self.minimum_required_version = "0.11.0"
         self.client_server_compatible = False
 
-    def get_token(self) -> grpc.access_token_call_credentials:
-        return self._token
+    def get_token(self) -> Optional[grpc.CallCredentials]:
+        return self._token_manager.get_token_credentials()
 
     def _prepare_about(self) -> Tuple[vector_db_pb2_grpc.AboutServiceStub, vector_db_pb2.AboutRequest]:
         stub = vector_db_pb2_grpc.AboutServiceStub(self.get_channel())
@@ -164,31 +160,8 @@ class BaseChannelProvider(object):
 
         return (channel_endpoints, add_new_channel)
 
-    def _get_ttl(self, payload) -> int:
-        return payload["exp"] - payload["iat"]
-
-    def _prepare_authenticate(self, credentials: Optional[types_pb2.Credentials], logger: Logger):
-        logger.debug("Refreshing auth token")
-        auth_stub = self._get_auth_stub()
-
-        auth_request = self._get_authenticate_request(self._credentials)
-
-        return (auth_stub, auth_request)
-
     def _get_auth_stub(self) -> auth_pb2_grpc.AuthServiceStub:
         return auth_pb2_grpc.AuthServiceStub(self.get_channel())
-
-    def _get_authenticate_request(self, credentials) -> auth_pb2.AuthRequest:
-        return auth_pb2.AuthRequest(credentials=credentials)
-
-    def _respond_authenticate(self, token) -> None:
-        payload = jwt.decode(
-            token, "", algorithms=["RS256"], options={"verify_signature": False}
-        )
-        self._ttl = self._get_ttl(payload)
-        self._ttl_start = payload["iat"]
-
-        self._token = grpc.access_token_call_credentials(token)
 
     def verify_compatible_server(self):
         def parse_version(v: str):

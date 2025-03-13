@@ -10,6 +10,7 @@ from ... import types
 from ...shared.proto_generated import vector_db_pb2
 from ...shared.proto_generated import vector_db_pb2_grpc
 from ...shared import base_channel_provider
+from ...shared.token_manager import TokenManager
 
 empty = google.protobuf.empty_pb2.Empty()
 
@@ -56,6 +57,9 @@ class ChannelProvider(base_channel_provider.BaseChannelProvider):
 
         # When locked, new task is being assigned to _auth_task
         self._auth_tending_lock: asyncio.Lock = asyncio.Lock()
+        
+        # Configure token manager for async operation
+        self._token_manager.configure_async(self._auth_tending_lock)
 
         # initializes authentication tending
         self._auth_task: Optional[asyncio.Task] = asyncio.create_task(
@@ -93,6 +97,7 @@ class ChannelProvider(base_channel_provider.BaseChannelProvider):
             # Set all event to prevent hanging if initial tend fails with error
             self._tend_ended.set()
             self._ready.set()
+            self._tend_exception = e
 
     async def _tend_cluster(self):
         try:
@@ -141,7 +146,7 @@ class ChannelProvider(base_channel_provider.BaseChannelProvider):
         try:
             return await stub.GetClusterId(
                 empty,
-                credentials=self._token,
+                credentials=self._token_manager.get_token_credentials(),
             )
         except Exception as e:
             logger.debug(
@@ -155,7 +160,7 @@ class ChannelProvider(base_channel_provider.BaseChannelProvider):
                     vector_db_pb2.ClusterNodeEndpointsRequest(
                         listenerName=self.listener_name
                     ),
-                    credentials=self._token,
+                    credentials=self._token_manager.get_token_credentials(),
                 )
             ).endpoints
         except Exception as e:
@@ -179,43 +184,27 @@ class ChannelProvider(base_channel_provider.BaseChannelProvider):
         return asyncio.create_task(self._close_on_channel_coroutine(channel_endpoints))
 
     async def _tend_token(self):
+        """Initialize token management and schedule token refresh"""
         try:
-            if not self._token:
+            if not self._token_manager.has_credentials():
                 return
-            elif not self._token:
-                await asyncio.sleep((self._ttl * self._ttl_threshold))
 
-            await self._update_token_and_ttl()
-
-            async with self._auth_tending_lock:
-                self._auth_task = asyncio.create_task(self._tend_token())
+            # Get the auth stub for token refresh
+            auth_stub = self._get_auth_stub()
+            
+            # Refresh the token initially
+            await self._token_manager.refresh_token_async(auth_stub)
 
         except Exception as e:
             self._tend_exception = e
             logger.error("Failed to tend token with error: %s", e)
             raise e
 
-    async def _update_token_and_ttl(
-        self,
-    ) -> None:
-
-        (auth_stub, auth_request) = self._prepare_authenticate(
-            self._credentials, logger
-        )
-
-        try:
-            response = await auth_stub.Authenticate(auth_request)
-        except grpc.RpcError as e:
-            logger.error("Failed to refresh authentication token with error: %s", e)
-            raise types.AVSServerError(rpc_error=e)
-
-        self._respond_authenticate(response.token)
-
     async def _check_server_version(self):
         try:
             stub = vector_db_pb2_grpc.AboutServiceStub(self.get_channel())
             about_request = vector_db_pb2.AboutRequest()
-            response = await stub.Get(about_request, credentials=self._token)
+            response = await stub.Get(about_request, credentials=self._token_manager.get_token_credentials())
             self.current_server_version = response.version
             self.verify_compatible_server()
         except grpc.RpcError as e:
@@ -274,4 +263,8 @@ class ChannelProvider(base_channel_provider.BaseChannelProvider):
                 await channelEndpoints.channel.close()
 
         async with self._auth_tending_lock:
-            self._auth_task.cancel()
+            if self._auth_task and not self._auth_task.done():
+                self._auth_task.cancel()
+                
+        # Cancel token refresh
+        self._token_manager.cancel_refresh()
