@@ -36,6 +36,14 @@ class ChannelProvider(base_channel_provider.BaseChannelProvider):
         ssl_target_name_override: Optional[str] = None,
     ) -> None:
 
+        # Initialize attributes before calling super().__init__
+        # This ensures they exist before any methods that might use them are called
+        self._auth_task = None
+
+        # Exception to progotate to main control flow from
+        # errors generated during tending async tasks
+        self._tend_exception = None
+
         super().__init__(
             seeds,
             listener_name,
@@ -62,15 +70,12 @@ class ChannelProvider(base_channel_provider.BaseChannelProvider):
         self._token_manager.configure_async(self._auth_tending_lock)
 
         # initializes authentication tending
-        self._auth_task: Optional[asyncio.Task] = asyncio.create_task(
+        self._auth_task = asyncio.create_task(
             self._tend_token()
         )
 
         # initializes client tending processes
         asyncio.create_task(self._tend())
-
-        # Exception to progotate to main control flow from errors generated during tending
-        self._tend_exception: Exception = None
 
     async def _is_ready(self):
         # Wait 1 round of cluster tending, auth token initialization, and server client compatibility verification
@@ -84,8 +89,14 @@ class ChannelProvider(base_channel_provider.BaseChannelProvider):
     async def _tend(self):
 
         try:
-            await self._auth_task
-
+            # Wait for auth task if it exists
+            if self._auth_task:
+                await self._auth_task
+            else:
+                logger.error("Auth task not initialized")
+                e = types.AVSClientError(message="Auth task not initialized")
+                self._tend_exception = e
+                raise e
             # verfies server is minimally compatible with client
             await self._check_server_version()
 

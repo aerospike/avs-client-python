@@ -51,9 +51,6 @@ class ChannelProvider(base_channel_provider.BaseChannelProvider):
         # When set, client has concluded cluster tending
         self._tend_ended = threading.Event()
 
-        # When locked, new task is being assigned to _auth_task
-        self._auth_tending_lock: threading.Lock = threading.Lock()
-
         # initializes authentication tending
         self._tend_token()
 
@@ -137,17 +134,8 @@ class ChannelProvider(base_channel_provider.BaseChannelProvider):
         # Get the auth stub for token refresh
         auth_stub = self._get_auth_stub()
         
-        # Refresh the token initially
+        # Refresh the token initially - TokenManager will handle scheduling future refreshes
         self._token_manager.refresh_token(auth_stub)
-        
-        # Schedule future token refreshes
-        with self._auth_tending_lock:
-            self._auth_timer = threading.Timer(
-                (self._ttl_threshold * self._token_manager._ttl), 
-                self._tend_token
-            )
-            self._auth_timer.daemon = True
-            self._auth_timer.start()
 
     def _check_server_version(self):
         stub = vector_db_pb2_grpc.AboutServiceStub(self.get_channel())
@@ -202,10 +190,6 @@ class ChannelProvider(base_channel_provider.BaseChannelProvider):
         for k, channelEndpoints in self._node_channels.items():
             if channelEndpoints.channel:
                 channelEndpoints.channel.close()
-
-        with self._auth_tending_lock:
-            if self._auth_timer is not None:
-                self._auth_timer.cancel()
                 
         # Cancel token refresh
         self._token_manager.cancel_refresh()
