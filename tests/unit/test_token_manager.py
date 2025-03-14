@@ -51,7 +51,7 @@ class TestTokenManager:
         manager = TokenManager()
         assert manager.has_credentials() is False
 
-    def test_configure_async(self):
+    async def test_configure_async(self):
         """Test configuring TokenManager for async operation"""
         manager = TokenManager(username="test_user", password="test_pass")
         assert manager._is_async is False
@@ -256,7 +256,6 @@ class TestTokenManager:
                 mock_timer.assert_called_once()
                 mock_timer_instance.start.assert_called_once()
 
-    @pytest.mark.asyncio
     async def test_refresh_token_async(self, mock_async_auth_stub, mock_jwt_decode):
         """Test refresh_token_async method"""
         manager = TokenManager(username="test_user", password="test_pass")
@@ -278,7 +277,6 @@ class TestTokenManager:
             # Verify refresh was scheduled
             mock_schedule.assert_called_once_with(mock_async_auth_stub)
 
-    @pytest.mark.asyncio
     async def test_refresh_token_async_no_credentials(self, mock_async_auth_stub):
         """Test refresh_token_async method with no credentials"""
         manager = TokenManager()  # No credentials
@@ -290,7 +288,6 @@ class TestTokenManager:
         # Verify no auth request was made
         mock_async_auth_stub.Authenticate.assert_not_called()
 
-    @pytest.mark.asyncio
     async def test_refresh_token_async_error(self, mock_async_auth_stub):
         """Test refresh_token_async method with error"""
         manager = TokenManager(username="test_user", password="test_pass")
@@ -303,69 +300,57 @@ class TestTokenManager:
         with pytest.raises(types.AVSServerError):
             await manager.refresh_token_async(mock_async_auth_stub)
 
-    @pytest.mark.asyncio
-    async def test_schedule_token_refresh_async(self, mock_async_auth_stub):
-        """Test _schedule_token_refresh_async method"""
-        manager = TokenManager(username="test_user", password="test_pass")
+    async def test_schedule_token_refresh_async_cancel_existing(self):
+        """Test that scheduling a token refresh cancels any existing refresh"""
+        manager = TokenManager("user", "pass")
         manager._is_async = True
         manager._auth_lock = asyncio.Lock()
+        auth_stub = MagicMock()
         
-        # Mock create_task
-        with patch('asyncio.create_task') as mock_create_task:
-            mock_task = Mock()
-            mock_create_task.return_value = mock_task
+        # Create a mock task with done and cancel methods
+        mock_task = AsyncMock(spec=asyncio.Task)  # Use AsyncMock with spec=asyncio.Task
+        mock_task.done.return_value = False
+        manager._auth_timer = mock_task
+        
+        # Mock the _wait_and_refresh method to return a completed future
+        # This prevents the "coroutine never awaited" warning
+        with patch.object(manager, '_wait_and_refresh') as mock_wait_and_refresh:
+            mock_future = asyncio.Future()
+            mock_future.set_result(None)
+            mock_wait_and_refresh.return_value = mock_future
             
-            # Test schedule refresh async
-            with patch.object(manager, '_get_next_refresh_time', return_value=1800):
-                await manager._schedule_token_refresh_async(mock_async_auth_stub)
+            # Mock create_task to return a new mock task
+            with patch('asyncio.create_task') as mock_create_task:
+                new_mock_task = MagicMock()
+                mock_create_task.return_value = new_mock_task
                 
-                # Verify task was created
+                # Schedule a new refresh
+                await manager._schedule_token_refresh_async(auth_stub)
+                
+                # Verify the old task was cancelled
+                mock_task.cancel.assert_called_once()
+                
+                # Verify a new task was created with the coroutine
                 mock_create_task.assert_called_once()
                 
-                # Verify _wait_and_refresh was called with correct args
-                args, kwargs = mock_create_task.call_args
-                assert args[0].__name__ == '_wait_and_refresh'
+                # Verify the new task was assigned
+                assert manager._auth_timer is new_mock_task
 
-    @pytest.mark.asyncio
-    async def test_schedule_token_refresh_async_cancel_existing(self, mock_async_auth_stub):
-        """Test _schedule_token_refresh_async method with existing task"""
-        manager = TokenManager(username="test_user", password="test_pass")
-        manager._is_async = True
-        manager._auth_lock = asyncio.Lock()
-        
-        # Set up existing task
-        existing_task = AsyncMock(spec=asyncio.Task)
-        existing_task.done.return_value = False
-        manager._auth_timer = existing_task
-        
-        # Mock create_task
-        with patch('asyncio.create_task') as mock_create_task:
-            mock_task = Mock()
-            mock_create_task.return_value = mock_task
-            
-            # Test schedule refresh async
-            with patch.object(manager, '_get_next_refresh_time', return_value=1800):
-                await manager._schedule_token_refresh_async(mock_async_auth_stub)
-                
-                # Verify existing task was cancelled
-                existing_task.cancel.assert_called_once()
-                
-                # Verify new task was created
-                mock_create_task.assert_called_once()
-
-    @pytest.mark.asyncio
     async def test_wait_and_refresh(self, mock_async_auth_stub):
         """Test _wait_and_refresh method"""
-        manager = TokenManager(username="test_user", password="test_pass")
+        manager = TokenManager("user", "pass")
+        manager._is_async = True
         
         # Mock sleep and refresh
         with patch('asyncio.sleep') as mock_sleep:
-            mock_sleep.return_value = asyncio.Future()
-            mock_sleep.return_value.set_result(None)
+            mock_sleep_future = asyncio.Future()
+            mock_sleep_future.set_result(None)
+            mock_sleep.return_value = mock_sleep_future
             
             with patch.object(manager, 'refresh_token_async') as mock_refresh:
-                mock_refresh.return_value = asyncio.Future()
-                mock_refresh.return_value.set_result(None)
+                mock_refresh_future = asyncio.Future()
+                mock_refresh_future.set_result(None)
+                mock_refresh.return_value = mock_refresh_future
                 
                 # Test wait and refresh
                 await manager._wait_and_refresh(10, mock_async_auth_stub)
@@ -410,4 +395,34 @@ class TestTokenManager:
         mock_task.cancel.assert_called_once()
         
         # Verify task was cleared
-        assert manager._auth_timer is None 
+        assert manager._auth_timer is None
+
+    async def test_schedule_token_refresh_async(self, mock_async_auth_stub):
+        """Test _schedule_token_refresh_async method"""
+        manager = TokenManager("user", "pass")
+        manager._is_async = True
+        manager._auth_lock = asyncio.Lock()
+        
+        # Mock the _wait_and_refresh method to return a completed future
+        with patch.object(manager, '_wait_and_refresh') as mock_wait_and_refresh:
+            mock_future = asyncio.Future()
+            mock_future.set_result(None)
+            mock_wait_and_refresh.return_value = mock_future
+            
+            # Mock create_task
+            with patch('asyncio.create_task') as mock_create_task:
+                mock_task = MagicMock()
+                mock_create_task.return_value = mock_task
+                
+                # Test schedule refresh async
+                with patch.object(manager, '_get_next_refresh_time', return_value=1800):
+                    await manager._schedule_token_refresh_async(mock_async_auth_stub)
+                    
+                    # Verify task was created
+                    mock_create_task.assert_called_once()
+                    
+                    # Verify _wait_and_refresh was called with correct parameters
+                    mock_wait_and_refresh.assert_called_once()
+                    wait_args, wait_kwargs = mock_wait_and_refresh.call_args
+                    assert wait_args[0] == 1800  # refresh_time
+                    assert wait_args[1] == mock_async_auth_stub  # auth_stub 
