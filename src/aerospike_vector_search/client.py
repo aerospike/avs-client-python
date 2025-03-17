@@ -1074,6 +1074,12 @@ class Client(BaseClientMixin, AdminBaseClientMixin):
                 **kwargs,
             )
         except grpc.RpcError as e:
+            # If the server does not support index syncing it means the server is older than 1.1.0
+            # This is a non-critical error and can be ignored
+            if e.code() == grpc.StatusCode.UNIMPLEMENTED:
+                logger.warn("Index sync is not supported in this version of the server, skipping sync")
+                return
+
             logger.error("Failed waiting for indices to sync with error: %s", e)
             raise types.AVSServerError(rpc_error=e)
 
