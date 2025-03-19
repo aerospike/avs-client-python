@@ -37,7 +37,11 @@ class TokenManager:
         self._ttl_start: int = 0
         self._ttl_threshold: float = ttl_threshold
         self._auth_timer: Optional[Union[threading.Timer, asyncio.Task]] = None
-        self._auth_lock: Union[threading.Lock, asyncio.Lock] = threading.Lock()
+        
+        # Split locks for sync and async operations
+        self._sync_auth_lock: threading.Lock = threading.Lock()
+        self._async_auth_lock: Optional[asyncio.Lock] = None
+        
         self._is_async: bool = False
         logger.debug("TokenManager initialized with credentials: %s", "present" if self._credentials else "none")
 
@@ -45,7 +49,7 @@ class TokenManager:
         """Configure the token manager for async operation"""
         logger.debug("Configuring TokenManager for async operation")
         self._is_async = True
-        self._auth_lock = lock
+        self._async_auth_lock = lock
 
     def has_credentials(self) -> bool:
         """Check if credentials are available"""
@@ -110,9 +114,14 @@ class TokenManager:
         # Calculate time elapsed since token was issued
         current_time = int(time.time())
         elapsed = current_time - self._ttl_start
-        
+
+        if self._ttl < elapsed:
+            logger.warning("Token has expired, refresh over is overdue by %d seconds", elapsed - self._ttl)
+
         # Adjust refresh time based on elapsed time
-        adjusted_refresh_time = max(0.1, refresh_time - elapsed)
+        # If the token has expired, we need to refresh it immediately
+        # But avoid passing a negative refresh time to the timer
+        adjusted_refresh_time = max(0, refresh_time - elapsed)
         
         logger.debug(
             "Calculated next refresh time: TTL=%d, threshold=%.2f, elapsed=%d, adjusted_refresh_time=%.2f",
@@ -150,8 +159,7 @@ class TokenManager:
         """Schedule the next token refresh"""
         if not self._is_async:
             logger.debug("Scheduling next synchronous token refresh")
-            try:
-                self._auth_lock.acquire()
+            with self._sync_auth_lock:
                 if self._auth_timer:
                     logger.debug("Cancelling existing refresh timer")
                     self._auth_timer.cancel()
@@ -165,8 +173,6 @@ class TokenManager:
                 self._auth_timer.daemon = True
                 self._auth_timer.start()
                 logger.debug("Token refresh timer started")
-            finally:
-                self._auth_lock.release()
 
     # Asynchronous methods
     async def refresh_token_async(self, auth_stub: auth_pb2_grpc.AuthServiceStub) -> None:
@@ -190,13 +196,9 @@ class TokenManager:
 
     async def _schedule_token_refresh_async(self, auth_stub: auth_pb2_grpc.AuthServiceStub) -> None:
         """Schedule the next token refresh asynchronously"""
-        if self._is_async:
+        if self._is_async and self._async_auth_lock is not None:
             logger.debug("Scheduling next asynchronous token refresh")
-            if isinstance(self._auth_lock, asyncio.Lock):
-                lock : asyncio.Lock = self._auth_lock
-            else:
-                raise types.AVSClientError(message=f"Invalid auth lock type: {type(self._auth_lock)}")
-            async with lock:
+            async with self._async_auth_lock:
                 if isinstance(self._auth_timer, asyncio.Task) and not self._auth_timer.done():
                     logger.debug("Cancelling existing async refresh task")
                     self._auth_timer.cancel()
@@ -206,6 +208,9 @@ class TokenManager:
                     self._wait_and_refresh(refresh_time, auth_stub)
                 )
                 logger.debug("Async token refresh task created")
+        else:
+            logger.error("Cannot schedule async refresh: not in async mode or async lock not configured")
+            raise types.AVSClientError(message=f"Async lock not configured: is_async={self._is_async}, async_lock={self._async_auth_lock}")
 
     async def _wait_and_refresh(self, wait_time: float, auth_stub: auth_pb2_grpc.AuthServiceStub) -> None:
         """Wait for the specified time and then refresh the token"""
@@ -215,25 +220,48 @@ class TokenManager:
         await self.refresh_token_async(auth_stub)
 
     def cancel_refresh(self) -> None:
-        """Cancel any scheduled token refresh"""
+        """Cancel any scheduled token refresh synchronously"""
         logger.debug("Cancelling scheduled token refresh")
 
-        if self._auth_timer is None:
-            logger.debug("No async refresh task to cancel")
-            return
+        if self._is_async:
+            logger.error("Attempting to synchronously cancel refresh in async mode. "
+                         "Use async method instead.")
+            raise TypeError("Attempting to synchronously cancel refresh in async mode. "
+                            "Use async method instead.")
+        
+        # Synchronous cancellation
+        with self._sync_auth_lock:
+            if self._auth_timer is None:
+                logger.debug("No sync refresh timer to cancel")
+                return
+            
+            logger.debug("Cancelling synchronous refresh timer")
+            self._auth_timer.cancel()
+            self._auth_timer = None
+            logger.debug("Synchronous token refresh cancelled")
 
+    async def cancel_refresh_async(self) -> None:
+        """Cancel any scheduled token refresh asynchronously"""
+        logger.debug("Cancelling scheduled async token refresh")
+        
         if not self._is_async:
-            try:
-                self._auth_lock.acquire()
-                logger.debug("Cancelling synchronous refresh timer")
-                self._auth_timer.cancel()
-                self._auth_timer = None
-            finally:
-                self._auth_lock.release()
-        else:
-            # For async mode, we need to check if it's a Task
+            logger.error("Attempting to asynchronously cancel refresh in sync mode. "
+                         "Use sync method instead.")
+            raise TypeError("Attempting to asynchronously cancel refresh in sync mode. "
+                            "Use sync method instead.")
+        
+        if self._async_auth_lock is None:
+            logger.error("Async lock not configured")
+            raise TypeError("Async lock not configured")
+        
+        # Asynchronous cancellation
+        async with self._async_auth_lock:
+            if self._auth_timer is None:
+                logger.debug("No async refresh task to cancel")
+                return
+            
             if isinstance(self._auth_timer, asyncio.Task) and not self._auth_timer.done():
                 logger.debug("Cancelling asynchronous refresh task")
                 self._auth_timer.cancel()
                 self._auth_timer = None
-        logger.debug("Token refresh cancelled") 
+                logger.debug("Asynchronous token refresh cancelled") 

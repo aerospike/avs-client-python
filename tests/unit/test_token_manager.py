@@ -60,7 +60,7 @@ class TestTokenManager:
         mock_lock = asyncio.Lock()
         manager.configure_async(mock_lock)
         assert manager._is_async is True
-        assert manager._auth_lock is mock_lock
+        assert manager._async_auth_lock is mock_lock
 
     def test_has_credentials(self):
         """Test has_credentials method"""
@@ -168,7 +168,7 @@ class TestTokenManager:
         # Test with elapsed time exceeding threshold
         mock_time.return_value = 1600000000 + 3000  # 3000 seconds elapsed
         refresh_time = manager._get_next_refresh_time()
-        assert refresh_time == 0.1  # Minimum refresh time
+        assert refresh_time == 0  # Minimum refresh time
 
     def test_refresh_token(self, mock_auth_stub, mock_jwt_decode):
         """Test refresh_token method"""
@@ -304,7 +304,7 @@ class TestTokenManager:
         """Test that scheduling a token refresh cancels any existing refresh"""
         manager = TokenManager("user", "pass")
         manager._is_async = True
-        manager._auth_lock = asyncio.Lock()
+        manager._async_auth_lock = asyncio.Lock()
         auth_stub = MagicMock()
         
         # Create a mock task with done and cancel methods
@@ -378,10 +378,11 @@ class TestTokenManager:
         # Verify timer was cleared
         assert manager._auth_timer is None
 
-    def test_cancel_refresh_async(self):
+    async def test_cancel_refresh_async(self):
         """Test cancel_refresh method in async mode"""
         manager = TokenManager(username="test_user", password="test_pass")
         manager._is_async = True
+        manager._async_auth_lock = asyncio.Lock()
         
         # Set up task
         mock_task = AsyncMock(spec=asyncio.Task)
@@ -389,7 +390,7 @@ class TestTokenManager:
         manager._auth_timer = mock_task
         
         # Test cancel refresh
-        manager.cancel_refresh()
+        await manager.cancel_refresh_async()
         
         # Verify task was cancelled
         mock_task.cancel.assert_called_once()
@@ -401,7 +402,7 @@ class TestTokenManager:
         """Test _schedule_token_refresh_async method"""
         manager = TokenManager("user", "pass")
         manager._is_async = True
-        manager._auth_lock = asyncio.Lock()
+        manager._async_auth_lock = asyncio.Lock()
         
         # Mock the _wait_and_refresh method to return a completed future
         with patch.object(manager, '_wait_and_refresh') as mock_wait_and_refresh:

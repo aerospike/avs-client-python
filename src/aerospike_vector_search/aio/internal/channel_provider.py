@@ -278,4 +278,4 @@ class ChannelProvider(base_channel_provider.BaseChannelProvider):
                 self._auth_task.cancel()
                 
         # Cancel token refresh
-        self._token_manager.cancel_refresh()
+        await self._token_manager.cancel_refresh_async()
