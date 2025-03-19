@@ -36,10 +36,6 @@ class ChannelProvider(base_channel_provider.BaseChannelProvider):
         ssl_target_name_override: Optional[str] = None,
     ) -> None:
 
-        # Initialize attributes before calling super().__init__
-        # This ensures they exist before any methods that might use them are called
-        self._auth_task = None
-
         # Exception to progotate to main control flow from
         # errors generated during tending async tasks
         self._tend_exception = None
@@ -69,42 +65,31 @@ class ChannelProvider(base_channel_provider.BaseChannelProvider):
         # Configure token manager for async operation
         self._token_manager.configure_async(self._auth_tending_lock)
 
-        # initializes authentication tending
-        self._auth_task = asyncio.create_task(
-            self._tend_token()
-        )
-
         # initializes client tending processes
-        asyncio.create_task(self._tend())
+        asyncio.create_task(self._start_tending())
 
     async def _is_ready(self):
         # Wait 1 round of cluster tending, auth token initialization, and server client compatibility verification
         await self._ready.wait()
 
-        # This propogates any fatal/unexpected errors from client initialization/tending to the client.
+        # This propagates any fatal/unexpected errors from client initialization/tending to the client.
         # Raising errors in a task does not deliver this error information to users
         if self._tend_exception:
             raise self._tend_exception
 
-    async def _tend(self):
+    async def _start_tending(self):
 
         try:
-            # Wait for auth task if it exists
-            if self._auth_task:
-                await self._auth_task
-            else:
-                logger.error("Auth task not initialized")
-                e = types.AVSClientError(message="Auth task not initialized")
-                self._tend_exception = e
-                raise e
+            auth_stub = self._get_auth_stub()
+            await self._token_manager.refresh_token_async(auth_stub)
+
             # verfies server is minimally compatible with client
             await self._check_server_version()
 
             await self._tend_cluster()
 
             self._ready.set()
-
-        except  Exception as e:
+        except Exception as e:
             # Set all event to prevent hanging if initial tend fails with error
             self._tend_ended.set()
             self._ready.set()
@@ -194,23 +179,6 @@ class ChannelProvider(base_channel_provider.BaseChannelProvider):
     def _call_close_on_channel(self, channel_endpoints):
         return asyncio.create_task(self._close_on_channel_coroutine(channel_endpoints))
 
-    async def _tend_token(self):
-        """Initialize token management and schedule token refresh"""
-        try:
-            if not self._token_manager.has_credentials():
-                return
-
-            # Get the auth stub for token refresh
-            auth_stub = self._get_auth_stub()
-            
-            # Refresh the token initially
-            await self._token_manager.refresh_token_async(auth_stub)
-
-        except Exception as e:
-            self._tend_exception = e
-            logger.error("Failed to tend token with error: %s", e)
-            raise e
-
     async def _check_server_version(self):
         try:
             stub = vector_db_pb2_grpc.AboutServiceStub(self.get_channel())
@@ -272,10 +240,10 @@ class ChannelProvider(base_channel_provider.BaseChannelProvider):
         for k, channelEndpoints in self._node_channels.items():
             if channelEndpoints.channel:
                 await channelEndpoints.channel.close()
-
-        async with self._auth_tending_lock:
-            if self._auth_task and not self._auth_task.done():
-                self._auth_task.cancel()
                 
         # Cancel token refresh
-        await self._token_manager.cancel_refresh_async()
+        try:
+            await self._token_manager.cancel_refresh_async()
+        except asyncio.CancelledError:
+            logger.debug("Token refresh cancelled during close")
+            # The cancelled exceptions is expected here so is ignored
