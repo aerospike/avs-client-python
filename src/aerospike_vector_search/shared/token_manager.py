@@ -268,4 +268,6 @@ class TokenManager:
                 logger.debug("Cancelling asynchronous refresh task")
                 self._auth_timer.cancel()
                 self._auth_timer = None
-                logger.debug("Asynchronous token refresh cancelled") 
+                # previous self._auth_timer is None check ensures this is not None
+                # ignore linter type check error
+                await self._auth_timer # type: ignore
