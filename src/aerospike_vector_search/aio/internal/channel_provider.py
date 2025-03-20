@@ -242,8 +242,4 @@ class ChannelProvider(base_channel_provider.BaseChannelProvider):
                 await channelEndpoints.channel.close()
                 
         # Cancel token refresh
-        try:
-            await self._token_manager.cancel_refresh_async()
-        except asyncio.CancelledError:
-            logger.debug("Token refresh cancelled during close")
-            # The cancelled exceptions is expected here so is ignored
+        await self._token_manager.cancel_refresh_async()
