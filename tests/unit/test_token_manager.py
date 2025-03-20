@@ -398,6 +398,7 @@ class TestTokenManager:
         
         assert task.done()
         assert task.cancelled()
+        assert manager._auth_timer is None
 
     async def test_schedule_token_refresh_async(self, mock_async_auth_stub):
         """Test _schedule_token_refresh_async method"""

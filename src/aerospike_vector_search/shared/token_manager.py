@@ -265,8 +265,12 @@ class TokenManager:
             
             if isinstance(self._auth_timer, asyncio.Task) and not self._auth_timer.done():
                 logger.debug("Cancelling asynchronous refresh task")
-                self._auth_timer.cancel()
-                # previous self._auth_timer is None check ensures this is not None
-                # ignore linter type check error
-                await self._auth_timer # type: ignore
-                self._auth_timer = None
+                try:
+                    self._auth_timer.cancel()
+                    # previous self._auth_timer is None check ensures this is not None
+                    # ignore linter type check error
+                    await self._auth_timer # type: ignore
+                except Exception as e:
+                    logger.error("Unexpected error cancelling async refresh task: %s", e)
+                finally:
+                    self._auth_timer = None
