@@ -11,6 +11,7 @@ from .. import types
 from ..shared.proto_generated import vector_db_pb2
 from ..shared.proto_generated import vector_db_pb2_grpc
 from ..shared import base_channel_provider
+from ..shared.token_manager import TokenManager
 
 empty = google.protobuf.empty_pb2.Empty()
 
@@ -49,11 +50,6 @@ class ChannelProvider(base_channel_provider.BaseChannelProvider):
         )
         # When set, client has concluded cluster tending
         self._tend_ended = threading.Event()
-
-        # When locked, new task is being assigned to _auth_task
-        self._auth_tending_lock: threading.Lock = threading.Lock()
-
-        self._auth_timer = None
 
         # initializes authentication tending
         self._tend_token()
@@ -102,7 +98,7 @@ class ChannelProvider(base_channel_provider.BaseChannelProvider):
         try:
             return stub.GetClusterId(
                 empty,
-                credentials=self._token,
+                credentials=self._token_manager.get_token_credentials(),
             )
         except Exception as e:
             logger.debug(
@@ -116,7 +112,7 @@ class ChannelProvider(base_channel_provider.BaseChannelProvider):
                     vector_db_pb2.ClusterNodeEndpointsRequest(
                         listenerName=self.listener_name
                     ),
-                    credentials=self._token,
+                    credentials=self._token_manager.get_token_credentials(),
                 )
             ).endpoints
         except Exception as e:
@@ -131,40 +127,22 @@ class ChannelProvider(base_channel_provider.BaseChannelProvider):
             logger.debug("While tending, failed to close GRPC channel: " + str(e))
 
     def _tend_token(self):
-
-        if not self._token:
+        """Initialize token management and schedule token refresh"""
+        if not self._token_manager.has_credentials():
             return
 
-        self._update_token_and_ttl()
-
-        with self._auth_tending_lock:
-            self._auth_timer = threading.Timer(
-                (self._ttl * self._ttl_threshold), self._tend_token
-            )
-            self._auth_timer.start()
-
-    def _update_token_and_ttl(
-        self,
-    ) -> None:
-
-        (auth_stub, auth_request) = self._prepare_authenticate(
-            self._credentials, logger
-        )
-
-        try:
-            response = auth_stub.Authenticate(auth_request)
-        except grpc.RpcError as e:
-            logger.error("Failed to refresh authentication token with error: %s", e)
-            raise types.AVSServerError(rpc_error=e)
-
-        self._respond_authenticate(response.token)
+        # Get the auth stub for token refresh
+        auth_stub = self._get_auth_stub()
+        
+        # Refresh the token initially - TokenManager will handle scheduling future refreshes
+        self._token_manager.refresh_token(auth_stub)
 
     def _check_server_version(self):
         stub = vector_db_pb2_grpc.AboutServiceStub(self.get_channel())
         about_request = vector_db_pb2.AboutRequest()
 
         try:
-            response = stub.Get(about_request, credentials=self._token)
+            response = stub.Get(about_request, credentials=self._token_manager.get_token_credentials())
             self.current_server_version = response.version
         except grpc.RpcError as e:
             logger.debug("Failed to retrieve server version: " + str(e))
@@ -212,7 +190,6 @@ class ChannelProvider(base_channel_provider.BaseChannelProvider):
         for k, channelEndpoints in self._node_channels.items():
             if channelEndpoints.channel:
                 channelEndpoints.channel.close()
-
-        with self._auth_tending_lock:
-            if self._auth_timer is not None:
-                self._auth_timer.cancel()
+                
+        # Cancel token refresh
+        self._token_manager.cancel_refresh()
