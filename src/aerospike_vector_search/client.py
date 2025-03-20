@@ -702,7 +702,7 @@ class Client(BaseClientMixin, AdminBaseClientMixin):
         index_labels: Optional[dict[str, str]] = None,
         index_storage: Optional[types.IndexStorage] = None,
         mode: Optional[types.IndexMode] = None,
-        timeout: Optional[int] = 100_000,
+        timeout: Optional[int] = None,
     ) -> None:
         """
         Create an index.
@@ -796,7 +796,7 @@ class Client(BaseClientMixin, AdminBaseClientMixin):
             index_labels: Optional[dict[str, str]] = None,
             hnsw_update_params: Optional[types.HnswIndexUpdate] = None,
             mode: Optional[types.IndexMode] = None,
-            timeout: Optional[int] = 100_000,
+            timeout: Optional[int] = None,
     ) -> None:
         """
         Update an existing index.
