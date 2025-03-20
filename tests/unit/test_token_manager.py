@@ -384,15 +384,20 @@ class TestTokenManager:
         manager._is_async = True
         manager._async_auth_lock = asyncio.Lock()
         
-        # Create a mock task that can be awaited
-        mock_task = AsyncMock(spec=asyncio.Task)
-        mock_task.done.return_value = False
-        manager._auth_timer = mock_task
+        # Create an actual asyncio task that can be awaited
+        async def dummy_task():
+            await asyncio.sleep(10)  # Simulate a long-running async operation
+
+        task = asyncio.create_task(dummy_task())  # Create a real Task
+        manager._auth_timer = task  # Assign it to the manager
+
+        try:
+            await manager.cancel_refresh_async()
+        except asyncio.CancelledError:
+            pass
         
-        await manager.cancel_refresh_async()
-        
-        mock_task.cancel.assert_called_once()
-        mock_task.done.assert_called_once()
+        assert task.done()
+        assert task.cancelled()
 
     async def test_schedule_token_refresh_async(self, mock_async_auth_stub):
         """Test _schedule_token_refresh_async method"""

@@ -265,5 +265,5 @@ class TokenManager:
                 self._auth_timer.cancel()
                 # previous self._auth_timer is None check ensures this is not None
                 # ignore linter type check error
-                await self._auth_timer() # type: ignore
+                await self._auth_timer # type: ignore
                 self._auth_timer = None
