@@ -214,10 +214,13 @@ class TokenManager:
 
     async def _wait_and_refresh(self, wait_time: float, auth_stub: auth_pb2_grpc.AuthServiceStub) -> None:
         """Wait for the specified time and then refresh the token"""
-        logger.debug("Waiting %.2f seconds before refreshing token", wait_time)
-        await asyncio.sleep(wait_time)
-        logger.debug("Wait complete, starting token refresh")
-        await self.refresh_token_async(auth_stub)
+        try:
+            logger.debug("Waiting %.2f seconds before refreshing token", wait_time)
+            await asyncio.sleep(wait_time)
+            logger.debug("Wait complete, starting token refresh")
+            await self.refresh_token_async(auth_stub)
+        except asyncio.CancelledError:
+            logger.debug("Token wait and refresh task cancelled")
 
     def cancel_refresh(self) -> None:
         """Cancel any scheduled token refresh synchronously"""
